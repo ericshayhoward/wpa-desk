@@ -2,6 +2,7 @@
 export * from "./types";
 export * from "./terms";
 export * from "./scenario";
+export * from "./arc";
 export * from "./evidence";
 export * from "./session";
 export * from "./casefile";

@@ -12,7 +12,7 @@ afterEach(() => {
 beforeEach(() => localStorage.clear());
 
 async function openCounterMemo(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole("button", { name: /Dean Alvarez/ }));
+  await user.click(screen.getByRole("button", { name: /Dr. Cherry.*FYC section caps/ }));
   await user.click(screen.getByRole("button", { name: /Counter with a cost-and-impact memo/ }));
 }
 
@@ -31,7 +31,7 @@ it("drafts are kept, survive a reload, and show up in the case file with changes
 
   // Reload: reopening the scenario goes straight back into the half-written memo.
   render(<App />);
-  await user.click(screen.getByRole("button", { name: /Dean Alvarez/ }));
+  await user.click(screen.getByRole("button", { name: /Dr. Cherry.*FYC section caps/ }));
   expect(screen.queryByRole("heading", { name: "How do you respond?" })).toBeNull();
   expect((screen.getByRole("textbox", { name: /Body/ }) as HTMLTextAreaElement).value).toBe("Caps matter.");
   expect(screen.getByText(/^1 version saved/)).toBeTruthy();

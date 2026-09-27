@@ -1,10 +1,10 @@
 import { DEFAULT_ASSUMPTIONS, TERMS, analyzeTerm, type Program } from "../model";
 import { termLabel } from "./terms";
-import type { Scenario, TrainingSession } from "./types";
+import { CAREER_STAGES, type Arc, type Scenario, type TrainingSession } from "./types";
 
 export const SAVE_FORMAT = "wpa-desk-save";
 /** Bump when the saved shape changes, and add a migration in parseSave. */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface SaveSummary {
   institution: string;
@@ -48,7 +48,7 @@ export function createSave(session: TrainingSession, label: string, savedAt: Dat
  * every check fails with a message a player can act on instead of crashing
  * the app later.
  */
-export function parseSave(raw: unknown, scenarios: Scenario[]): SaveFile {
+export function parseSave(raw: unknown, scenarios: Scenario[], arcs: Arc[] = []): SaveFile {
   const f = obj(raw, "This file");
   if (f.format !== SAVE_FORMAT) throw new Error("This isn't a WPA Desk save file.");
   if (typeof f.version !== "number") throw new Error("The save file has no version number.");
@@ -57,8 +57,9 @@ export function parseSave(raw: unknown, scenarios: Scenario[]): SaveFile {
   }
   let rawSession = f.session;
   if (f.version < 2) rawSession = migrate1to2(rawSession);
+  if (f.version < 3) rawSession = migrate2to3(rawSession);
 
-  const session = parseSession(rawSession, scenarios);
+  const session = parseSession(rawSession, scenarios, arcs);
   return {
     format: SAVE_FORMAT,
     version: SAVE_VERSION,
@@ -89,7 +90,39 @@ function migrate1to2(raw: unknown): unknown {
   };
 }
 
-function parseSession(raw: unknown, scenarios: Scenario[]): TrainingSession {
+/**
+ * v3 added arcs, the Director of First-Year Writing as a stakeholder, and
+ * made the player an assistant director until the interim year. Earlier
+ * saves become standard-arc sessions with the director at starting trust.
+ */
+function migrate2to3(raw: unknown): unknown {
+  const s = obj(raw, "The saved session");
+  const program = obj(s.program, "The saved program");
+  const stakeholders = Array.isArray(program.stakeholders) ? (program.stakeholders as Record<string, unknown>[]) : [];
+  const hasDirector = stakeholders.some((x) => x.id === "fyw_director");
+  const termIndex = typeof s.termIndex === "number" ? s.termIndex : 1;
+  return {
+    ...s,
+    arcId: "standard",
+    stage: termIndex >= 5 ? "wpa" : "assistant_director",
+    program: {
+      ...program,
+      stakeholders: hasDirector
+        ? stakeholders
+        : [
+            ...stakeholders,
+            {
+              id: "fyw_director",
+              name: "Director of First-Year Writing",
+              trust: 60,
+              priorities: ["program coherence", "instructor support", "mentoring graduate administrators"],
+            },
+          ],
+    },
+  };
+}
+
+function parseSession(raw: unknown, scenarios: Scenario[], arcs: Arc[]): TrainingSession {
   const s = obj(raw, "The saved session");
   const known = new Set(scenarios.map((x) => x.id));
   const scenarioId = (id: unknown, where: string) => {
@@ -104,7 +137,8 @@ function parseSession(raw: unknown, scenarios: Scenario[]): TrainingSession {
   const session: TrainingSession = {
     program,
     termIndex,
-    stage: oneOf(s.stage, ["assistant_director", "wpa", "program_builder"] as const, "career stage"),
+    stage: oneOf(s.stage, CAREER_STAGES, "career stage"),
+    ...(s.arcId !== undefined && { arcId: arcId(s.arcId, arcs) }),
     adminHoursPerTerm: int(s, "adminHoursPerTerm", 0),
     adminHoursRemaining: int(s, "adminHoursRemaining", 0),
     inbox: list(s, "inbox").map((id) => scenarioId(id, "inbox")),
@@ -135,6 +169,13 @@ function parseSession(raw: unknown, scenarios: Scenario[]): TrainingSession {
     throw new Error("The save's admin hours don't add up.");
   }
   return session;
+}
+
+function arcId(v: unknown, arcs: Arc[]): string {
+  if (typeof v !== "string" || (arcs.length > 0 && !arcs.some((a) => a.id === v))) {
+    throw new Error(`The save belongs to a storyline this version doesn't have (${String(v)}).`);
+  }
+  return v;
 }
 
 function parseDrafts(raw: unknown): TrainingSession["drafts"] {

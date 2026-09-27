@@ -78,6 +78,7 @@ export interface Policies {
 export type StakeholderId =
   | "dean"
   | "chair"
+  | "fyw_director"
   | "provost_office"
   | "faculty_senate"
   | "writing_center"
@@ -87,7 +88,7 @@ export type StakeholderId =
   | "accreditor";
 
 export const STAKEHOLDER_IDS: readonly StakeholderId[] = [
-  "dean", "chair", "provost_office", "faculty_senate", "writing_center",
+  "dean", "chair", "fyw_director", "provost_office", "faculty_senate", "writing_center",
   "gta_cohort", "adjunct_faculty", "students", "accreditor",
 ];
 

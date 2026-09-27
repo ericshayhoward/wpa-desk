@@ -1,0 +1,30 @@
+# The standard arc: three years as a PhD student assistant director at
+# Midland State, ending with the Year 3 annual report.
+#
+# The player starts in their second year of the PhD and goes on the job
+# market in Year 3, while serving as interim director during Dr. Cherry's
+# sabbatical.
+#
+# calendar: when each scenario may arrive (term 1 = Fall, Year 1). A
+# scenario's own trigger still decides whether it makes sense to arrive.
+
+id: standard
+title: The Standard Arc
+description: >
+  Three years as assistant director of first-year writing at Midland State,
+  from your second year of the PhD to the job market, ending with the
+  Year 3 annual report.
+terms: 6
+startStage: assistant_director
+
+stageChanges:
+  - term: 5
+    stage: wpa
+    note: >
+      Dr. Cherry begins her sabbatical, and for this year you are interim
+      director of first-year writing. The decisions that used to go through
+      her now come to you, and so does the Year 3 annual report.
+
+calendar:
+  - { scenario: cap-memo, from: 1, until: 1 }
+  - { scenario: late-hire, from: 2 }

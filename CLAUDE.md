@@ -55,8 +55,16 @@ npm run build
 - `src/test-fixtures/` holds reusable student sessions for tests.
 - Long-term goal: a hosted multi-user version; see `docs/ROADMAP.md` before
   making choices that would only work local-only.
+- Arcs (`src/content/arcs/*.yaml`, parsed by `parseArc()`) set a
+  playthrough's length, role changes, and scenario calendar. The app plays
+  `STANDARD_ARC`; pass the session's arc to `advanceTerm` (it checks). A
+  session without an arc is free play: triggers only, no calendar. New
+  scenarios must be added to the arc's calendar or they never arrive.
+- The player's supervisor, Dr. Nora Cherry, is stakeholder `fyw_director`.
 - Scenarios interact (e.g., holding caps at 24 makes The Late Hire arrive in
-  spring). Multi-term tests must resolve urgent scenarios before advancing.
+  Spring Y1; raising them to 27 drives adjuncts away so it arrives in Spring
+  Y2). Multi-term tests must resolve urgent scenarios before advancing, or
+  pass only the scenarios they need.
 
 ## Environment notes
 

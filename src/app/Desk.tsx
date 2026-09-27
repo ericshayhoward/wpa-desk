@@ -3,7 +3,9 @@ import {
   COMMITMENT_EFFECTS,
   blockingScenarios,
   fillTemplate,
+  isFinalTerm,
   termLabel,
+  type Arc,
   type Commitment,
   type PendingEffect,
   type TrainingSession,
@@ -14,8 +16,10 @@ import { stakeholderName } from "./format";
 
 interface Props {
   session: TrainingSession;
-  /** What happened when the term advanced: delayed effects and missed commitments. */
-  landed: { effects: PendingEffect[]; missed: Commitment[]; drift: string[] };
+  /** The arc being played, if any. */
+  arc?: Arc;
+  /** What happened when the term advanced: role changes, delayed effects, and missed commitments. */
+  landed: { effects: PendingEffect[]; missed: Commitment[]; drift: string[]; milestones: string[] };
   onOpen: (scenarioId: string) => void;
   onNextTerm: () => void;
   onDeliver: (id: string) => void;
@@ -23,17 +27,23 @@ interface Props {
   onAbandon: (id: string) => void;
 }
 
-export function Desk({ session, landed, onOpen, onNextTerm, onDeliver, onExtend, onAbandon }: Props) {
+export function Desk({ session, arc, landed, onOpen, onNextTerm, onDeliver, onExtend, onAbandon }: Props) {
   const program = session.program;
   const inbox = session.inbox.map((id) => SCENARIOS.find((s) => s.id === id)!).filter(Boolean);
   const titleOf = (id: string) => SCENARIOS.find((s) => s.id === id)?.title ?? id;
   const blocking = blockingScenarios(session, SCENARIOS);
+  const final = isFinalTerm(session, arc);
 
   return (
     <div className="desk">
-      {(landed.effects.length > 0 || landed.missed.length > 0 || landed.drift.length > 0) && (
+      {(landed.effects.length > 0 || landed.missed.length > 0 || landed.drift.length > 0 || landed.milestones.length > 0) && (
         <section className="notice" aria-live="polite">
           <h2>Since last term</h2>
+          {landed.milestones.map((m, i) => (
+            <p key={`m${i}`}>
+              <strong>{m}</strong>
+            </p>
+          ))}
           {landed.effects.map((p, i) => (
             <p key={i}>
               <span className="muted small">{titleOf(p.scenarioId)}:</span> {p.note}
@@ -78,15 +88,22 @@ export function Desk({ session, landed, onOpen, onNextTerm, onDeliver, onExtend,
             })}
           </ul>
         )}
-        <div className="row-end">
-          <button
-            className={inbox.length ? "secondary" : "primary"}
-            disabled={blocking.length > 0}
-            onClick={onNextTerm}
-          >
-            {inbox.length ? "Leave these for next term and advance" : `Advance to ${termLabel(session.termIndex + 1)}`}
-          </button>
-        </div>
+        {final ? (
+          <p className="muted small row-end-note">
+            {termLabel(session.termIndex)} is the final term of {arc!.title}. The Year 3 annual report and your ending
+            aren't built yet.
+          </p>
+        ) : (
+          <div className="row-end">
+            <button
+              className={inbox.length ? "secondary" : "primary"}
+              disabled={blocking.length > 0}
+              onClick={onNextTerm}
+            >
+              {inbox.length ? "Leave these for next term and advance" : `Advance to ${termLabel(session.termIndex + 1)}`}
+            </button>
+          </div>
+        )}
         {blocking.length > 0 && (
           <p className="muted small row-end-note">
             {blocking.map((s) => s.title).join(", ")} can't wait. Resolve {blocking.length === 1 ? "it" : "them"} before the term

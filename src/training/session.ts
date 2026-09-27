@@ -7,6 +7,7 @@ import {
   type Program,
   type ProgramChange,
 } from "../model";
+import { arcAllows, checkArc, isFinalTerm, stageChangeAt } from "./arc";
 import type { EvidenceDraft } from "./evidence";
 import { persuasionProfile } from "./cast";
 import { missOverdue } from "./commitments";
@@ -15,7 +16,7 @@ import { fillTemplate } from "./template";
 import { isEligible } from "./scenario";
 import { termLabel, termOf } from "./terms";
 import type {
-  CareerStage,
+  Arc,
   Character,
   Commitment,
   Consequence,
@@ -33,11 +34,17 @@ import { REPLY_TONE } from "./types";
 
 export const DEFAULT_ADMIN_HOURS_PER_TERM = 60;
 
-export function startSession(program: Program, scenarios: Scenario[], stage: CareerStage = "wpa"): TrainingSession {
+/**
+ * Starts a session. With an arc, scenarios arrive on its calendar and the
+ * player's role follows it; without one (free play), any scenario whose
+ * trigger holds can arrive.
+ */
+export function startSession(program: Program, scenarios: Scenario[], arc?: Arc): TrainingSession {
   const session: TrainingSession = {
     program,
     termIndex: 1,
-    stage,
+    stage: arc?.startStage ?? "wpa",
+    ...(arc && { arcId: arc.id }),
     adminHoursPerTerm: DEFAULT_ADMIN_HOURS_PER_TERM,
     adminHoursRemaining: DEFAULT_ADMIN_HOURS_PER_TERM,
     inbox: [],
@@ -48,7 +55,7 @@ export function startSession(program: Program, scenarios: Scenario[], stage: Car
     commitments: [],
     nextId: 1,
   };
-  return deliver(session, scenarios);
+  return deliver(session, scenarios, arc);
 }
 
 export function addEvidence(session: TrainingSession, draft: EvidenceDraft): TrainingSession {
@@ -242,12 +249,16 @@ export function blockingScenarios(session: TrainingSession, scenarios: Scenario[
 
 /**
  * Moves to the next term: commitments still open and due are missed, then
- * delayed effects that come due are applied.
+ * delayed effects that come due are applied, then the arc's role change for
+ * the new term (if any) takes effect. Pass the arc the session started with.
  */
 export function advanceTerm(
   session: TrainingSession,
   scenarios: Scenario[],
-): { session: TrainingSession; applied: PendingEffect[]; missed: Commitment[]; drift: string[] } {
+  arc?: Arc,
+): { session: TrainingSession; applied: PendingEffect[]; missed: Commitment[]; drift: string[]; milestones: string[] } {
+  checkArc(session, arc);
+  if (isFinalTerm(session, arc)) throw new Error(`${termLabel(session.termIndex)} is the final term of ${arc!.title}.`);
   const blocked = blockingScenarios(session, scenarios);
   if (blocked.length) {
     throw new Error(`Resolve before ${termLabel(session.termIndex)} ends: ${blocked.map((s) => s.title).join(", ")}`);
@@ -260,14 +271,22 @@ export function advanceTerm(
   const termIndex = session.termIndex + 1;
   const applied = closed.session.pending.filter((p) => p.dueTerm <= termIndex);
   const program = applyChanges(attrition.program, applied.flatMap((p) => p.changes));
+  const stageChange = arc && stageChangeAt(arc, termIndex);
   const advanced: TrainingSession = {
     ...closed.session,
     program,
     termIndex,
+    stage: stageChange?.stage ?? session.stage,
     adminHoursRemaining: session.adminHoursPerTerm,
     pending: closed.session.pending.filter((p) => p.dueTerm > termIndex),
   };
-  return { session: deliver(advanced, scenarios), applied, missed: closed.missed, drift: attrition.notes };
+  return {
+    session: deliver(advanced, scenarios, arc),
+    applied,
+    missed: closed.missed,
+    drift: attrition.notes,
+    milestones: stageChange ? [stageChange.note] : [],
+  };
 }
 
 /**
@@ -275,12 +294,13 @@ export function advanceTerm(
  * (e.g., instructors resigning) apply only if the scenario actually arrives,
  * and eligibility is judged with those changes in place.
  */
-function deliver(session: TrainingSession, scenarios: Scenario[]): TrainingSession {
+function deliver(session: TrainingSession, scenarios: Scenario[], arc: Arc | undefined): TrainingSession {
   const done = new Set(session.decisions.map((d) => d.scenarioId));
   const inbox = session.inbox.filter((id) => !done.has(id));
   let program = session.program;
   for (const s of scenarios) {
     if (done.has(s.id) || inbox.includes(s.id)) continue;
+    if (arc && !arcAllows(arc, s.id, session.termIndex)) continue;
     const withArrival = s.arrival.length ? applyChanges(program, s.arrival) : program;
     if (isEligible(s, { ...session, program: withArrival })) {
       program = withArrival;

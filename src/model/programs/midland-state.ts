@@ -79,6 +79,7 @@ export const MIDLAND_STATE: Program = {
   stakeholders: [
     { id: "dean", name: "Dean of Arts & Sciences", trust: 55, priorities: ["balanced budget", "enrollment growth", "accreditation readiness"] },
     { id: "chair", name: "English Department Chair", trust: 60, priorities: ["TT research time", "graduate program health"] },
+    { id: "fyw_director", name: "Director of First-Year Writing", trust: 60, priorities: ["program coherence", "instructor support", "mentoring graduate administrators"] },
     { id: "provost_office", name: "Provost's Office", trust: 50, priorities: ["retention", "academic integrity", "efficiency"] },
     { id: "faculty_senate", name: "Faculty Senate", trust: 50, priorities: ["shared governance", "academic freedom"] },
     { id: "writing_center", name: "Writing Center Director", trust: 65, priorities: ["tutor funding", "partnership with FYC"] },

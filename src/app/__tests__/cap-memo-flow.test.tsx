@@ -37,7 +37,7 @@ describe("playing The Cap Memo through the UI", () => {
     render(<App />);
     expect(screen.getByText("$8,600 deficit")).toBeTruthy();
     expect(screen.getByText("Fall, Year 1")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Dean Alvarez/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Dr. Cherry.*FYC section caps/ })).toBeTruthy();
     // The People card names the characters and shows what moves them.
     expect(screen.getByText("Elena Alvarez")).toBeTruthy();
     expect(screen.getByText("Chair, Department of English")).toBeTruthy();

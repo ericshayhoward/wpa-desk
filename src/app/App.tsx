@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { DEFAULT_ASSUMPTIONS, MIDLAND_STATE, analyzeTerm } from "../model";
-import { CAST, SCENARIOS } from "../content";
+import { ARCS, CAST, SCENARIOS, STANDARD_ARC } from "../content";
 import {
   abandonCommitment,
   addEvidence,
@@ -12,6 +12,7 @@ import {
   deliverCommitment,
   extendCommitment,
   resolveScenario,
+  STAGE_LABELS,
   startSession,
   termLabel,
   termOf,
@@ -41,11 +42,16 @@ const TAB_LABELS: Record<Tab, string> = { desk: "Desk", dossier: "Dossier", tool
 function initialSession(): { session: TrainingSession; note: string | null } {
   const r = readSlot(AUTOSAVE);
   if (r.ok) return { session: r.save.session, note: `Resumed your session (${r.save.summary.term}).` };
-  const fresh = startSession(MIDLAND_STATE, SCENARIOS);
+  const fresh = startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC);
   if ("error" in r) return { session: fresh, note: `Couldn't resume your last session (${r.error}). Started a new one.` };
   return { session: fresh, note: null };
 }
 type Tool = "caps" | "staffing";
+
+/** The arc a session is playing, or undefined for free play. */
+function arcOf(session: TrainingSession) {
+  return ARCS.find((a) => a.id === session.arcId);
+}
 
 export function App() {
   const [initial] = useState(initialSession);
@@ -58,7 +64,12 @@ export function App() {
   const [tool, setTool] = useState<Tool>("caps");
   const [openScenario, setOpenScenario] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<DecisionOutcome | null>(null);
-  const NOTHING_LANDED = { effects: [] as PendingEffect[], missed: [] as Commitment[], drift: [] as string[] };
+  const NOTHING_LANDED = {
+    effects: [] as PendingEffect[],
+    missed: [] as Commitment[],
+    drift: [] as string[],
+    milestones: [] as string[],
+  };
   const [landed, setLanded] = useState(NOTHING_LANDED);
 
   const program = session.program;
@@ -93,9 +104,9 @@ export function App() {
   };
 
   const nextTerm = () => {
-    const result = advanceTerm(session, SCENARIOS);
+    const result = advanceTerm(session, SCENARIOS, arcOf(session));
     setSession(result.session);
-    setLanded({ effects: result.applied, missed: result.missed, drift: result.drift });
+    setLanded({ effects: result.applied, missed: result.missed, drift: result.drift, milestones: result.milestones });
     setOutcome(null);
   };
 
@@ -140,6 +151,10 @@ export function App() {
           <div>
             <dt>Term</dt>
             <dd>{termLabel(session.termIndex)}</dd>
+          </div>
+          <div>
+            <dt>Role</dt>
+            <dd>{STAGE_LABELS[session.stage]}</dd>
           </div>
           <div>
             <dt>Admin hours left</dt>
@@ -211,6 +226,7 @@ export function App() {
           ) : (
             <Desk
               session={session}
+              arc={arcOf(session)}
               landed={landed}
               onOpen={(id) => {
                 setOpenScenario(id);
@@ -235,7 +251,7 @@ export function App() {
           <SavesPanel
             session={session}
             onLoad={replaceSession}
-            onNewSession={() => replaceSession(startSession(MIDLAND_STATE, SCENARIOS), "Started a new session.")}
+            onNewSession={() => replaceSession(startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC), "Started a new session.")}
           />
         )}
         {tab === "tools" && (

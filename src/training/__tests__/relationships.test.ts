@@ -112,8 +112,8 @@ describe("morale turnover", () => {
 });
 
 describe("cast content", () => {
-  it("loads Midland's four named people", () => {
-    expect(CAST.map((c) => c.shortName)).toEqual(["Dean Alvarez", "Dr. Hale", "Associate Provost Okafor", "Dr. Raman"]);
+  it("loads Midland's five named people", () => {
+    expect(CAST.map((c) => c.shortName)).toEqual(["Dean Alvarez", "Dr. Hale", "Dr. Cherry", "Associate Provost Okafor", "Dr. Raman"]);
   });
 
   it("rejects bad profiles with readable errors", () => {

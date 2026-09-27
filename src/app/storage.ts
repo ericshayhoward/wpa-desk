@@ -3,7 +3,7 @@
  * unavailable (private windows, blocked site data) or full, and the app must
  * keep working without it.
  */
-import { SCENARIOS } from "../content";
+import { ARCS, SCENARIOS } from "../content";
 import { createSave, parseSave, type SaveFile, type TrainingSession } from "../training";
 
 const PREFIX = "wpa-desk:";
@@ -22,7 +22,7 @@ export function readSlot(slot: SlotId): ReadResult {
   }
   if (raw === null) return { ok: false, empty: true };
   try {
-    return { ok: true, save: parseSave(JSON.parse(raw), SCENARIOS) };
+    return { ok: true, save: parseSave(JSON.parse(raw), SCENARIOS, ARCS) };
   } catch (err) {
     return { ok: false, error: err instanceof SyntaxError ? "The saved data is damaged." : (err as Error).message };
   }
@@ -62,5 +62,5 @@ export function importFile(text: string): SaveFile {
   } catch {
     throw new Error("That file isn't a WPA Desk save (it isn't valid JSON).");
   }
-  return parseSave(raw, SCENARIOS);
+  return parseSave(raw, SCENARIOS, ARCS);
 }

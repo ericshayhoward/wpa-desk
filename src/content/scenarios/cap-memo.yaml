@@ -1,5 +1,10 @@
 # The Cap Memo — the dean wants higher FYC caps to close a deficit.
 #
+# The dean writes to Dr. Cherry, who forwards it to the player (her assistant
+# director) to run the numbers and draft the reply she'll send under both
+# names. The memo's reader is still the dean, so persuasion uses the dean's
+# profile.
+#
 # Numbers referenced in the prose come from the Midland State model:
 # a $8,600-per-term deficit; caps of 27 cut 5 fall sections, all adjunct.
 
@@ -11,6 +16,20 @@ trigger:
   requiresDeficit: true
 
 documents:
+  - from: fyw_director
+    genre: email
+    subject: "Fwd: FYC section caps for next fall"
+    body: |
+      The dean's memo is below. I'm in accreditation planning all week, so
+      I'd like you to take the lead on this one: run the numbers, decide what
+      we should recommend, and draft the reply. I'll read it before it goes
+      out under both our names.
+
+      Whatever we say, remember that the dean has to be able to defend it to
+      the provost.
+
+      — Nora
+
   - from: dean
     genre: memo
     subject: FYC section caps for next fall
@@ -28,6 +47,7 @@ documents:
       if you see any problems.
 
       — Dean Alvarez, College of Arts & Sciences
+      To: Dr. Nora Cherry, Director of First-Year Writing
 
 suggestedTools: [cap_calculator]
 
@@ -39,18 +59,20 @@ options:
     memo:
       required: false
       audience: dean
-      prompt: Confirm the change and set expectations for how it will be carried out.
+      prompt: Draft the reply confirming the change and setting expectations for how it will be carried out.
     consequence:
       narrative: |
-        The registrar rebuilds the schedule. Five fall sections disappear, all
-        of them taught by adjuncts. The deficit closes on paper, and the dean
-        thanks you at the next chairs' meeting.
+        Dr. Cherry sends your reply with one line added. The registrar
+        rebuilds the schedule. Five fall sections disappear, all of them
+        taught by adjuncts. The deficit closes on paper, and the dean thanks
+        the program at the next chairs' meeting.
       changes:
         - { kind: setCap, courseId: ENGL101, cap: 27 }
         - { kind: setCap, courseId: ENGL102, cap: 27 }
         - { kind: adjustTrust, stakeholder: dean, delta: 8 }
         - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -12 }
         - { kind: adjustTrust, stakeholder: students, delta: -3 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -2 }
         - { kind: adjustPoliticalCapital, delta: 4 }
       response:
         from: dean
@@ -60,7 +82,7 @@ options:
         - inTerms: 2
           note: |
             Adjuncts learned about the lost sections from the schedule, not from
-            you. Two experienced instructors take work elsewhere, and those who
+            the program. Two experienced instructors take work elsewhere, and those who
             stay are responding to more student writing each term.
           changes:
             - { kind: adjustHeadcount, rank: adjunct, delta: -2 }
@@ -75,7 +97,7 @@ options:
       required: true
       audience: dean
       prompt: |
-        Make the case for holding caps. The dean has to defend this decision
+        Draft the case for holding caps. The dean has to defend this decision
         to the provost, so numbers that speak to the college's priorities
         (budget, retention) will carry more weight than principle alone.
     persuasion:
@@ -91,6 +113,7 @@ options:
           - { kind: adjustBudget, delta: 8600 }
           - { kind: adjustTrust, stakeholder: dean, delta: 3 }
           - { kind: adjustTrust, stakeholder: chair, delta: 2 }
+          - { kind: adjustTrust, stakeholder: fyw_director, delta: 5 }
           - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 6 }
           - { kind: adjustTrust, stakeholder: students, delta: 2 }
         response:
@@ -110,7 +133,7 @@ options:
               - { kind: adjustBudget, delta: -8600 }
       unpersuaded:
         narrative: |
-          Your memo argues from principle and professional standards but offers
+          The memo argues from principle and professional standards but offers
           no local numbers. The dean appreciates the conviction, but nothing in
           it changes the math. Caps go to 27.
         changes:
@@ -135,13 +158,15 @@ options:
     consequence:
       narrative: |
         The dean accepts the middle ground. Caps of 25 trim about one section
-        per term and less than half the deficit; the rest is still yours to
-        solve. Adjuncts lose a little work, and you've implicitly promised to
-        study what happens.
+        per term and less than half the deficit; the rest is still the
+        program's to solve. Adjuncts lose a little work, and you've
+        implicitly promised to study what happens, which Dr. Cherry makes
+        clear is your project.
       changes:
         - { kind: setCap, courseId: ENGL101, cap: 25 }
         - { kind: setCap, courseId: ENGL102, cap: 25 }
         - { kind: adjustTrust, stakeholder: dean, delta: 3 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 2 }
         - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -4 }
       response:
         from: dean
@@ -163,8 +188,10 @@ options:
       narrative: |
         You ask for two weeks. The dean grants one, then raises caps to 27
         anyway because the registrar's deadline won't move. But instructors
-        heard about the change from you first, and some of them noticed that
-        you asked. So did the chair, who appreciates being brought in early.
+        heard about the change from the program first, and some of them
+        noticed that you asked. So did the chair, who appreciates being
+        brought in early, and Dr. Cherry, who asks you to run the next
+        instructor meeting.
       changes:
         - { kind: setCap, courseId: ENGL101, cap: 27 }
         - { kind: setCap, courseId: ENGL102, cap: 27 }
@@ -172,6 +199,7 @@ options:
         - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 4 }
         - { kind: adjustTrust, stakeholder: gta_cohort, delta: 2 }
         - { kind: adjustTrust, stakeholder: chair, delta: 4 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
       response:
         from: dean
         body: I understand wanting to consult, but the registrar's deadline is real. We're going ahead at 27.
@@ -190,6 +218,8 @@ debrief:
       view: Fewer sections means less income, and bigger sections mean more unpaid grading. We rarely hear about these decisions until the schedule changes.
     - stakeholder: students
       view: Bigger classes mean less time with the instructor, especially for students who need it most.
+    - stakeholder: fyw_director
+      view: I asked you to draft this because the reasoning matters as much as the answer. Whatever we recommend, I want to know we ran the numbers and thought about who pays.
     - stakeholder: provost_office
       view: We want the savings, and we also watch first-year retention. Rising D/F/W in gateway courses is a problem we'll notice.
   readings:

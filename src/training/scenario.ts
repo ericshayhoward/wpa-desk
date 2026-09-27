@@ -1,6 +1,16 @@
-import { DEFAULT_ASSUMPTIONS, STAKEHOLDER_IDS, TERMS, analyzeTerm, parseChange, type StakeholderId, type Term } from "../model";
+import {
+  DEFAULT_ASSUMPTIONS,
+  STAFFING_ORDER,
+  STAKEHOLDER_IDS,
+  TERMS,
+  analyzeTerm,
+  parseChange,
+  type StakeholderId,
+  type Term,
+  type TermAnalysis,
+} from "../model";
+import { CAREER_STAGES } from "./types";
 import type {
-  CareerStage,
   Consequence,
   DelayedEffect,
   EvidenceKind,
@@ -11,13 +21,16 @@ import type {
   ScenarioOption,
   ToolId,
   TrainingSession,
+  TriggerAfter,
+  TriggerCondition,
+  TriggerMeasure,
 } from "./types";
 import { termOf } from "./terms";
 
-const STAGES: readonly CareerStage[] = ["assistant_director", "wpa", "program_builder"];
 const TOOLS: readonly ToolId[] = ["cap_calculator", "staffing_planner"];
 const EVIDENCE_KINDS: readonly EvidenceKind[] = ["cap_analysis", "staffing_plan"];
 const GENRES: readonly ScenarioDocument["genre"][] = ["memo", "email", "report", "note"];
+const MEASURES: readonly TriggerMeasure[] = ["trust", "morale", "dfw", "politicalCapital", "budgetBalance"];
 
 /**
  * Validates an untyped scenario (usually parsed YAML) and returns a typed
@@ -39,13 +52,18 @@ export function parseScenario(raw: unknown): Scenario {
   return {
     id,
     title: str(r, "title", at),
-    stages: arr(r, "stages", at).map((s) => oneOf(s, STAGES, `${at} stages`)),
+    stages: arr(r, "stages", at).map((s) => oneOf(s, CAREER_STAGES, `${at} stages`)),
     trigger: {
       minTerm: trigger.minTerm === undefined ? undefined : num(trigger, "minTerm", `${at} trigger`),
       term: trigger.term === undefined ? undefined : oneOf(trigger.term, TERMS as readonly Term[], `${at} trigger term`),
       requiresDeficit: trigger.requiresDeficit === undefined ? undefined : bool(trigger, "requiresDeficit", `${at} trigger`),
       requiresUnstaffed:
         trigger.requiresUnstaffed === undefined ? undefined : bool(trigger, "requiresUnstaffed", `${at} trigger`),
+      after: trigger.after === undefined ? undefined : parseAfter(trigger.after, `${at} trigger after`),
+      conditions:
+        trigger.conditions === undefined
+          ? undefined
+          : arr(trigger, "conditions", `${at} trigger`).map((c, i) => parseCondition(c, `${at} trigger condition ${i + 1}`)),
     },
     arrival: (r.arrival === undefined ? [] : arr(r, "arrival", at)).map((c, i) => parseChange(c, `${at} arrival ${i + 1}`)),
     urgent: r.urgent === undefined ? false : bool(r, "urgent", at),
@@ -152,6 +170,61 @@ function parsePersuasion(raw: unknown, at: string): Persuasion {
   };
 }
 
+function parseAfter(raw: unknown, at: string): TriggerAfter {
+  const r = obj(raw, at);
+  const inTerms = r.inTerms === undefined ? undefined : num(r, "inTerms", at);
+  if (inTerms !== undefined && (!Number.isInteger(inTerms) || inTerms < 1)) {
+    throw new Error(`${at}: "inTerms" must be a whole number ≥ 1`);
+  }
+  return {
+    scenario: str(r, "scenario", at),
+    options: r.options === undefined ? undefined : arr(r, "options", at).map((o) => text(o, `${at} options`)),
+    persuaded: r.persuaded === undefined ? undefined : bool(r, "persuaded", at),
+    inTerms,
+  };
+}
+
+function parseCondition(raw: unknown, at: string): TriggerCondition {
+  const r = obj(raw, at);
+  const measure = oneOf(r.measure, MEASURES, `${at} measure`);
+  const c: TriggerCondition = {
+    measure,
+    below: r.below === undefined ? undefined : num(r, "below", at),
+    atLeast: r.atLeast === undefined ? undefined : num(r, "atLeast", at),
+  };
+  if (c.below === undefined && c.atLeast === undefined) throw new Error(`${at}: needs "below", "atLeast", or both`);
+  if (measure === "trust") c.stakeholder = stakeholder(r.stakeholder, at);
+  if (measure === "morale") c.rank = oneOf(r.rank, STAFFING_ORDER, `${at} rank`);
+  if (measure === "dfw" && r.courseId !== undefined) c.courseId = str(r, "courseId", at);
+  if (measure === "dfw" && ((c.below ?? 0) > 1 || (c.atLeast ?? 0) > 1)) {
+    throw new Error(`${at}: D/F/W thresholds are fractions (0.22 means 22%)`);
+  }
+  return c;
+}
+
+/**
+ * Checks references between scenarios, which a single file can't: every
+ * `trigger.after` must name a real scenario and real options.
+ */
+export function validateScenarioLinks(scenarios: Scenario[]): void {
+  const ids = new Set<string>();
+  for (const s of scenarios) {
+    if (ids.has(s.id)) throw new Error(`scenario "${s.id}": another scenario has the same id`);
+    ids.add(s.id);
+  }
+  for (const s of scenarios) {
+    const after = s.trigger.after;
+    if (!after) continue;
+    const target = scenarios.find((x) => x.id === after.scenario);
+    if (!target) throw new Error(`scenario "${s.id}" trigger after: no scenario "${after.scenario}"`);
+    for (const o of after.options ?? []) {
+      if (!target.options.some((x) => x.id === o)) {
+        throw new Error(`scenario "${s.id}" trigger after: "${after.scenario}" has no option "${o}"`);
+      }
+    }
+  }
+}
+
 function parseDelayed(raw: unknown, at: string): DelayedEffect {
   const r = obj(raw, at);
   const inTerms = num(r, "inTerms", at);
@@ -174,12 +247,46 @@ export function isEligible(scenario: Scenario, session: TrainingSession): boolea
   if (!scenario.stages.includes(session.stage)) return false;
   if (t.minTerm !== undefined && session.termIndex < t.minTerm) return false;
   if (t.term !== undefined && termOf(session.termIndex) !== t.term) return false;
-  if (t.requiresDeficit || t.requiresUnstaffed) {
-    const analysis = analyzeTerm(session.program, termOf(session.termIndex), DEFAULT_ASSUMPTIONS);
-    if (t.requiresDeficit && analysis.budgetBalance >= 0) return false;
-    if (t.requiresUnstaffed && analysis.unstaffedSections === 0) return false;
+  if (t.after && !afterHolds(t.after, session)) return false;
+  let analysis: TermAnalysis | undefined;
+  const analyze = () => (analysis ??= analyzeTerm(session.program, termOf(session.termIndex), DEFAULT_ASSUMPTIONS));
+  if (t.requiresDeficit && analyze().budgetBalance >= 0) return false;
+  if (t.requiresUnstaffed && analyze().unstaffedSections === 0) return false;
+  for (const c of t.conditions ?? []) {
+    const v = measure(c, session, analyze);
+    if (c.below !== undefined && !(v < c.below)) return false;
+    if (c.atLeast !== undefined && !(v >= c.atLeast)) return false;
   }
   return true;
+}
+
+function afterHolds(after: TriggerAfter, session: TrainingSession): boolean {
+  const d = session.decisions.find((x) => x.scenarioId === after.scenario);
+  if (!d) return false;
+  if (after.options && !after.options.includes(d.optionId)) return false;
+  if (after.persuaded !== undefined && d.persuaded !== after.persuaded) return false;
+  if (after.inTerms !== undefined && session.termIndex < d.termIndex + after.inTerms) return false;
+  return true;
+}
+
+function measure(c: TriggerCondition, session: TrainingSession, analyze: () => TermAnalysis): number {
+  const p = session.program;
+  switch (c.measure) {
+    case "trust":
+      return p.stakeholders.find((s) => s.id === c.stakeholder)?.trust ?? 0;
+    case "morale":
+      return p.instructors.find((i) => i.rank === c.rank)?.morale ?? 0;
+    case "politicalCapital":
+      return p.politicalCapital;
+    case "budgetBalance":
+      return analyze().budgetBalance;
+    case "dfw": {
+      if (!c.courseId) return analyze().dfw.mid;
+      const course = analyze().courses.find((x) => x.courseId === c.courseId);
+      if (!course) throw new Error(`Trigger condition names an unknown course: ${c.courseId}`);
+      return course.dfw.mid;
+    }
+  }
 }
 
 // ---- small validators ------------------------------------------------------

@@ -28,6 +28,18 @@
   responds: Plans that protect the department's name, and being consulted before decisions rather than after.
   persuasion: { withEvidence: 20, withoutEvidence: 65 }
 
+- stakeholder: fyw_director
+  name: Nora Cherry
+  shortName: Dr. Cherry
+  title: Director of First-Year Writing
+  bio: >
+    Your supervisor and the program's WPA, a tenured associate professor
+    six years into running first-year writing. Hired you as assistant director because she wants
+    to train the next generation of WPAs, and expects you to bring her
+    problems with a proposed solution attached.
+  responds: Careful work with the numbers checked, and hearing about problems early rather than after they've grown.
+  persuasion: { withEvidence: 15, withoutEvidence: 55 }
+
 - stakeholder: provost_office
   name: Grace Okafor
   shortName: Associate Provost Okafor

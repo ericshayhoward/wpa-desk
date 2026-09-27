@@ -184,17 +184,39 @@ commitments kept versus missed, instructor morale, and dissertation
 progress. The ending screen explains why, like a
 debrief, rather than showing a bare grade.
 
-Design direction (proposed, not yet built):
+Built so far (`src/content/arcs/standard.yaml`, `src/training/arc.ts`):
 
 - **Placement lives in the arc; conditions live in the scenario.** A
-  scenario's `trigger` says what must be true for it to make sense
-  (`requiresDeficit`, `requiresUnstaffed`, earlier choices, thresholds). The
-  arc says *when* it's eligible (a term window). The same scenario can then
-  sit at different points in different arcs.
-- **Richer triggers** — an earlier choice (`after: { scenario, option }`),
-  state thresholds (D/F/W, morale, trust with a character), and a latest
-  term, so follow-ups like the Cap Memo reprieve review become scenarios
-  rather than notes.
+  scenario's `trigger` says what must be true for it to make sense. The
+  arc's `calendar` says *when* it may arrive (`from`/`until` terms); a
+  scenario not in the calendar never arrives in that arc. The same scenario
+  can sit at different points in different arcs.
+- **Role changes** — `startStage` plus `stageChanges` (term, stage, note);
+  the note appears under "Since last term".
+- **Final term** — the term can't advance past `terms`.
+- **Free play** — a session started without an arc has no calendar and
+  runs on triggers alone (used by most model tests).
+- **Richer triggers**, in scenario YAML:
+
+  ```yaml
+  trigger:
+    after:                       # a follow-up to an earlier decision
+      scenario: cap-memo
+      options: [counter-with-data]   # optional: only these choices
+      persuaded: true                # optional: only if the memo landed
+      inTerms: 2                     # optional: at least 2 terms later
+    conditions:                  # every one must hold
+      - { measure: trust, stakeholder: dean, below: 40 }
+      - { measure: morale, rank: adjunct, below: 45 }
+      - { measure: dfw, courseId: ENGL101, atLeast: 0.2 }  # fraction
+      - { measure: politicalCapital, atLeast: 10 }
+      - { measure: budgetBalance, below: 0 }
+  ```
+
+  `after` references are checked across files on load.
+
+Still to design and build:
+
 - **Recurring events** — each year has a rhythm even between scripted
   scenarios: budget in fall, staffing and hiring in spring, annual report at
   year end.

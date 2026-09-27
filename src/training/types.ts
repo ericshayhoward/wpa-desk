@@ -4,10 +4,16 @@
  * The training layer reads the program model and proposes ProgramChanges to
  * it. The model never imports from here.
  */
-import type { Program, ProgramChange, StakeholderId, Term, TermComparison } from "../model";
+import type { Program, ProgramChange, Rank, StakeholderId, Term, TermComparison } from "../model";
 import type { DraftInProgress, DraftVersion, ReflectionVersion } from "./drafts";
 
-export type CareerStage = "assistant_director" | "wpa" | "program_builder";
+/** Assistant director under the WPA, then (in the standard arc) interim WPA. */
+export type CareerStage = "assistant_director" | "wpa";
+export const CAREER_STAGES: readonly CareerStage[] = ["assistant_director", "wpa"];
+export const STAGE_LABELS: Record<CareerStage, string> = {
+  assistant_director: "Assistant Director",
+  wpa: "Interim Director",
+};
 export type ToolId = "cap_calculator" | "staffing_planner";
 
 // ---------------------------------------------------------------------------
@@ -30,6 +36,36 @@ export interface ScenarioTrigger {
   requiresDeficit?: boolean;
   /** Only arrives if, after its arrival changes, some sections have no instructor. */
   requiresUnstaffed?: boolean;
+  /** Only arrives after an earlier decision (a follow-up). */
+  after?: TriggerAfter;
+  /** Only arrives while every condition on the program's state holds. */
+  conditions?: TriggerCondition[];
+}
+
+export interface TriggerAfter {
+  scenario: string;
+  /** Only if one of these options was chosen. */
+  options?: string[];
+  /** Only if the memo did (true) or didn't (false) persuade its reader. */
+  persuaded?: boolean;
+  /** At least this many terms after that decision. */
+  inTerms?: number;
+}
+
+/**
+ * A threshold on the program's current state. `dfw` is a fraction (0.22 =
+ * 22%), the projected midpoint for one course or, without `courseId`, the
+ * whole program. `budgetBalance` is dollars per term (negative = deficit).
+ */
+export type TriggerMeasure = "trust" | "morale" | "dfw" | "politicalCapital" | "budgetBalance";
+
+export interface TriggerCondition {
+  measure: TriggerMeasure;
+  stakeholder?: StakeholderId;
+  rank?: Rank;
+  courseId?: string;
+  below?: number;
+  atLeast?: number;
 }
 
 /**
@@ -109,6 +145,42 @@ export interface Scenario {
     perspectives: { stakeholder: StakeholderId; view: string }[];
     readings: string[];
   };
+}
+
+// ---------------------------------------------------------------------------
+// Arcs (authored as YAML in src/content/arcs)
+// ---------------------------------------------------------------------------
+
+/**
+ * A playthrough's shape: how long it runs, the player's role over time, and
+ * when each scenario is eligible. Scenario triggers still decide whether it
+ * makes sense to arrive; the arc decides when it may.
+ */
+export interface Arc {
+  id: string;
+  title: string;
+  description: string;
+  /** Number of terms; the last one is the final term. */
+  terms: number;
+  startStage: CareerStage;
+  stageChanges: ArcStageChange[];
+  calendar: ArcEntry[];
+}
+
+export interface ArcStageChange {
+  /** The term the new role begins. */
+  term: number;
+  stage: CareerStage;
+  /** Shown when the term begins. */
+  note: string;
+}
+
+export interface ArcEntry {
+  scenario: string;
+  /** First term the scenario may arrive. */
+  from: number;
+  /** Last term it may arrive; absent means through the end of the arc. */
+  until?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -262,6 +334,8 @@ export interface TrainingSession {
   /** 1 = fall of year 1, 2 = spring of year 1, … */
   termIndex: number;
   stage: CareerStage;
+  /** The arc being played; absent for a free-play session with no calendar. */
+  arcId?: string;
   adminHoursPerTerm: number;
   adminHoursRemaining: number;
   inbox: string[];
