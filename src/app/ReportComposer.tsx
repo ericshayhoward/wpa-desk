@@ -17,6 +17,7 @@ import {
   type YearEndSpec,
 } from "../training";
 import { stakeholderByline, stakeholderName } from "./format";
+import { Icon } from "./ui";
 
 interface Props {
   session: TrainingSession;
@@ -74,8 +75,9 @@ export function ReportComposer({ session, spec, scenarios, onDraft, onSubmit, on
 
   return (
     <div className="report-composer">
-      <button className="link" onClick={onBack}>
-        ← Back to desk
+      <button className="link back-link" onClick={onBack}>
+        <Icon name="back" size={16} />
+        Back to desk
       </button>
       <h2 className="scenario-title">Year-end report</h2>
 

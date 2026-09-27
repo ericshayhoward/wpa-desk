@@ -3,6 +3,7 @@ import { SCENARIOS } from "../content";
 import { scenarioSummaries, studentSummary, summariesToCsv, type SaveFile } from "../training";
 import { Dossier } from "./Dossier";
 import { importFile } from "./storage";
+import { Icon } from "./ui";
 
 interface Loaded {
   key: number;
@@ -66,8 +67,9 @@ export function ReviewMode({ onExit }: { onExit: () => void }) {
     if (f) {
       return (
         <div className="review">
-          <button className="link no-print" onClick={() => setView({ kind: "overview" })}>
-            ← Back to class overview
+          <button className="link back-link no-print" onClick={() => setView({ kind: "overview" })}>
+            <Icon name="back" size={16} />
+            Back to class overview
           </button>
           <Dossier session={f.save.session} scenarios={SCENARIOS} title={`${nameOf(f)}: case files`} />
         </div>
@@ -103,6 +105,9 @@ export function ReviewMode({ onExit }: { onExit: () => void }) {
           void add(e.dataTransfer.files);
         }}
       >
+        <span className="icon-chip dropzone-icon" aria-hidden="true">
+          <Icon name="folder" size={22} />
+        </span>
         <strong>Open student files</strong>
         <span className="muted small">Drop save files (.json) here, or click to choose. You can select many at once.</span>
         <input

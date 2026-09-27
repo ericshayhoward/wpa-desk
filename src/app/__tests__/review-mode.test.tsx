@@ -57,7 +57,7 @@ it("instructor review: class overview, by-scenario view, read-only case files, o
   expect(screen.queryByRole("textbox", { name: "Your name" })).toBeNull();
 
   // Back to the instructor's own desk: session and autosave unchanged.
-  await user.click(screen.getByRole("button", { name: "← Back to class overview" }));
+  await user.click(screen.getByRole("button", { name: "Back to class overview" }));
   await user.click(screen.getByRole("button", { name: "Back to my desk" }));
   expect(screen.getByText("Fall, Year 1")).toBeTruthy();
   expect(screen.getByRole("button", { name: /Dr. Cherry.*FYC section caps/ })).toBeTruthy();

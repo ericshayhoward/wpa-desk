@@ -870,3 +870,4 @@ del { background: var(--down-soft); color: var(--muted); border-radius: 3px; pad
   width: auto; padding: 0; margin: 0; flex: none; box-shadow: none; transform: translateY(2px);
 }
 .check { align-items: flex-start; cursor: pointer; }
+.dropzone-icon { width: 48px; height: 48px; border-radius: 14px; margin-bottom: 4px; }
