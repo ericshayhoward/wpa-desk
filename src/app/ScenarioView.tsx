@@ -1,5 +1,7 @@
 import { useState } from "react";
 import {
+  fillTemplate,
+  termOf,
   unavailableReason,
   type EvidenceDraft,
   type MemoDraft,
@@ -9,6 +11,7 @@ import {
 } from "../training";
 import { CapCalculator } from "./CapCalculator";
 import { MemoComposer } from "./MemoComposer";
+import { StaffingPlanner } from "./StaffingPlanner";
 import { stakeholderName } from "./format";
 
 interface Props {
@@ -43,10 +46,10 @@ export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onBa
               <span className="muted small">From</span> {stakeholderName(program, d.from)}
             </div>
             <div>
-              <span className="muted small">Re</span> {d.subject}
+              <span className="muted small">Re</span> {fillTemplate(d.subject, session)}
             </div>
           </header>
-          {d.body.split(/\n\s*\n/).map((para, j) => (
+          {fillTemplate(d.body, session).split(/\n\s*\n/).map((para, j) => (
             <p key={j}>{para}</p>
           ))}
         </article>
@@ -59,6 +62,16 @@ export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onBa
             <span className="muted small"> — try the proposal, then save the comparison as evidence</span>
           </summary>
           <CapCalculator program={program} onSaveEvidence={onSaveEvidence} />
+        </details>
+      )}
+
+      {scenario.suggestedTools.includes("staffing_planner") && (
+        <details className="tool-drawer">
+          <summary>
+            Open the staffing planner
+            <span className="muted small"> — build a plan to cover the gap, then save it as evidence</span>
+          </summary>
+          <StaffingPlanner program={program} onSaveEvidence={onSaveEvidence} initialTerm={termOf(session.termIndex)} />
         </details>
       )}
 

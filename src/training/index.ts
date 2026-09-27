@@ -5,3 +5,5 @@ export * from "./scenario";
 export * from "./evidence";
 export * from "./session";
 export * from "./dossier";
+export * from "./template";
+export * from "./save";

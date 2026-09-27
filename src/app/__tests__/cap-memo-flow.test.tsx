@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../App";
 
 afterEach(cleanup);
+beforeEach(() => localStorage.clear());
 
 async function openCapMemo() {
   const user = userEvent.setup();

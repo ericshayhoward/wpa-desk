@@ -50,6 +50,20 @@ export interface InstructorPool {
   paidBy: "program" | "department";
   /** 0–100. Not yet used by calculations; scenarios will move it. */
   morale: number;
+  /**
+   * Extra sections people in this pool can take beyond their regular load,
+   * used only after every regular load is full. Absent means no overloads.
+   */
+  overload?: { maxPerPerson: number; costPerSection: number };
+  /** Why the pool's limits are what they are, in plain language. */
+  note?: string;
+}
+
+/** Sections deliberately not offered, leaving some students without a seat. */
+export interface Cancellation {
+  courseId: string;
+  term: Term;
+  sections: number;
 }
 
 export interface Policies {
@@ -97,6 +111,7 @@ export interface Program {
   policies: Policies;
   /** Instruction budget the writing program controls, per term, in dollars. */
   budgetPerTerm: number;
+  cancellations: Cancellation[];
   stakeholders: Stakeholder[];
   /** WPA's discretionary influence. Spent to win fights, earned by delivering. */
   politicalCapital: number;

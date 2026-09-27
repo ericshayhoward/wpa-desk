@@ -11,12 +11,20 @@ export interface Range {
 export interface CourseLine {
   courseId: string;
   title: string;
+  /** Seats students need (demand). */
   seats: number;
   cap: number;
+  /** Sections actually offered (needed minus cancelled). These get staffed. */
   sections: number;
+  /** Sections needed to seat every student at this cap. */
+  sectionsNeeded: number;
+  sectionsCancelled: number;
   /** Seats divided by cap before rounding up to whole sections (e.g., 9.2). */
   exactSections: number;
-  /** Seats spread evenly across sections. */
+  /** Students who get a seat, and those left without one because of cancellations. */
+  seatsServed: number;
+  seatsUnserved: number;
+  /** Seated students spread evenly across offered sections. */
   avgSectionSize: number;
   /** Projected D/F/W share (0–1). */
   dfw: Range;
@@ -25,8 +33,12 @@ export interface CourseLine {
 export interface StaffingLine {
   rank: Rank;
   headcount: number;
+  /** Regular-load capacity (headcount × sections per person). */
   capacity: number;
+  /** All sections this pool teaches, including overloads. */
   sectionsAssigned: number;
+  overloadCapacity: number;
+  overloadSections: number;
   /** People with at least one section, assuming full loads are given first. */
   peopleTeaching: number;
   /** People in this pool with no writing sections this term. */
@@ -43,7 +55,10 @@ export interface TermAnalysis {
   term: Term;
   courses: CourseLine[];
   totalSeats: number;
+  totalSeatsServed: number;
+  totalSeatsUnserved: number;
   totalSections: number;
+  totalSectionsCancelled: number;
   staffing: StaffingLine[];
   unstaffedSections: number;
   cost: { program: number; department: number; total: number };
@@ -61,15 +76,28 @@ export function analyzeTerm(program: Program, term: Term, assumptions: Assumptio
   const perStudent = assumptions.dfwPerStudentOverThreshold;
   const over = (size: number) => Math.max(0, size - threshold);
 
-  // ---- Courses: sections needed and projected D/F/W ----
+  // ---- Courses: sections needed, cancellations, and projected D/F/W ----
   const courses: CourseLine[] = program.courses.map((c) => {
     const cap = program.policies.caps[c.id];
     if (cap === undefined || cap < 1) {
       throw new Error(`No valid cap for course ${c.id}`);
     }
     const seats = c.seatDemand[term];
-    const sections = seats > 0 ? Math.ceil(seats / cap) : 0;
-    const avgSectionSize = sections > 0 ? seats / sections : 0;
+    const sectionsNeeded = seats > 0 ? Math.ceil(seats / cap) : 0;
+    const requested = sum(
+      (program.cancellations ?? []).filter((x) => x.courseId === c.id && x.term === term).map((x) => x.sections),
+    );
+    const sectionsCancelled = Math.min(sectionsNeeded, Math.max(0, requested));
+    const sections = sectionsNeeded - sectionsCancelled;
+    const seatsServed = Math.min(seats, sections * cap);
+    const seatsUnserved = seats - seatsServed;
+    const avgSectionSize = sections > 0 ? seatsServed / sections : 0;
+    if (sectionsCancelled > 0) {
+      trace.push(
+        `${c.id}: cancelling ${sectionsCancelled} of ${sectionsNeeded} sections leaves ` +
+          `${seatsUnserved} students without a seat.`,
+      );
+    }
 
     // D/F/W is calibrated to what the program observed at its baseline
     // section size; only the change in over-threshold students moves it.
@@ -83,46 +111,89 @@ export function analyzeTerm(program: Program, term: Term, assumptions: Assumptio
           `(range ${pct(dfw.low)}–${pct(dfw.high)}).`,
       );
     }
-    return { courseId: c.id, title: c.title, seats, cap, sections, exactSections: seats / cap, avgSectionSize, dfw };
+    return {
+      courseId: c.id,
+      title: c.title,
+      seats,
+      cap,
+      sections,
+      sectionsNeeded,
+      sectionsCancelled,
+      exactSections: seats / cap,
+      seatsServed,
+      seatsUnserved,
+      avgSectionSize,
+      dfw,
+    };
   });
 
   const totalSeats = sum(courses.map((c) => c.seats));
+  const totalSeatsServed = sum(courses.map((c) => c.seatsServed));
+  const totalSeatsUnserved = totalSeats - totalSeatsServed;
   const totalSections = sum(courses.map((c) => c.sections));
-  const avgSize = totalSections > 0 ? totalSeats / totalSections : 0;
-  trace.push(`${totalSeats} seats across ${totalSections} sections (average ${avgSize.toFixed(1)} per section).`);
+  const totalSectionsCancelled = sum(courses.map((c) => c.sectionsCancelled));
+  const avgSize = totalSections > 0 ? totalSeatsServed / totalSections : 0;
+  trace.push(`${totalSeatsServed} seats across ${totalSections} sections (average ${avgSize.toFixed(1)} per section).`);
 
-  // ---- Staffing: fill sections pool by pool ----
+  // ---- Staffing: fill regular loads pool by pool, then overloads ----
   const feedback = assumptions.feedbackMinutesPerStudent;
   let remaining = totalSections;
-  const staffing: StaffingLine[] = [];
-  for (const rank of STAFFING_ORDER) {
-    const pool = program.instructors.find((p) => p.rank === rank);
-    if (!pool) continue;
+  const pools = STAFFING_ORDER.map((rank) => program.instructors.find((p) => p.rank === rank)).filter(
+    (p): p is NonNullable<typeof p> => p !== undefined,
+  );
+
+  const regular = new Map<Rank, number>();
+  for (const pool of pools) {
+    const assigned = Math.min(remaining, pool.headcount * pool.sectionsPerTerm);
+    regular.set(pool.rank, assigned);
+    remaining -= assigned;
+  }
+  const overloads = new Map<Rank, number>();
+  for (const pool of pools) {
+    const assigned = Math.min(remaining, pool.headcount * (pool.overload?.maxPerPerson ?? 0));
+    overloads.set(pool.rank, assigned);
+    remaining -= assigned;
+    if (assigned > 0) {
+      trace.push(
+        `${pool.rank}: ${assigned} overload section${assigned === 1 ? "" : "s"} ` +
+          `at ${usd(pool.overload!.costPerSection)} each, after every regular load is full.`,
+      );
+    }
+  }
+
+  const staffing: StaffingLine[] = pools.map((pool) => {
     const capacity = pool.headcount * pool.sectionsPerTerm;
-    const sectionsAssigned = Math.min(remaining, capacity);
-    remaining -= sectionsAssigned;
-    const peopleTeaching = Math.min(pool.headcount, Math.ceil(sectionsAssigned / pool.sectionsPerTerm));
+    const regularSections = regular.get(pool.rank) ?? 0;
+    const overloadSections = overloads.get(pool.rank) ?? 0;
+    const peopleTeaching =
+      pool.sectionsPerTerm > 0 ? Math.min(pool.headcount, Math.ceil(regularSections / pool.sectionsPerTerm)) : 0;
     const studentsPerFullLoad = pool.sectionsPerTerm * avgSize;
     const hours = (minutes: number) => (studentsPerFullLoad * minutes) / 60;
-    staffing.push({
-      rank,
+    if (regularSections < capacity) {
+      trace.push(`${pool.rank}: ${capacity - regularSections} of ${capacity} available sections go unused.`);
+    }
+    return {
+      rank: pool.rank,
       headcount: pool.headcount,
       capacity,
-      sectionsAssigned,
+      sectionsAssigned: regularSections + overloadSections,
+      overloadCapacity: pool.headcount * (pool.overload?.maxPerPerson ?? 0),
+      overloadSections,
       peopleTeaching,
       peopleWithoutSections: pool.headcount - peopleTeaching,
-      cost: sectionsAssigned * pool.costPerSection,
+      cost: regularSections * pool.costPerSection + overloadSections * (pool.overload?.costPerSection ?? 0),
       paidBy: pool.paidBy,
       studentsPerFullLoad,
       feedbackHoursPerFullLoad: { low: hours(feedback.low), mid: hours(feedback.value), high: hours(feedback.high) },
-    });
-    if (sectionsAssigned < capacity) {
-      trace.push(`${rank}: ${capacity - sectionsAssigned} of ${capacity} available sections go unused.`);
-    }
-  }
+    };
+  });
+
   const unstaffedSections = remaining;
   if (unstaffedSections > 0) {
-    trace.push(`${unstaffedSections} sections have no instructor; new hiring is needed.`);
+    trace.push(
+      `${unstaffedSections} section${unstaffedSections === 1 ? " has" : "s have"} no instructor. ` +
+        `Closing the gap means hiring, assigning overloads, or cancelling sections.`,
+    );
   }
 
   // ---- Cost and budget ----
@@ -134,16 +205,19 @@ export function analyzeTerm(program: Program, term: Term, assumptions: Assumptio
       `(${budgetBalance >= 0 ? "surplus" : "deficit"} of ${usd(Math.abs(budgetBalance))}).`,
   );
 
-  // ---- Seat-weighted D/F/W ----
+  // ---- D/F/W weighted by seated students ----
   const weighted = (k: keyof Range) =>
-    totalSeats > 0 ? sum(courses.map((c) => c.dfw[k] * c.seats)) / totalSeats : 0;
+    totalSeatsServed > 0 ? sum(courses.map((c) => c.dfw[k] * c.seatsServed)) / totalSeatsServed : 0;
   const dfw = { low: weighted("low"), mid: weighted("mid"), high: weighted("high") };
 
   return {
     term,
     courses,
     totalSeats,
+    totalSeatsServed,
+    totalSeatsUnserved,
     totalSections,
+    totalSectionsCancelled,
     staffing,
     unstaffedSections,
     cost: { program: programCost, department: departmentCost, total: programCost + departmentCost },

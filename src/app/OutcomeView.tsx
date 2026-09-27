@@ -10,10 +10,23 @@ interface Props {
 }
 
 export function OutcomeView({ outcome, program, onDone, onDossier }: Props) {
-  const { scenario, option, consequence, persuaded, missingEvidence, trustChanges, politicalCapital, impact, queued, memo } = outcome;
+  const {
+    scenario,
+    option,
+    consequence,
+    persuaded,
+    missingEvidence,
+    trustChanges,
+    politicalCapital,
+    impact,
+    changeDescriptions,
+    queued,
+    memo,
+  } = outcome;
   const c = impact.comparison;
   const staffingChanges = Object.entries(c.sectionsByRank).filter(([, d]) => d !== 0);
-  const programChanged = c.sections !== 0 || c.programCost !== 0 || c.budgetBalance !== 0;
+  const programChanged =
+    c.sections !== 0 || c.programCost !== 0 || c.budgetBalance !== 0 || c.unstaffedSections !== 0 || c.seatsUnserved !== 0;
 
   return (
     <div className="outcome">
@@ -66,13 +79,32 @@ export function OutcomeView({ outcome, program, onDone, onDossier }: Props) {
         </section>
 
         <section className="card">
-          <h3>Projected effect on a fall term</h3>
+          <h3>Projected effect this {impact.term}</h3>
+          {changeDescriptions.length > 0 && (
+            <ul className="plan small">
+              {changeDescriptions.map((d, i) => (
+                <li key={i}>{d}</li>
+              ))}
+            </ul>
+          )}
           {!programChanged ? (
             <p className="muted">Sections, staffing, and budget are unchanged.</p>
           ) : (
             <ul className="changes">
+              {c.unstaffedSections !== 0 && (
+                <li>
+                  <span>Unstaffed sections</span>
+                  <span className={`num ${c.unstaffedSections < 0 ? "up" : "down"}`}>{signed(c.unstaffedSections)}</span>
+                </li>
+              )}
+              {c.seatsUnserved !== 0 && (
+                <li>
+                  <span>Students without a seat</span>
+                  <span className={`num ${c.seatsUnserved > 0 ? "down" : "up"}`}>{signed(c.seatsUnserved)}</span>
+                </li>
+              )}
               <li>
-                <span>Sections</span>
+                <span>Sections offered</span>
                 <span className="num">{signed(c.sections)}</span>
               </li>
               <li>

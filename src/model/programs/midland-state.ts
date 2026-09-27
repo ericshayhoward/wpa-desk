@@ -48,10 +48,24 @@ export const MIDLAND_STATE: Program = {
     },
   ],
   instructors: [
-    { rank: "tt", headcount: 3, sectionsPerTerm: 1, costPerSection: 19500, paidBy: "department", morale: 65 },
-    { rank: "ntt", headcount: 2, sectionsPerTerm: 3, costPerSection: 6500, paidBy: "program", morale: 60 },
-    { rank: "gta", headcount: 15, sectionsPerTerm: 1, costPerSection: 9000, paidBy: "program", morale: 55 },
-    { rank: "adjunct", headcount: 14, sectionsPerTerm: 3, costPerSection: 3600, paidBy: "program", morale: 45 },
+    {
+      rank: "tt", headcount: 3, sectionsPerTerm: 1, costPerSection: 19500, paidBy: "department", morale: 65,
+      note: "Tenure-track faculty teach one writing section a term; the rest of their load is literature and graduate courses.",
+    },
+    {
+      rank: "ntt", headcount: 2, sectionsPerTerm: 3, costPerSection: 6500, paidBy: "program", morale: 60,
+      note:
+        "Full-time lecturers' contracts allow one overload section a term if they agree, paid at the adjunct rate " +
+        "rather than their salary rate. None are assigned unless you ask.",
+    },
+    {
+      rank: "gta", headcount: 15, sectionsPerTerm: 1, costPerSection: 9000, paidBy: "program", morale: 55,
+      note: "Graduate contracts limit teaching assistants to one section a term to protect time to degree.",
+    },
+    {
+      rank: "adjunct", headcount: 14, sectionsPerTerm: 3, costPerSection: 3600, paidBy: "program", morale: 45,
+      note: "The university caps adjuncts at three sections a term, which keeps them below the hours that would make them eligible for benefits.",
+    },
   ],
   policies: {
     caps: { ENGL101: 24, ENGL101S: 18, ENGL102: 24 },
@@ -61,6 +75,7 @@ export const MIDLAND_STATE: Program = {
     portfolioAssessment: false,
   },
   budgetPerTerm: 295000,
+  cancellations: [],
   stakeholders: [
     { id: "dean", name: "Dean of Arts & Sciences", trust: 55, priorities: ["balanced budget", "enrollment growth", "accreditation readiness"] },
     { id: "chair", name: "English Department Chair", trust: 60, priorities: ["TT research time", "graduate program health"] },

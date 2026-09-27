@@ -1,0 +1,184 @@
+# The Late Hire — three adjuncts withdraw two weeks before spring.
+#
+# Arrives in spring only if the departures actually leave sections uncovered.
+# A program that raised caps in The Cap Memo has enough slack that this
+# crisis never happens, which is itself a consequence worth noticing.
+#
+# From Midland's baseline: 11 adjuncts × 3 sections = 33 for 36 needed,
+# so 3 ENGL 102 sections are uncovered.
+
+id: late-hire
+title: The Late Hire
+stages: [assistant_director, wpa]
+trigger:
+  minTerm: 2
+  term: spring
+  requiresUnstaffed: true
+arrival:
+  - { kind: adjustHeadcount, rank: adjunct, delta: -3 }
+urgent: true
+
+documents:
+  - from: chair
+    genre: email
+    subject: Spring sections without instructors
+    body: |
+      Bad news two weeks out. Three of our adjuncts have withdrawn from their
+      spring contracts: one took a full-time position at the community
+      college, one is moving for a partner's job, and one has a family
+      emergency.
+
+      I've shifted the instructors we still have as far as their contracts
+      allow, but we still have no instructor for {{unstaffed_sections}} of
+      ENGL 102. Students are already enrolled, and the registrar needs names
+      by Monday.
+
+      Your call on how to handle it. Let me know what you need from me.
+
+suggestedTools: [staffing_planner]
+
+options:
+  - id: emergency-hire
+    label: Request an emergency hiring exception
+    description: Ask the dean to waive the posting period so you can hire from your applicant file this week.
+    cost: { adminHours: 8, politicalCapital: 3 }
+    memo:
+      required: true
+      audience: dean
+      prompt: |
+        Ask for an exception to the usual posting period. The dean will want
+        to know exactly what the gap is, what hiring closes it, and why the
+        alternatives are worse.
+    persuasion:
+      evidenceKinds: [staffing_plan]
+      persuaded:
+        narrative: |
+          The dean signs off the same afternoon, and HR waives the posting
+          period. You hire an experienced instructor from your applicant file
+          who has taught first-year writing at another campus. There's time
+          for a short orientation before classes begin.
+        changes:
+          - { kind: adjustHeadcount, rank: adjunct, delta: 1 }
+          - { kind: adjustTrust, stakeholder: dean, delta: 2 }
+          - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 2 }
+        response:
+          from: dean
+          body: |
+            Your plan made this easy to approve. Let's talk this summer about
+            keeping a vetted pool of instructors so we aren't doing this two
+            weeks before a term again.
+      unpersuaded:
+        narrative: |
+          Without a clear picture of the gap and the plan, the dean sends the
+          request back to HR's standard process. The posting runs its full
+          two weeks. Your new instructor starts in the second week of the
+          term, and a colleague covers the first week of classes informally,
+          without pay.
+        changes:
+          - { kind: adjustHeadcount, rank: adjunct, delta: 1 }
+          - { kind: adjustTrust, stakeholder: dean, delta: -2 }
+          - { kind: adjustTrust, stakeholder: students, delta: -4 }
+          - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -2 }
+        response:
+          from: dean
+          body: I can't justify bypassing HR without a clearer case. Please follow the standard posting process.
+
+  - id: overloads
+    label: Ask the lecturers to take overloads
+    description: Ask each full-time lecturer to teach one extra section at the adjunct rate; cancel anything still uncovered.
+    cost: { adminHours: 3, politicalCapital: 2 }
+    memo:
+      required: false
+      audience: chair
+      prompt: Explain the plan, and what you're asking of the lecturers.
+    consequence:
+      narrative: |
+        Both lecturers agree, one of them reluctantly. Their overloads cover
+        two sections at the adjunct rate. Any section still uncovered is
+        cancelled, and those students scramble for a seat.
+      changes:
+        - { kind: setOverload, rank: ntt, maxPerPerson: 1, costPerSection: 3600 }
+        - { kind: cancelUnstaffed, courseId: ENGL102 }
+        - { kind: adjustMorale, rank: ntt, delta: -8 }
+        - { kind: adjustTrust, stakeholder: students, delta: -2 }
+      response:
+        from: chair
+        body: Thank you for asking them directly rather than just assigning it. I know it wasn't an easy conversation.
+      delayed:
+        - inTerms: 1
+          note: |
+            The overload term is over. One lecturer asks whether overloads are
+            going to be expected every term now.
+          changes:
+            - { kind: setOverload, rank: ntt, maxPerPerson: 0, costPerSection: 0 }
+            - { kind: cancelSections, courseId: ENGL102, term: spring, sections: 0 }
+            - { kind: adjustMorale, rank: ntt, delta: -2 }
+
+  - id: add-seats
+    label: Add seats to the remaining sections
+    description: Raise the ENGL 102 cap by two for this term so the sections you can staff absorb every student.
+    cost: { adminHours: 2 }
+    memo:
+      required: false
+      audience: adjunct_faculty
+      prompt: Tell instructors their sections are growing, and why.
+    consequence:
+      narrative: |
+        The registrar raises the ENGL 102 cap by two, and the uncovered
+        sections are folded into the rest. Every student keeps a seat. Every
+        ENGL 102 instructor now has more students than they signed up for,
+        with no change in pay.
+      changes:
+        - { kind: adjustCap, courseId: ENGL102, delta: 2 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -6 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -3 }
+        - { kind: adjustTrust, stakeholder: students, delta: -2 }
+        - { kind: adjustMorale, rank: adjunct, delta: -4 }
+      delayed:
+        - inTerms: 1
+          note: Caps go back down for fall. Instructors remember being told, not asked.
+          changes:
+            - { kind: adjustCap, courseId: ENGL102, delta: -2 }
+
+  - id: cancel
+    label: Cancel the uncovered sections
+    description: Cancel exactly the sections that have no instructor, and send the students to advising.
+    cost: { adminHours: 2 }
+    consequence:
+      narrative: |
+        The registrar cancels the uncovered sections and emails the students.
+        Some find seats elsewhere; most will have to wait until fall to take
+        ENGL 102. The budget looks fine this term.
+      changes:
+        - { kind: cancelUnstaffed, courseId: ENGL102 }
+        - { kind: adjustTrust, stakeholder: students, delta: -8 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: -4 }
+      delayed:
+        - inTerms: 1
+          note: |
+            Students who lost a seat in spring are trying to get into ENGL 102
+            this fall, and advisors have been forwarding their emails to you
+            all summer.
+          changes:
+            - { kind: cancelSections, courseId: ENGL102, term: spring, sections: 0 }
+            - { kind: adjustTrust, stakeholder: students, delta: -2 }
+
+debrief:
+  weighs:
+    - Who absorbs the gap. Overloads and bigger classes put the cost on people already teaching; cancellations put it on students.
+    - Speed versus process. Hiring exceptions spend capital and need a clear case; following standard rules can cost the first weeks of a term.
+    - Which students lose out. Cancelled sections usually hit students who registered last, who are disproportionately transfer, first-generation, and working students.
+    - Overload pay. Paying full-time lecturers the adjunct rate for extra sections is common, and it quietly sets the value of the work.
+    - The pipeline. A standing pool of vetted instructors is cheaper than a crisis, but it takes time to build before you need it.
+  perspectives:
+    - stakeholder: chair
+      view: I need the schedule settled by Monday, and I don't want the department's name on a pile of cancelled classes.
+    - stakeholder: adjunct_faculty
+      view: When someone leaves, the rest of us are the shock absorbers — bigger sections, same pay, and no say in it.
+    - stakeholder: students
+      view: I registered for this class months ago. A cancellation pushes back everything that comes after it.
+    - stakeholder: dean
+      view: I can approve exceptions, but I need to see that you've thought through the options, not just that it's urgent.
+  readings:
+    - CCCC, Statement on Working Conditions for Non-Tenure-Track Writing Faculty (2016)
+    - 'Cox, Dougherty, Kahn, LaFrance, and Lynch-Biniek, "The Indianapolis Resolution: Responding to Twenty-First-Century Exigencies/Political Economies of Composition Labor," CCC 66.1 (2014)'

@@ -152,8 +152,12 @@ describe("The Cap Memo", () => {
     expect(session.dossier).toHaveLength(1);
     expect(session.commitments[0]).toMatchObject({ text: "Share D/F/W data by next fall", dueTerm: 3, status: "open" });
 
-    // The reprieve expires after two terms.
-    const t3 = advanceTerm(advanceTerm(session, SCENARIOS).session, SCENARIOS).session;
+    // Holding caps at 24 leaves no slack, so The Late Hire arrives in spring
+    // and must be handled before the year ends. Then the reprieve expires.
+    const t2 = advanceTerm(session, SCENARIOS).session;
+    expect(t2.inbox).toContain("late-hire");
+    const handled = resolveScenario(t2, scenarioById("late-hire")!, "add-seats", null).session;
+    const t3 = advanceTerm(handled, SCENARIOS).session;
     expect(t3.program.budgetPerTerm).toBe(MIDLAND_STATE.budgetPerTerm);
   });
 

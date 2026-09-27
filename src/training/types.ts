@@ -7,7 +7,7 @@
 import type { Program, ProgramChange, StakeholderId, Term, TermComparison } from "../model";
 
 export type CareerStage = "assistant_director" | "wpa" | "program_builder";
-export type ToolId = "cap_calculator";
+export type ToolId = "cap_calculator" | "staffing_planner";
 
 // ---------------------------------------------------------------------------
 // Scenarios (authored as YAML in src/content/scenarios)
@@ -23,14 +23,27 @@ export interface ScenarioDocument {
 export interface ScenarioTrigger {
   /** Earliest term (1 = fall of year 1) the scenario can arrive. */
   minTerm?: number;
+  /** Only arrives in this kind of term. */
+  term?: Term;
   /** Only arrives if the program is running an instruction deficit. */
   requiresDeficit?: boolean;
+  /** Only arrives if, after its arrival changes, some sections have no instructor. */
+  requiresUnstaffed?: boolean;
 }
+
+/**
+ * A change a scenario can make. Most are ProgramChanges; a few are resolved
+ * against the program's state at the moment of decision.
+ */
+export type ScenarioChange =
+  | ProgramChange
+  /** Cancels exactly as many sections of a course as are currently unstaffed this term. */
+  | { kind: "cancelUnstaffed"; courseId: string };
 
 /** What happens after an option is chosen: the model changes plus how it reads. */
 export interface Consequence {
   narrative: string;
-  changes: ProgramChange[];
+  changes: ScenarioChange[];
   /** Optional in-character reply from a stakeholder. */
   response?: { from: StakeholderId; body: string };
   /** Effects that land in later terms; they belong to this outcome only. */
@@ -70,6 +83,10 @@ export interface Scenario {
   title: string;
   stages: CareerStage[];
   trigger: ScenarioTrigger;
+  /** Changes that happen when the scenario arrives, before any decision (e.g., instructors resign). */
+  arrival: ProgramChange[];
+  /** Must be resolved before the term can advance. */
+  urgent: boolean;
   documents: ScenarioDocument[];
   suggestedTools: ToolId[];
   options: ScenarioOption[];
@@ -84,10 +101,11 @@ export interface Scenario {
 // Evidence and memos
 // ---------------------------------------------------------------------------
 
-export type EvidenceKind = "cap_analysis";
+export type EvidenceKind = "cap_analysis" | "staffing_plan";
 
 export const EVIDENCE_LABELS: Record<EvidenceKind, string> = {
   cap_analysis: "a cost-and-impact analysis from the class cap calculator",
+  staffing_plan: "a staffing plan from the staffing planner",
 };
 
 /** A snapshot of a tool result the player chose to keep. */
@@ -182,8 +200,10 @@ export interface DecisionOutcome {
   missingEvidence: EvidenceKind[];
   trustChanges: { stakeholder: StakeholderId; before: number; after: number }[];
   politicalCapital: { before: number; after: number };
-  /** Next term's projected impact of this decision's program changes. */
+  /** Projected impact of this decision's program changes on the current term. */
   impact: { term: Term; comparison: TermComparison };
+  /** The resolved program changes, described in plain language. */
+  changeDescriptions: string[];
   queued: PendingEffect[];
   memo: Memo | null;
 }

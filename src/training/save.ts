@@ -1,0 +1,145 @@
+import { DEFAULT_ASSUMPTIONS, TERMS, analyzeTerm, type Program } from "../model";
+import { termLabel } from "./terms";
+import type { Scenario, TrainingSession } from "./types";
+
+export const SAVE_FORMAT = "wpa-desk-save";
+/** Bump when the saved shape changes, and add a migration in parseSave. */
+export const SAVE_VERSION = 1;
+
+export interface SaveSummary {
+  institution: string;
+  term: string;
+  decisions: number;
+  memos: number;
+}
+
+export interface SaveFile {
+  format: typeof SAVE_FORMAT;
+  version: number;
+  savedAt: string;
+  label: string;
+  summary: SaveSummary;
+  session: TrainingSession;
+}
+
+export function summarize(session: TrainingSession): SaveSummary {
+  return {
+    institution: session.program.institution,
+    term: termLabel(session.termIndex),
+    decisions: session.decisions.length,
+    memos: session.dossier.length,
+  };
+}
+
+/** Wraps a session in a versioned save. `savedAt` is passed in to keep this pure. */
+export function createSave(session: TrainingSession, label: string, savedAt: Date): SaveFile {
+  return {
+    format: SAVE_FORMAT,
+    version: SAVE_VERSION,
+    savedAt: savedAt.toISOString(),
+    label,
+    summary: summarize(session),
+    session: JSON.parse(JSON.stringify(session)),
+  };
+}
+
+/**
+ * Validates a save from storage or an imported file. Saves are untrusted, so
+ * every check fails with a message a player can act on instead of crashing
+ * the app later.
+ */
+export function parseSave(raw: unknown, scenarios: Scenario[]): SaveFile {
+  const f = obj(raw, "This file");
+  if (f.format !== SAVE_FORMAT) throw new Error("This isn't a WPA Desk save file.");
+  if (typeof f.version !== "number") throw new Error("The save file has no version number.");
+  if (f.version > SAVE_VERSION) {
+    throw new Error("This save was made by a newer version of WPA Desk. Update the app to open it.");
+  }
+  // Future: migrate older versions here, e.g. `if (f.version === 1) f = migrate1to2(f)`.
+
+  const session = parseSession(f.session, scenarios);
+  return {
+    format: SAVE_FORMAT,
+    version: SAVE_VERSION,
+    savedAt: typeof f.savedAt === "string" ? f.savedAt : new Date(0).toISOString(),
+    label: typeof f.label === "string" ? f.label : "Untitled save",
+    summary: summarize(session),
+    session,
+  };
+}
+
+function parseSession(raw: unknown, scenarios: Scenario[]): TrainingSession {
+  const s = obj(raw, "The saved session");
+  const known = new Set(scenarios.map((x) => x.id));
+  const scenarioId = (id: unknown, where: string) => {
+    if (typeof id !== "string" || !known.has(id)) {
+      throw new Error(`The save refers to a scenario this version doesn't have (${where}: ${String(id)}).`);
+    }
+    return id;
+  };
+
+  const program = parseProgram(s.program);
+  const termIndex = int(s, "termIndex", 1);
+  const session: TrainingSession = {
+    program,
+    termIndex,
+    stage: oneOf(s.stage, ["assistant_director", "wpa", "program_builder"] as const, "career stage"),
+    adminHoursPerTerm: int(s, "adminHoursPerTerm", 0),
+    adminHoursRemaining: int(s, "adminHoursRemaining", 0),
+    inbox: list(s, "inbox").map((id) => scenarioId(id, "inbox")),
+    decisions: list(s, "decisions").map((d) => {
+      const r = obj(d, "A saved decision");
+      scenarioId(r.scenarioId, "decisions");
+      return r as unknown as TrainingSession["decisions"][number];
+    }),
+    pending: list(s, "pending").map((p) => {
+      const r = obj(p, "A pending consequence");
+      if (!Array.isArray(r.changes) || typeof r.dueTerm !== "number") throw new Error("A pending consequence is damaged.");
+      return r as unknown as TrainingSession["pending"][number];
+    }),
+    evidence: list(s, "evidence") as TrainingSession["evidence"],
+    dossier: list(s, "dossier") as TrainingSession["dossier"],
+    commitments: list(s, "commitments") as TrainingSession["commitments"],
+    nextId: int(s, "nextId", 1),
+  };
+  if (session.adminHoursRemaining > session.adminHoursPerTerm) {
+    throw new Error("The save's admin hours don't add up.");
+  }
+  return session;
+}
+
+function parseProgram(raw: unknown): Program {
+  const p = obj(raw, "The saved program");
+  for (const k of ["courses", "instructors", "stakeholders"]) {
+    if (!Array.isArray(p[k]) || (p[k] as unknown[]).length === 0) throw new Error(`The saved program is missing its ${k}.`);
+  }
+  if (typeof p.policies !== "object" || p.policies === null) throw new Error("The saved program is missing its policies.");
+  const program = { ...p, cancellations: Array.isArray(p.cancellations) ? p.cancellations : [] } as unknown as Program;
+  // The real test: can the model analyze it?
+  try {
+    for (const t of TERMS) analyzeTerm(program, t, DEFAULT_ASSUMPTIONS);
+  } catch (err) {
+    throw new Error(`The saved program is damaged: ${(err as Error).message}.`);
+  }
+  return program;
+}
+
+// ---- small validators ------------------------------------------------------
+
+function obj(v: unknown, what: string): Record<string, unknown> {
+  if (typeof v !== "object" || v === null || Array.isArray(v)) throw new Error(`${what} isn't in the expected format.`);
+  return v as Record<string, unknown>;
+}
+function list(r: Record<string, unknown>, k: string): unknown[] {
+  if (!Array.isArray(r[k])) throw new Error(`The saved session is missing its ${k}.`);
+  return r[k] as unknown[];
+}
+function int(r: Record<string, unknown>, k: string, min: number): number {
+  const v = r[k];
+  if (typeof v !== "number" || !Number.isInteger(v) || v < min) throw new Error(`The saved session has an invalid ${k}.`);
+  return v;
+}
+function oneOf<T extends string>(v: unknown, allowed: readonly T[], what: string): T {
+  if (typeof v !== "string" || !(allowed as readonly string[]).includes(v)) throw new Error(`The save has an unknown ${what}.`);
+  return v as T;
+}

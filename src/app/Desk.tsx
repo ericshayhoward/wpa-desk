@@ -1,5 +1,5 @@
 import { SCENARIOS } from "../content";
-import { termLabel, type PendingEffect, type TrainingSession } from "../training";
+import { blockingScenarios, fillTemplate, termLabel, type PendingEffect, type TrainingSession } from "../training";
 import { stakeholderName } from "./format";
 
 interface Props {
@@ -15,6 +15,7 @@ export function Desk({ session, landed, onOpen, onNextTerm }: Props) {
   const inbox = session.inbox.map((id) => SCENARIOS.find((s) => s.id === id)!).filter(Boolean);
   const openCommitments = session.commitments.filter((c) => c.status === "open");
   const titleOf = (id: string) => SCENARIOS.find((s) => s.id === id)?.title ?? id;
+  const blocking = blockingScenarios(session, SCENARIOS);
 
   return (
     <div className="desk">
@@ -40,8 +41,11 @@ export function Desk({ session, landed, onOpen, onNextTerm }: Props) {
               return (
                 <li key={s.id}>
                   <button className="inbox-item" onClick={() => onOpen(s.id)}>
-                    <span className="inbox-from">{stakeholderName(program, doc.from)}</span>
-                    <span className="inbox-subject">{doc.subject}</span>
+                    <span className="inbox-from">
+                      {stakeholderName(program, doc.from)}
+                      {s.urgent && <span className="badge urgent">urgent</span>}
+                    </span>
+                    <span className="inbox-subject">{fillTemplate(doc.subject, session)}</span>
                     <span className="muted small">{s.title}</span>
                   </button>
                 </li>
@@ -50,10 +54,20 @@ export function Desk({ session, landed, onOpen, onNextTerm }: Props) {
           </ul>
         )}
         <div className="row-end">
-          <button className={inbox.length ? "secondary" : "primary"} onClick={onNextTerm}>
+          <button
+            className={inbox.length ? "secondary" : "primary"}
+            disabled={blocking.length > 0}
+            onClick={onNextTerm}
+          >
             {inbox.length ? "Leave these for next term and advance" : `Advance to ${termLabel(session.termIndex + 1)}`}
           </button>
         </div>
+        {blocking.length > 0 && (
+          <p className="muted small row-end-note">
+            {blocking.map((s) => s.title).join(", ")} can't wait. Resolve {blocking.length === 1 ? "it" : "them"} before the term
+            ends.
+          </p>
+        )}
       </section>
 
       <div className="grid-2">

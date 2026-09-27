@@ -12,6 +12,7 @@ import {
 } from "../model";
 import { capAnalysisEvidence, type EvidenceDraft } from "../training";
 import { signed, usd } from "./format";
+import { Delta, EvidenceBar, Row, TermToggle, WhatIf, tone } from "./ToolParts";
 
 interface Props {
   program: Program;
@@ -24,7 +25,6 @@ interface Props {
 export function CapCalculator({ program, onSaveEvidence, initialCaps }: Props) {
   const [term, setTerm] = useState<Term>("fall");
   const [caps, setCaps] = useState<Record<string, number>>({ ...program.policies.caps, ...initialCaps });
-  const [saved, setSaved] = useState<string | null>(null);
 
   const { before, after } = useMemo(() => {
     const changes: ProgramChange[] = Object.entries(caps)
@@ -45,15 +45,9 @@ export function CapCalculator({ program, onSaveEvidence, initialCaps }: Props) {
         <div>
           <h2>Class cap calculator</h2>
           <p className="muted">What happens to sections, staffing, cost, and outcomes if caps change?</p>
-          <p className="whatif small">What-if only: this doesn't change your program. Caps change through decisions.</p>
+          <WhatIf what="Caps" />
         </div>
-        <div className="segmented" role="group" aria-label="Term">
-          {(["fall", "spring"] as Term[]).map((t) => (
-            <button key={t} aria-pressed={term === t} onClick={() => setTerm(t)}>
-              {t === "fall" ? "Fall" : "Spring"}
-            </button>
-          ))}
-        </div>
+        <TermToggle term={term} onChange={setTerm} />
       </header>
 
       <div className="caps">
@@ -78,22 +72,7 @@ export function CapCalculator({ program, onSaveEvidence, initialCaps }: Props) {
       </div>
 
       {onSaveEvidence && (
-        <div className="evidence-bar">
-          <button
-            className="primary"
-            disabled={!changed}
-            onClick={() => {
-              const draft = capAnalysisEvidence(program, caps, before, after);
-              onSaveEvidence(draft);
-              setSaved(draft.label);
-            }}
-          >
-            Save this comparison as evidence
-          </button>
-          <span className="muted small" aria-live="polite">
-            {saved ? `Saved: ${saved}` : changed ? "You can attach saved evidence to a memo." : "Change a cap to compare."}
-          </span>
-        </div>
+        <EvidenceBar changed={changed} build={() => capAnalysisEvidence(program, caps, before, after)} onSave={onSaveEvidence} />
       )}
 
       <table className="compare">
@@ -237,29 +216,6 @@ export function CapCalculator({ program, onSaveEvidence, initialCaps }: Props) {
 }
 
 // ---------------------------------------------------------------------------
-
-function Row(props: { label: string; a: number; b: number; fmt: (n: number) => string; lowerIsGood?: boolean }) {
-  const d = props.b - props.a;
-  return (
-    <tr>
-      <th scope="row">{props.label}</th>
-      <td>{props.fmt(props.a)}</td>
-      <td>{props.fmt(props.b)}</td>
-      <td className={tone(d, props.lowerIsGood)}>{d === 0 ? "—" : (d > 0 ? "+" : "−") + props.fmt(Math.abs(d))}</td>
-    </tr>
-  );
-}
-
-function Delta({ value, higherIsBad }: { value: number; higherIsBad?: boolean }) {
-  if (value === 0) return null;
-  return <span className={`delta ${tone(value, higherIsBad)}`}>{signed(value, 0)}</span>;
-}
-
-/** Colors a change without calling it good or bad outright; direction depends on the metric. */
-function tone(d: number, lowerIsGood = false): string {
-  if (d === 0) return "";
-  return (d > 0) !== lowerIsGood ? "up" : "down";
-}
 
 function rangeText(r: Range): string {
   return `${(r.mid * 100).toFixed(1)}% (${(r.low * 100).toFixed(1)}–${(r.high * 100).toFixed(1)})`;

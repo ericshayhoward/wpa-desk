@@ -3,11 +3,13 @@ import {
   analyzeTerm,
   applyChanges,
   compareTerms,
+  describeChange,
   type Program,
   type ProgramChange,
 } from "../model";
 import type { EvidenceDraft } from "./evidence";
 import { isEligible } from "./scenario";
+import { termLabel, termOf } from "./terms";
 import type {
   CareerStage,
   Commitment,
@@ -17,6 +19,7 @@ import type {
   MemoDraft,
   PendingEffect,
   Scenario,
+  ScenarioChange,
   ScenarioOption,
   TrainingSession,
 } from "./types";
@@ -38,7 +41,7 @@ export function startSession(program: Program, scenarios: Scenario[], stage: Car
     commitments: [],
     nextId: 1,
   };
-  return { ...session, inbox: eligibleInbox(session, scenarios) };
+  return deliver(session, scenarios);
 }
 
 export function addEvidence(session: TrainingSession, draft: EvidenceDraft): TrainingSession {
@@ -119,10 +122,12 @@ export function resolveScenario(
   }
 
   // ---- Apply ----
+  const before = session.program;
+  const term = termOf(session.termIndex);
+  const resolved = resolveChanges(before, term, consequence.changes);
   const costChanges: ProgramChange[] =
     option.cost.politicalCapital > 0 ? [{ kind: "adjustPoliticalCapital", delta: -option.cost.politicalCapital }] : [];
-  const before = session.program;
-  const after = applyChanges(before, [...consequence.changes, ...costChanges]);
+  const after = applyChanges(before, [...resolved, ...costChanges]);
 
   const queued: PendingEffect[] = consequence.delayed.map((d) => ({
     ...d,
@@ -134,14 +139,13 @@ export function resolveScenario(
     .map((s) => ({ stakeholder: s.id, before: before.stakeholders.find((b) => b.id === s.id)?.trust ?? s.trust, after: s.trust }))
     .filter((t) => t.before !== t.after);
 
-  const impactTerm = "fall" as const;
   const impact = {
-    term: impactTerm,
-    comparison: compareTerms(
-      analyzeTerm(before, impactTerm, DEFAULT_ASSUMPTIONS),
-      analyzeTerm(after, impactTerm, DEFAULT_ASSUMPTIONS),
-    ),
+    term,
+    comparison: compareTerms(analyzeTerm(before, term, DEFAULT_ASSUMPTIONS), analyzeTerm(after, term, DEFAULT_ASSUMPTIONS)),
   };
+  const changeDescriptions = resolved
+    .filter((c) => c.kind !== "adjustTrust" && c.kind !== "adjustPoliticalCapital")
+    .map((c) => describeChange(before, c));
 
   const nextSession: TrainingSession = {
     ...session,
@@ -169,10 +173,16 @@ export function resolveScenario(
       trustChanges,
       politicalCapital: { before: before.politicalCapital, after: after.politicalCapital },
       impact,
+      changeDescriptions,
       queued,
       memo,
     },
   };
+}
+
+/** Urgent scenarios still in the inbox; the term can't advance until they're resolved. */
+export function blockingScenarios(session: TrainingSession, scenarios: Scenario[]): Scenario[] {
+  return scenarios.filter((s) => s.urgent && session.inbox.includes(s.id));
 }
 
 /** Moves to the next term, applying delayed effects that come due. */
@@ -180,6 +190,10 @@ export function advanceTerm(
   session: TrainingSession,
   scenarios: Scenario[],
 ): { session: TrainingSession; applied: PendingEffect[] } {
+  const blocked = blockingScenarios(session, scenarios);
+  if (blocked.length) {
+    throw new Error(`Resolve before ${termLabel(session.termIndex)} ends: ${blocked.map((s) => s.title).join(", ")}`);
+  }
   const termIndex = session.termIndex + 1;
   const applied = session.pending.filter((p) => p.dueTerm <= termIndex);
   const program = applyChanges(session.program, applied.flatMap((p) => p.changes));
@@ -190,12 +204,46 @@ export function advanceTerm(
     adminHoursRemaining: session.adminHoursPerTerm,
     pending: session.pending.filter((p) => p.dueTerm > termIndex),
   };
-  return { session: { ...advanced, inbox: eligibleInbox(advanced, scenarios) }, applied };
+  return { session: deliver(advanced, scenarios), applied };
 }
 
-function eligibleInbox(session: TrainingSession, scenarios: Scenario[]): string[] {
+/**
+ * Adds newly eligible scenarios to the inbox. A scenario's arrival changes
+ * (e.g., instructors resigning) apply only if the scenario actually arrives,
+ * and eligibility is judged with those changes in place.
+ */
+function deliver(session: TrainingSession, scenarios: Scenario[]): TrainingSession {
   const done = new Set(session.decisions.map((d) => d.scenarioId));
-  const carried = session.inbox.filter((id) => !done.has(id));
-  const fresh = scenarios.filter((s) => !done.has(s.id) && !carried.includes(s.id) && isEligible(s, session)).map((s) => s.id);
-  return [...carried, ...fresh];
+  const inbox = session.inbox.filter((id) => !done.has(id));
+  let program = session.program;
+  for (const s of scenarios) {
+    if (done.has(s.id) || inbox.includes(s.id)) continue;
+    const withArrival = s.arrival.length ? applyChanges(program, s.arrival) : program;
+    if (isEligible(s, { ...session, program: withArrival })) {
+      program = withArrival;
+      inbox.push(s.id);
+    }
+  }
+  return { ...session, program, inbox };
+}
+
+/** Turns scenario changes into concrete ProgramChanges against the current program. */
+function resolveChanges(program: Program, term: ReturnType<typeof termOf>, changes: ScenarioChange[]): ProgramChange[] {
+  let working = program;
+  const out: ProgramChange[] = [];
+  for (const c of changes) {
+    let concrete: ProgramChange;
+    if (c.kind === "cancelUnstaffed") {
+      const a = analyzeTerm(working, term, DEFAULT_ASSUMPTIONS);
+      const course = a.courses.find((x) => x.courseId === c.courseId);
+      if (!course) throw new Error(`Unknown course: ${c.courseId}`);
+      const sections = Math.min(course.sectionsNeeded, course.sectionsCancelled + a.unstaffedSections);
+      concrete = { kind: "cancelSections", courseId: c.courseId, term, sections };
+    } else {
+      concrete = c;
+    }
+    out.push(concrete);
+    working = applyChanges(working, [concrete]);
+  }
+  return out;
 }

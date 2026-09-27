@@ -35,6 +35,19 @@ npm run build
 - Persuasion is decided mechanically by attached evidence kinds, never by
   grading memo prose.
 - `src/app/__tests__/` has jsdom playthrough tests; add one per scenario.
+- A YAML error makes every test file that imports content fail to load, so
+  check the "Test Files" line, not just "Tests". Quote YAML strings that
+  contain ": ".
+- Saves: `src/training/save.ts` defines a versioned format (`SAVE_VERSION`)
+  and validates untrusted input with player-readable errors. If you change
+  the shape of `TrainingSession` or `Program`, bump the version and add a
+  migration in `parseSave`. Browser storage lives in `src/app/storage.ts`
+  (all access guarded; autosave + 3 slots + file export/import).
+- UI tests must `localStorage.clear()` in `beforeEach` (autosave persists
+  across renders). `src/test-setup.ts` restores jsdom's localStorage, which
+  Node 25's built-in stub otherwise shadows.
+- Scenarios interact (e.g., holding caps at 24 makes The Late Hire arrive in
+  spring). Multi-term tests must resolve urgent scenarios before advancing.
 
 ## Environment notes
 

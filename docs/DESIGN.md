@@ -193,6 +193,24 @@ debrief:
   readings: [...]
 ```
 
+Other scenario features (see `late-hire.yaml`):
+
+- `arrival` — ProgramChanges that happen when the scenario arrives, before
+  any decision (e.g., three adjuncts resign). They apply only if the
+  scenario actually arrives.
+- `trigger.term` (fall/spring) and `trigger.requiresUnstaffed` — the latter
+  is judged *after* arrival changes, so a scenario only fires if it really
+  creates a crisis in the player's current program.
+- `urgent: true` — the term can't advance until it's resolved.
+- `{{placeholders}}` in document text (`{{unstaffed_sections}}`,
+  `{{deficit}}`, `{{term}}`) state the real numbers earlier decisions
+  produced.
+- `cancelUnstaffed` — a scenario-only change resolved at decision time to
+  cancel exactly the sections still uncovered.
+- Relative changes (`adjustCap`, `adjustBudget`) compose with earlier
+  decisions; prefer them over absolute ones (`setCap`) for temporary effects
+  that revert later.
+
 ### v1 scenario set (~10)
 
 1. The Cap Memo — the dean wants higher caps.

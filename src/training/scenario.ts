@@ -1,4 +1,4 @@
-import { DEFAULT_ASSUMPTIONS, STAKEHOLDER_IDS, analyzeTerm, parseChange, type StakeholderId } from "../model";
+import { DEFAULT_ASSUMPTIONS, STAKEHOLDER_IDS, TERMS, analyzeTerm, parseChange, type StakeholderId, type Term } from "../model";
 import type {
   CareerStage,
   Consequence,
@@ -6,6 +6,7 @@ import type {
   EvidenceKind,
   Persuasion,
   Scenario,
+  ScenarioChange,
   ScenarioDocument,
   ScenarioOption,
   ToolId,
@@ -14,8 +15,8 @@ import type {
 import { termOf } from "./terms";
 
 const STAGES: readonly CareerStage[] = ["assistant_director", "wpa", "program_builder"];
-const TOOLS: readonly ToolId[] = ["cap_calculator"];
-const EVIDENCE_KINDS: readonly EvidenceKind[] = ["cap_analysis"];
+const TOOLS: readonly ToolId[] = ["cap_calculator", "staffing_planner"];
+const EVIDENCE_KINDS: readonly EvidenceKind[] = ["cap_analysis", "staffing_plan"];
 const GENRES: readonly ScenarioDocument["genre"][] = ["memo", "email", "report", "note"];
 
 /**
@@ -41,8 +42,13 @@ export function parseScenario(raw: unknown): Scenario {
     stages: arr(r, "stages", at).map((s) => oneOf(s, STAGES, `${at} stages`)),
     trigger: {
       minTerm: trigger.minTerm === undefined ? undefined : num(trigger, "minTerm", `${at} trigger`),
+      term: trigger.term === undefined ? undefined : oneOf(trigger.term, TERMS as readonly Term[], `${at} trigger term`),
       requiresDeficit: trigger.requiresDeficit === undefined ? undefined : bool(trigger, "requiresDeficit", `${at} trigger`),
+      requiresUnstaffed:
+        trigger.requiresUnstaffed === undefined ? undefined : bool(trigger, "requiresUnstaffed", `${at} trigger`),
     },
+    arrival: (r.arrival === undefined ? [] : arr(r, "arrival", at)).map((c, i) => parseChange(c, `${at} arrival ${i + 1}`)),
+    urgent: r.urgent === undefined ? false : bool(r, "urgent", at),
     documents: arr(r, "documents", at).map((d, i) => {
       const w = `${at} document ${i + 1}`;
       const doc = obj(d, w);
@@ -114,13 +120,19 @@ function parseConsequence(raw: unknown, at: string): Consequence {
   const response = r.response === undefined ? undefined : obj(r.response, `${at} response`);
   return {
     narrative: str(r, "narrative", at).trim(),
-    changes: (r.changes === undefined ? [] : arr(r, "changes", at)).map((c, i) => parseChange(c, `${at} change ${i + 1}`)),
+    changes: (r.changes === undefined ? [] : arr(r, "changes", at)).map((c, i) => parseScenarioChange(c, `${at} change ${i + 1}`)),
     response: response && {
       from: stakeholder(response.from, `${at} response`),
       body: str(response, "body", `${at} response`).trim(),
     },
     delayed: (r.delayed === undefined ? [] : arr(r, "delayed", at)).map((d, i) => parseDelayed(d, `${at} delayed ${i + 1}`)),
   };
+}
+
+function parseScenarioChange(raw: unknown, at: string): ScenarioChange {
+  const r = obj(raw, at);
+  if (r.kind === "cancelUnstaffed") return { kind: "cancelUnstaffed", courseId: str(r, "courseId", at) };
+  return parseChange(raw, at);
 }
 
 function parsePersuasion(raw: unknown, at: string): Persuasion {
@@ -145,14 +157,19 @@ function parseDelayed(raw: unknown, at: string): DelayedEffect {
 
 // ---------------------------------------------------------------------------
 
-/** Whether a scenario can arrive in the session's current term. */
+/**
+ * Whether a scenario can arrive in the session's current term. Pass a
+ * session whose program already includes the scenario's arrival changes.
+ */
 export function isEligible(scenario: Scenario, session: TrainingSession): boolean {
   const t = scenario.trigger;
   if (!scenario.stages.includes(session.stage)) return false;
   if (t.minTerm !== undefined && session.termIndex < t.minTerm) return false;
-  if (t.requiresDeficit) {
+  if (t.term !== undefined && termOf(session.termIndex) !== t.term) return false;
+  if (t.requiresDeficit || t.requiresUnstaffed) {
     const analysis = analyzeTerm(session.program, termOf(session.termIndex), DEFAULT_ASSUMPTIONS);
-    if (analysis.budgetBalance >= 0) return false;
+    if (t.requiresDeficit && analysis.budgetBalance >= 0) return false;
+    if (t.requiresUnstaffed && analysis.unstaffedSections === 0) return false;
   }
   return true;
 }
