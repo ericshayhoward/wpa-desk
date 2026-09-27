@@ -138,15 +138,22 @@ PhD (a common pattern: first year in the writing center or another
 assignment, then an administrative role). Year 3 of the arc is their fourth
 PhD year, when they go on the job market.
 
-- Years 1–2: Assistant Director under the WPA (a new cast member, the
-  player's supervisor). Scenarios reach the player the way they would reach
+- Years 1–2: Assistant Director under the WPA, **Dr. Nora Cherry**,
+  Director of First-Year Writing and the player's supervisor (a new cast
+  member; adding her needs a new stakeholder id, so a save-version bump).
+  Proposed profile: a mentor who wants the player to succeed, so a low bar
+  with evidence and a moderate one without (15 / 55), and trust with her
+  shapes the recommendation letter behind the ending. Scenarios reach the player the way they would reach
   an AD; e.g., the WPA forwards the dean's cap request and asks the player to
   run the numbers and draft the response.
-- Year 3 (proposed): the WPA goes on sabbatical and the player serves as
+- Year 3 (decided): Dr. Cherry goes on sabbatical and the player serves as
   **interim director** (career stage `wpa`), with more authority and harder
   problems. Fall Y3 also brings the job market, which competes for admin
-  hours. Optional: a dissertation-progress meter so admin work has a
-  personal cost.
+  hours.
+- **Dissertation progress** (decided): a meter fed by hours not spent on
+  admin work, so over-committing has a personal cost. It feeds the
+  ending (a finished or nearly finished dissertation matters on the
+  market).
 
 **Annual reports** (decided): the report goes to the chair, Dr. Hale, who
 forwards it to the dean. Reports are reflective only: they are saved to the
@@ -161,9 +168,9 @@ case files and exported, for instructors to evaluate, and never scored.
   outcomes, initiatives, next year's requests, and a three-year look back,
   with evidence attached from their own data and a recap of commitments.
 
-**Endings** (decided in principle: scored from three years of results, shown
-alongside the Year 3 report; presentation to be designed later). Proposed
-job-market outcomes:
+**Endings** (decided: scored from three years of results, shown alongside
+the Year 3 report; presentation to be designed later). Job-market
+outcomes:
 
 1. Tenure-track assistant professor at a university, with a WPA role.
 2. Full-time faculty position at a two-year college (written as a real,
@@ -172,8 +179,9 @@ job-market outcomes:
    player goes on the market without a strong administrative record.
 
 Proposed score inputs: program outcomes against Midland's baseline (D/F/W,
-staffing stability, budget), trust with characters, commitments kept versus
-missed, and instructor morale. The ending screen explains why, like a
+staffing stability, budget), trust with characters (Dr. Cherry's especially),
+commitments kept versus missed, instructor morale, and dissertation
+progress. The ending screen explains why, like a
 debrief, rather than showing a bare grade.
 
 Design direction (proposed, not yet built):
