@@ -11,6 +11,8 @@ import type { TrainingSession } from "./types";
  *   {{term}}                → "fall" / "spring"
  *   {{deficit}}             → "$8,600" (0 if balanced)
  *   {{surplus}}             → "$41,800" (0 if in deficit)
+ *   {{sections}}            → 60 (sections offered this term)
+ *   {{sections_gta}}        → 15 (sections this term by any instructor rank)
  *   {{cap_ENGL101}}         → 24 (any course id)
  *   {{headcount_gta}}       → 15 (any instructor rank)
  *   {{pay_gta}}             → "$9,000" per section (any instructor rank)
@@ -31,7 +33,9 @@ export function fillTemplate(text: string, session: TrainingSession): string {
     term,
     deficit: `$${Math.max(0, -a.budgetBalance).toLocaleString("en-US")}`,
     surplus: `$${Math.max(0, a.budgetBalance).toLocaleString("en-US")}`,
+    sections: String(a.totalSections),
   };
+  for (const line of a.staffing) vars[`sections_${line.rank}`] = String(line.sectionsAssigned);
   for (const [id, cap] of Object.entries(session.program.policies.caps)) vars[`cap_${id}`] = String(cap);
   for (const p of session.program.instructors) {
     vars[`headcount_${p.rank}`] = String(p.headcount);

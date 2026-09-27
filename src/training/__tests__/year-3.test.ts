@@ -53,6 +53,7 @@ describe("The GTA Stipend Campaign", () => {
     const body = fillTemplate(stipend.documents[0]!.body, to(5));
     expect(body).toContain("We are the 15 graduate teaching assistants");
     expect(body).toContain("We are paid $9,000 for each");
+    expect(body).toContain("We teach 15 of the program's 60 sections");
   });
 
   it("signing wins the GTAs and costs the dean, the provost's office, and Dr. Cherry", () => {

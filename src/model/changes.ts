@@ -207,7 +207,10 @@ export function parseChange(raw: unknown, where = "change"): ProgramChange {
     case "cancelSections": {
       const term = str("term");
       if (!(TERMS as readonly string[]).includes(term)) throw new Error(`${where}: "term" must be fall or spring`);
-      return { kind: "cancelSections", courseId: str("courseId"), term: term as Term, sections: num("sections") };
+      const courseId = str("courseId");
+      // Cancellations are per course; "all" would silently cancel only the first one.
+      if (courseId === "all") throw new Error(`${where}: "courseId" must name one course`);
+      return { kind: "cancelSections", courseId, term: term as Term, sections: num("sections") };
     }
     case "setBudget":
       return { kind: "setBudget", budgetPerTerm: num("budgetPerTerm") };

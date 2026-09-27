@@ -54,7 +54,7 @@ export function parseScenario(raw: unknown): Scenario {
     title: str(r, "title", at),
     stages: arr(r, "stages", at).map((s) => oneOf(s, CAREER_STAGES, `${at} stages`)),
     trigger: {
-      minTerm: trigger.minTerm === undefined ? undefined : num(trigger, "minTerm", `${at} trigger`),
+      minTerm: trigger.minTerm === undefined ? undefined : wholeTerm(trigger, "minTerm", `${at} trigger`),
       term: trigger.term === undefined ? undefined : oneOf(trigger.term, TERMS as readonly Term[], `${at} trigger term`),
       requiresDeficit: trigger.requiresDeficit === undefined ? undefined : bool(trigger, "requiresDeficit", `${at} trigger`),
       requiresUnstaffed:
@@ -129,8 +129,8 @@ function parseOption(raw: unknown, at: string): ScenarioOption {
     label: str(r, "label", w),
     description: str(r, "description", w),
     cost: {
-      adminHours: cost.adminHours === undefined ? 0 : num(cost, "adminHours", `${w} cost`),
-      politicalCapital: cost.politicalCapital === undefined ? 0 : num(cost, "politicalCapital", `${w} cost`),
+      adminHours: cost.adminHours === undefined ? 0 : nonNegative(cost, "adminHours", `${w} cost`),
+      politicalCapital: cost.politicalCapital === undefined ? 0 : nonNegative(cost, "politicalCapital", `${w} cost`),
     },
     memo,
     requires,
@@ -316,6 +316,17 @@ function text(v: unknown, at: string): string {
 function num(r: Record<string, unknown>, k: string, at: string): number {
   if (typeof r[k] !== "number" || !Number.isFinite(r[k])) throw new Error(`${at}: "${k}" must be a number`);
   return r[k] as number;
+}
+function wholeTerm(r: Record<string, unknown>, k: string, at: string): number {
+  const v = num(r, k, at);
+  if (!Number.isInteger(v) || v < 1) throw new Error(`${at}: "${k}" must be a whole number ≥ 1`);
+  return v;
+}
+/** Costs are spent, never refunded: a negative cost would push admin hours past the term's total. */
+function nonNegative(r: Record<string, unknown>, k: string, at: string): number {
+  const v = num(r, k, at);
+  if (v < 0) throw new Error(`${at}: "${k}" can't be negative`);
+  return v;
 }
 function bool(r: Record<string, unknown>, k: string, at: string): boolean {
   if (typeof r[k] !== "boolean") throw new Error(`${at}: "${k}" must be true or false`);

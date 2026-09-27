@@ -285,7 +285,7 @@ function reportsMarkdown(session: TrainingSession, names: Names): string[] {
     for (const sec of r.sections) {
       const by = sec.author === "player" ? (r.from === "player" ? "" : " (the author's section)") : ` (${names.short(sec.author)})`;
       out.push(`### ${sec.title}${by}`, "", sec.body, "");
-      if (sec.history) out.push(...historyMarkdown(sec.history, r.startedAt));
+      if (sec.history) out.push(...historyMarkdown(sec.history, r.startedAt, "report"));
     }
     out.push("### Appendix: the numbers", "", ...r.appendix.map((l) => `- ${l}`), "");
     if (r.reply) out.push(quote(r.reply.body), `> — ${names.short(r.reply.from)}`, "");
@@ -318,7 +318,7 @@ function reportsMarkdown(session: TrainingSession, names: Names): string[] {
 }
 
 /** Timeline plus word-level changes between consecutive versions. */
-function historyMarkdown(history: DraftVersion[], startedAt: string | undefined): string[] {
+function historyMarkdown(history: DraftVersion[], startedAt: string | undefined, what = "memo"): string[] {
   if (history.length === 0) {
     return ["#### Drafting history", "", "_No drafting history recorded (written before WPA Desk kept history)._", ""];
   }
@@ -326,7 +326,7 @@ function historyMarkdown(history: DraftVersion[], startedAt: string | undefined)
   const out = [
     "#### Drafting history",
     "",
-    `${history.length} version${history.length === 1 ? "" : "s"}${minutes !== null ? `; ${minutes} minute${minutes === 1 ? "" : "s"} from opening the memo to sending it` : ""}.`,
+    `${history.length} version${history.length === 1 ? "" : "s"}${minutes !== null ? `; ${minutes} minute${minutes === 1 ? "" : "s"} from opening the ${what} to sending it` : ""}.`,
     "",
     "| # | Time (UTC) | Event | Words | Note |",
     "|---|---|---|---|---|",

@@ -260,7 +260,7 @@ Built so far (`src/content/arcs/standard.yaml`, `src/training/arc.ts`):
 - **Political capital is earned by delivering**: a memo that persuades its
   reader returns +2, and each kept commitment +1. Without this, careful
   players ran out by Year 3 and only expedient choices earned capital back.
-- **Calibration** (13 scenarios, whole-arc test runs): thoughtful play
+- **Calibration** (12 scenarios, whole-arc test runs): thoughtful play
   with evidence scores about 72 (tenure track); adding kept commitments
   raises it to about 78 with the dissertation still on track; also teaching
   the extra sections yourself scores about 76 but leaves the dissertation
@@ -284,7 +284,7 @@ Midland):
 | Fall Y2 | The Accreditation Ask · The Dual-Enrollment Drop |
 | Spring Y2 | The DSP Pilot · The Detector · Cap Memo follow-up |
 | Fall Y3 | The GTA Stipend Campaign · The Writing Center Budget Swap |
-| Spring Y3 | Year 3 annual report (capstone) |
+| Spring Y3 | The Handoff · Year 3 annual report (capstone) |
 
 ### Memos (v1)
 
@@ -304,6 +304,7 @@ simulation. The design keeps them meaningful without anything grading prose.
   the term you do it (early is allowed) and earns trust with the memo's
   reader (+3). One extension is allowed (−1). Anything still open when its
   term ends is missed (−6), so over-promising in memos taxes future terms.
+  Submitting the capstone ends the final term, so it misses them too.
 - **Dossier (case files)** — one self-contained case file per decision:
   what arrived (documents as they read at the time), the decision, the memo
   with evidence and commitment status, what happened (narrative, reply,
@@ -339,7 +340,8 @@ simulation. The design keeps them meaningful without anything grading prose.
 Stakeholders with a single decision-maker have a named character, authored
 in `src/content/cast/*.yaml` (content, not program data, so the model can
 hold real programs). Midland's cast: Dean Elena Alvarez, Dr. Marcus Hale
-(chair), Associate Provost Grace Okafor, Dr. Priya Raman (writing center).
+(chair), Dr. Nora Cherry (Director of First-Year Writing), Associate
+Provost Grace Okafor, Dr. Priya Raman (writing center).
 Groups (adjuncts, GTAs, students, senate, accreditor) remain groups.
 
 Relationships have mechanical weight:
@@ -410,8 +412,10 @@ Other scenario features (see `late-hire.yaml`):
   creates a crisis in the player's current program.
 - `urgent: true` — the term can't advance until it's resolved.
 - `{{placeholders}}` in document text (`{{unstaffed_sections}}`,
-  `{{deficit}}`, `{{surplus}}`, `{{term}}`) state the real numbers earlier decisions
-  produced.
+  `{{deficit}}`, `{{surplus}}`, `{{term}}`, `{{sections}}`,
+  `{{sections_gta}}`, `{{headcount_gta}}`, `{{pay_gta}}`, `{{cap_ENGL101}}`;
+  full list in `src/training/template.ts`) state the real numbers earlier
+  decisions produced.
 - `cancelUnstaffed` — a scenario-only change resolved at decision time to
   cancel exactly the sections still uncovered.
 - `setPolicy` sets a program policy: on/off (`commonSyllabus`,
