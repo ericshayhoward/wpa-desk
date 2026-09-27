@@ -144,12 +144,19 @@ export function caseFilesToMarkdown(session: TrainingSession, scenarios: Scenari
     `> ${PORTFOLIO_NOTICE}`,
     "",
   ];
-  if (files.length === 0) {
+  if (files.length === 0 && session.reports.length === 0) {
     out.push("_No decisions yet._");
     return out.join("\n");
   }
 
-  out.push("## Contents", "", ...files.map((f) => `${f.index}. ${f.scenario.title} (${termLabel(f.decision.termIndex)})`), "");
+  out.push(
+    "## Contents",
+    "",
+    ...files.map((f) => `${f.index}. ${f.scenario.title} (${termLabel(f.decision.termIndex)})`),
+    ...session.reports.map((r) => `- Year ${r.year} annual report`),
+    ...(session.ending ? ["- How the arc ended"] : []),
+    "",
+  );
 
   for (const f of files) {
     const snap = f.snapshot;
@@ -242,7 +249,54 @@ export function caseFilesToMarkdown(session: TrainingSession, scenarios: Scenari
       });
     }
   }
+  out.push(...reportsMarkdown(session, names));
   return out.join("\n");
+}
+
+/** Annual reports, then the ending if the arc is over. */
+function reportsMarkdown(session: TrainingSession, names: Names): string[] {
+  const out: string[] = [];
+  const you = session.portfolio?.author?.trim() || "The author";
+  for (const r of session.reports) {
+    out.push(
+      "---",
+      "",
+      `## Year ${r.year} annual report`,
+      "",
+      `**To:** ${names.byline(r.to)}  `,
+      `**From:** ${r.from === "player" ? you : names.byline(r.from)}  `,
+      `_Submitted ${termLabel(r.termIndex)}._`,
+      "",
+    );
+    for (const sec of r.sections) {
+      const by = sec.author === "player" ? (r.from === "player" ? "" : " (the author's section)") : ` (${names.short(sec.author)})`;
+      out.push(`### ${sec.title}${by}`, "", sec.body, "");
+      if (sec.history) out.push(...historyMarkdown(sec.history, r.startedAt));
+    }
+    out.push("### Appendix: the numbers", "", ...r.appendix.map((l) => `- ${l}`), "");
+    if (r.reply) out.push(quote(r.reply.body), `> — ${names.short(r.reply.from)}`, "");
+  }
+  const e = session.ending;
+  if (e) {
+    out.push(
+      "---",
+      "",
+      "## How the arc ended",
+      "",
+      `**${e.title}**`,
+      "",
+      e.narrative,
+      "",
+      `Score: ${e.score} of 100 (university tenure-track needed ${e.thresholds.tenureTrackAt} and a dissertation on track; two-year college needed ${e.thresholds.twoYearAt}).`,
+      "",
+      ...(e.gateNote ? [`_${e.gateNote}_`, ""] : []),
+      "| Factor | Points | Why |",
+      "|---|---|---|",
+      ...e.factors.map((f) => `| ${f.label} | ${f.points} / ${f.max} | ${f.explanation.replace(/\|/g, "\\|")} |`),
+      "",
+    );
+  }
+  return out;
 }
 
 /** Timeline plus word-level changes between consecutive versions. */

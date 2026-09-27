@@ -215,11 +215,38 @@ Built so far (`src/content/arcs/standard.yaml`, `src/training/arc.ts`):
 
   `after` references are checked across files on load.
 
+- **Term history** — a record of the program's numbers at the start of
+  play (`baseline`) and at the end of every term (`history`), used by
+  reports and the ending.
+- **Year-end reports** (`yearEnd` in the arc; `src/training/report.ts`) —
+  due in a set term, they block the term until submitted and cost admin
+  hours (a shortfall comes out of dissertation time as overtime). The
+  supervisor's sections are generated from the player's recorded data; the
+  player's sections keep drafting history. A data panel and appendix show
+  the year's numbers, decisions, and commitments.
+- **Time costs** (`timeCosts`) — hours taken from a term up front (job
+  applications, Fall Y3).
+- **Dissertation** (`dissertation`) — unspent admin hours accumulate toward
+  `hoursToFinish`; `onTrackAt` is the share needed to defend by summer.
+  Shown in the status bar during play.
+- **Endings** (`endings`; `src/training/ending.ts`) — submitting the
+  capstone scores the record out of 100: program outcomes 20 (fall D/F/W
+  against the baseline, terms with uncovered sections, budget), the
+  recommender's trust 15, campus relationships 15, instructors' trust and
+  morale 15, commitments kept 15, dissertation 20. Thresholds and outcome
+  text live in the arc; weights in `ENDING_RULES`. The tenure-track outcome
+  also needs the dissertation finished or on track, and the ending screen
+  says so when that gate is what held it back. Reports and the ending are
+  in the dossier and the Markdown export.
+- **Calibration note** — with only two scenarios, few admin hours get spent,
+  so the dissertation fills for nearly everyone and ordinary play lands
+  around 50–60 (two-year college). Recalibrate hours and weights as
+  scenarios are added.
+
 Still to design and build:
 
 - **Recurring events** — each year has a rhythm even between scripted
-  scenarios: budget in fall, staffing and hiring in spring, annual report at
-  year end.
+  scenarios: a budget cycle in fall, staffing and hiring in spring.
 - **Inbox density** — about 2 major scenarios per term, plus short minor
   items (one email, a choice, no memo) to reach the 3–5 in the core loop.
 

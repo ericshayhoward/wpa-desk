@@ -13,7 +13,9 @@ import {
   type TrainingSession,
 } from "../training";
 import { namesFor } from "./format";
+import { EndingView } from "./EndingView";
 import { DraftHistory, ReflectionHistory, RevisionEditor } from "./HistoryView";
+import { ReportView } from "./ReportView";
 import { ReflectionEditor } from "./ReflectionEditor";
 
 interface Props {
@@ -58,10 +60,10 @@ export function Dossier({ session, scenarios, onReflect, onRevise, onPortfolio, 
           </p>
         </div>
         <div className="row-start">
-          <button className="secondary" disabled={files.length === 0} onClick={() => window.print()}>
+          <button className="secondary" disabled={files.length === 0 && session.reports.length === 0} onClick={() => window.print()}>
             Print / Save as PDF
           </button>
-          <button className="secondary" disabled={files.length === 0} onClick={exportMarkdown}>
+          <button className="secondary" disabled={files.length === 0 && session.reports.length === 0} onClick={exportMarkdown}>
             Export as Markdown
           </button>
         </div>
@@ -284,6 +286,26 @@ export function Dossier({ session, scenarios, onReflect, onRevise, onPortfolio, 
           </article>
         );
       })}
+
+      {session.reports.map((r) => (
+        <article key={r.termIndex} className="case-file" aria-labelledby={`report-${r.year}`}>
+          <h2 id={`report-${r.year}`}>Year {r.year} annual report</h2>
+          <ReportView report={r} program={session.program} author={session.portfolio?.author} showHistory />
+          {r.reply && (
+            <blockquote className="reply">
+              <p>{r.reply.body}</p>
+              <footer>— {names.short(r.reply.from)}</footer>
+            </blockquote>
+          )}
+        </article>
+      ))}
+
+      {session.ending && (
+        <article className="case-file" aria-labelledby="ending">
+          <h2 id="ending">How the arc ended</h2>
+          <EndingView ending={session.ending} report={undefined} program={session.program} />
+        </article>
+      )}
     </section>
   );
 }

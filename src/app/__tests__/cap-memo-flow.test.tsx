@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../App";
+import { submitYearEndReport } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
@@ -63,6 +64,7 @@ describe("playing The Cap Memo through the UI", () => {
 
     // Two terms later, the delayed consequence lands.
     await user.click(screen.getByRole("button", { name: /Advance to Spring, Year 1/ }));
+    await submitYearEndReport(user);
     await user.click(screen.getByRole("button", { name: /Advance to Fall, Year 2/ }));
     expect(screen.getByRole("heading", { name: "Since last term" })).toBeTruthy();
     expect(screen.getByText(/Two experienced instructors take work elsewhere/)).toBeTruthy();

@@ -13,3 +13,6 @@ export * from "./save";
 export * from "./commitments";
 export * from "./cast";
 export * from "./morale";
+export * from "./history";
+export * from "./report";
+export * from "./ending";

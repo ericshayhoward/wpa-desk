@@ -7,7 +7,9 @@ import {
   type Program,
   type ProgramChange,
 } from "../model";
-import { arcAllows, checkArc, isFinalTerm, stageChangeAt } from "./arc";
+import { arcAllows, checkArc, isFinalTerm, stageChangeAt, timeCostAt } from "./arc";
+import { recordTerm } from "./history";
+import { reportDue } from "./report";
 import type { EvidenceDraft } from "./evidence";
 import { persuasionProfile } from "./cast";
 import { missOverdue } from "./commitments";
@@ -46,7 +48,7 @@ export function startSession(program: Program, scenarios: Scenario[], arc?: Arc)
     stage: arc?.startStage ?? "wpa",
     ...(arc && { arcId: arc.id }),
     adminHoursPerTerm: DEFAULT_ADMIN_HOURS_PER_TERM,
-    adminHoursRemaining: DEFAULT_ADMIN_HOURS_PER_TERM,
+    adminHoursRemaining: DEFAULT_ADMIN_HOURS_PER_TERM - (timeCostAt(arc, 1)?.hours ?? 0),
     inbox: [],
     decisions: [],
     pending: [],
@@ -54,6 +56,10 @@ export function startSession(program: Program, scenarios: Scenario[], arc?: Arc)
     dossier: [],
     commitments: [],
     nextId: 1,
+    history: [],
+    overtimeHours: 0,
+    reports: [],
+    baseline: { ...recordTerm({ program, termIndex: 1, adminHoursRemaining: 0, overtimeHours: 0 }) },
   };
   return deliver(session, scenarios, arc);
 }
@@ -258,26 +264,32 @@ export function advanceTerm(
   arc?: Arc,
 ): { session: TrainingSession; applied: PendingEffect[]; missed: Commitment[]; drift: string[]; milestones: string[] } {
   checkArc(session, arc);
+  if (session.ending) throw new Error(`${arc?.title ?? "This session"} has ended.`);
   if (isFinalTerm(session, arc)) throw new Error(`${termLabel(session.termIndex)} is the final term of ${arc!.title}.`);
   const blocked = blockingScenarios(session, scenarios);
   if (blocked.length) {
     throw new Error(`Resolve before ${termLabel(session.termIndex)} ends: ${blocked.map((s) => s.title).join(", ")}`);
   }
+  if (reportDue(session, arc)) throw new Error(`Submit the year-end report before ${termLabel(session.termIndex)} ends.`);
   // Order matters: close out the ending term (missed commitments, turnover
   // judged on the morale people actually worked under), then land the
   // consequences that come due in the new term.
+  const record = recordTerm(session);
   const closed = missOverdue(session);
   const attrition = applyMoraleAttrition(closed.session.program);
   const termIndex = session.termIndex + 1;
   const applied = closed.session.pending.filter((p) => p.dueTerm <= termIndex);
   const program = applyChanges(attrition.program, applied.flatMap((p) => p.changes));
   const stageChange = arc && stageChangeAt(arc, termIndex);
+  const timeCost = timeCostAt(arc, termIndex);
   const advanced: TrainingSession = {
     ...closed.session,
     program,
     termIndex,
     stage: stageChange?.stage ?? session.stage,
-    adminHoursRemaining: session.adminHoursPerTerm,
+    adminHoursRemaining: Math.max(0, session.adminHoursPerTerm - (timeCost?.hours ?? 0)),
+    overtimeHours: 0,
+    history: [...session.history, record],
     pending: closed.session.pending.filter((p) => p.dueTerm > termIndex),
   };
   return {
@@ -285,7 +297,7 @@ export function advanceTerm(
     applied,
     missed: closed.missed,
     drift: attrition.notes,
-    milestones: stageChange ? [stageChange.note] : [],
+    milestones: [...(stageChange ? [stageChange.note] : []), ...(timeCost ? [timeCost.note] : [])],
   };
 }
 

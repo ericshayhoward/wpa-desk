@@ -40,5 +40,7 @@ it("The Late Hire: urgent, blocks the term, resolved by adding seats", async () 
 
   await user.click(screen.getByRole("button", { name: "Back to desk" }));
   expect(screen.queryByText("3 of 60")).toBeNull();
-  expect((screen.getByRole("button", { name: /advance/i }) as HTMLButtonElement).disabled).toBe(false);
+  // The crisis no longer blocks the term; only the year-end report does.
+  expect(screen.queryByText(/The Late Hire can't wait/)).toBeNull();
+  expect(screen.getByText("Submit the year-end report before the term ends.")).toBeTruthy();
 });

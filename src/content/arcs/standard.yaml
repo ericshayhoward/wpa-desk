@@ -28,3 +28,143 @@ stageChanges:
 calendar:
   - { scenario: cap-memo, from: 1, until: 1 }
   - { scenario: late-hire, from: 2 }
+
+# Hours taken from a term before the player can spend them.
+timeCosts:
+  - term: 5
+    hours: 15
+    label: Job applications
+    note: >
+      Job applications are due this fall. Cover letters, a teaching
+      statement, a writing sample, and chasing recommendation letters take
+      15 of this term's admin hours.
+
+# Unspent admin hours feed the dissertation. Illustrative calibration: with
+# 60 hours a term, finishing needs about 40 unspent hours a term on average.
+# Revisit as more scenarios fill the arc.
+dissertation:
+  hoursToFinish: 240
+  onTrackAt: 0.75
+
+# Annual reports go to the chair, who forwards them to the dean. They're
+# reflective: kept in the case files and exported, never scored.
+yearEnd:
+  - term: 2
+    from: fyw_director
+    to: chair
+    hours: 6
+    request:
+      from: fyw_director
+      genre: email
+      subject: "Year 1 annual report: your section"
+      body: |
+        The annual report goes to Dr. Hale at the end of the term, and he
+        forwards it to the dean. I'll write most of it, but I'd like you to
+        write the program data section this year: sections, staffing, D/F/W,
+        and the budget, and what the numbers mean.
+
+        Don't just list numbers. The dean reads this section for budget and
+        results, so tell them what they're looking at.
+
+        — Nora
+    sections: [program_data, assessment, initiatives, requests]
+    playerSections: [program_data]
+    reply:
+      from: fyw_director
+      body: Thank you. This is going in as you wrote it. Next year I'll ask you for a harder section.
+
+  - term: 4
+    from: fyw_director
+    to: chair
+    hours: 6
+    request:
+      from: fyw_director
+      genre: email
+      subject: "Year 2 annual report: assessment and outcomes"
+      body: |
+        With the accreditation visit this year, the assessment section of
+        the annual report matters more than usual, and I'd like you to write
+        it. What did we learn about student writing and student success this
+        year? What's our evidence, what does it show, and what can't it show?
+
+        Be honest about the gaps. The accreditor will find them anyway.
+
+        — Nora
+    sections: [program_data, assessment, initiatives, requests]
+    playerSections: [assessment]
+    reply:
+      from: fyw_director
+      body: Thank you. I'll be on sabbatical next year, so it helps to see you writing about the program as a whole.
+
+  - term: 6
+    from: player
+    to: chair
+    hours: 16
+    capstone: true
+    request:
+      from: chair
+      genre: email
+      subject: Annual report for first-year writing
+      body: |
+        With Dr. Cherry on sabbatical, the annual report for first-year
+        writing is yours this year. The usual sections, please: program data,
+        assessment, initiatives, and requests for next year.
+
+        Since this is the end of your three years in the program office, I'd
+        also like a section looking back over that time, for the record and
+        for whoever comes next. I'll forward the report to the dean.
+
+        — Marcus Hale
+    sections: [program_data, assessment, initiatives, requests, looking_back]
+    playerSections: [program_data, assessment, initiatives, requests, looking_back]
+    reply:
+      from: chair
+      body: Thank you for this, and for three years of work in the program office. I've sent it on to the dean.
+
+# Decided when the capstone report is submitted, from a score (0–100) across
+# program outcomes, the supervisor's trust (the recommendation letter),
+# campus relationships, instructors, commitments, and the dissertation. The
+# university tenure-track outcome also needs the dissertation finished or
+# on track.
+endings:
+  tenureTrackAt: 70
+  twoYearAt: 45
+  recommender: fyw_director
+  relationships: [dean, chair, provost_office, writing_center]
+  outcomes:
+    tenure_track:
+      title: Assistant Professor and Director of First-Year Writing
+      narrative: |
+        In March, a regional public university offers you a tenure-track
+        position as assistant professor and director of first-year writing.
+        The search committee asked about your three years in Midland's
+        program office in every interview, and Dr. Cherry's letter described
+        an administrator who brings problems with the numbers already run.
+
+        You'll run a program of your own in the fall. The work you did as an
+        assistant director is now the job.
+    two_year:
+      title: Assistant Professor of English at a Two-Year College
+      narrative: |
+        In April, a community college offers you a full-time, permanent
+        position teaching writing. It's a teaching-focused job with a
+        five-course load, students who are often the first in their families
+        to attend college, and a department that asked you in the interview
+        to help coordinate its composition courses.
+
+        Many writing teachers build whole careers in two-year colleges, where
+        a large share of first-year writing in the United States is taught.
+        Your administrative experience will matter here from the first
+        semester.
+    rotated_out:
+      title: Rotated Out of the Program Office
+      narrative: |
+        The assistant directorship goes to another graduate student next
+        year, and your applications this cycle don't turn into offers. You'll
+        go on the market again next fall, with the dissertation to finish and
+        a smaller administrative record than you hoped to show.
+
+        Dr. Cherry meets with you before she leaves for the summer. It
+        happens more often than people say, she tells you, and what you learned
+        about the people and the numbers is still yours. Your case files
+        show what you'd do differently.

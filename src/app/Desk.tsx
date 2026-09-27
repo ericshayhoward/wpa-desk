@@ -6,6 +6,7 @@ import {
   isFinalTerm,
   termLabel,
   type Arc,
+  type YearEndSpec,
   type Commitment,
   type PendingEffect,
   type TrainingSession,
@@ -18,6 +19,9 @@ interface Props {
   session: TrainingSession;
   /** The arc being played, if any. */
   arc?: Arc;
+  /** A year-end report due this term, if any. */
+  reportDue?: YearEndSpec | null;
+  onOpenReport?: () => void;
   /** What happened when the term advanced: role changes, delayed effects, and missed commitments. */
   landed: { effects: PendingEffect[]; missed: Commitment[]; drift: string[]; milestones: string[] };
   onOpen: (scenarioId: string) => void;
@@ -27,7 +31,7 @@ interface Props {
   onAbandon: (id: string) => void;
 }
 
-export function Desk({ session, arc, landed, onOpen, onNextTerm, onDeliver, onExtend, onAbandon }: Props) {
+export function Desk({ session, arc, reportDue, onOpenReport, landed, onOpen, onNextTerm, onDeliver, onExtend, onAbandon }: Props) {
   const program = session.program;
   const inbox = session.inbox.map((id) => SCENARIOS.find((s) => s.id === id)!).filter(Boolean);
   const titleOf = (id: string) => SCENARIOS.find((s) => s.id === id)?.title ?? id;
@@ -67,8 +71,24 @@ export function Desk({ session, arc, landed, onOpen, onNextTerm, onDeliver, onEx
 
       <section className="card">
         <h2>Inbox</h2>
+        {reportDue && (
+          <ul className="inbox">
+            <li>
+              <button className="inbox-item" onClick={onOpenReport}>
+                <span className="inbox-from">
+                  {stakeholderName(program, reportDue.request.from)}
+                  <span className="badge urgent">due this term</span>
+                </span>
+                <span className="inbox-subject">{reportDue.request.subject}</span>
+                <span className="muted small">
+                  Year-end report · {reportDue.hours} admin hours
+                </span>
+              </button>
+            </li>
+          </ul>
+        )}
         {inbox.length === 0 ? (
-          <p className="muted">Nothing waiting on you this term.</p>
+          !reportDue && <p className="muted">Nothing waiting on you this term.</p>
         ) : (
           <ul className="inbox">
             {inbox.map((s) => {
@@ -90,19 +110,22 @@ export function Desk({ session, arc, landed, onOpen, onNextTerm, onDeliver, onEx
         )}
         {final ? (
           <p className="muted small row-end-note">
-            {termLabel(session.termIndex)} is the final term of {arc!.title}. The Year 3 annual report and your ending
-            aren't built yet.
+            {termLabel(session.termIndex)} is the final term of {arc!.title}.
+            {reportDue ? " Submitting the annual report finishes the arc." : ""}
           </p>
         ) : (
           <div className="row-end">
             <button
               className={inbox.length ? "secondary" : "primary"}
-              disabled={blocking.length > 0}
+              disabled={blocking.length > 0 || !!reportDue}
               onClick={onNextTerm}
             >
               {inbox.length ? "Leave these for next term and advance" : `Advance to ${termLabel(session.termIndex + 1)}`}
             </button>
           </div>
+        )}
+        {reportDue && !final && (
+          <p className="muted small row-end-note">Submit the year-end report before the term ends.</p>
         )}
         {blocking.length > 0 && (
           <p className="muted small row-end-note">

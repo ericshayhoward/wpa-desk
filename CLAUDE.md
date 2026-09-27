@@ -61,6 +61,10 @@ npm run build
   session without an arc is free play: triggers only, no calendar. New
   scenarios must be added to the arc's calendar or they never arrive.
 - The player's supervisor, Dr. Nora Cherry, is stakeholder `fyw_director`.
+- In the standard arc a year-end report is due every spring and blocks the
+  term. Engine tests use `submitDueReport` (`src/test-fixtures/reports.ts`);
+  UI tests use `submitYearEndReport` (`src/app/__tests__/helpers.ts`).
+  Submitting the Spring Y3 capstone sets `session.ending` and ends play.
 - Scenarios interact (e.g., holding caps at 24 makes The Late Hire arrive in
   Spring Y1; raising them to 27 drives adjuncts away so it arrives in Spring
   Y2). Multi-term tests must resolve urgent scenarios before advancing, or

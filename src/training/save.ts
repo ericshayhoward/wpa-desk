@@ -1,10 +1,11 @@
 import { DEFAULT_ASSUMPTIONS, TERMS, analyzeTerm, type Program } from "../model";
 import { termLabel } from "./terms";
+import { recordTerm } from "./history";
 import { CAREER_STAGES, type Arc, type Scenario, type TrainingSession } from "./types";
 
 export const SAVE_FORMAT = "wpa-desk-save";
 /** Bump when the saved shape changes, and add a migration in parseSave. */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export interface SaveSummary {
   institution: string;
@@ -58,6 +59,7 @@ export function parseSave(raw: unknown, scenarios: Scenario[], arcs: Arc[] = [])
   let rawSession = f.session;
   if (f.version < 2) rawSession = migrate1to2(rawSession);
   if (f.version < 3) rawSession = migrate2to3(rawSession);
+  if (f.version < 4) rawSession = migrate3to4(rawSession);
 
   const session = parseSession(rawSession, scenarios, arcs);
   return {
@@ -122,6 +124,16 @@ function migrate2to3(raw: unknown): unknown {
   };
 }
 
+/**
+ * v4 added term history, year-end reports, and endings. Earlier saves start
+ * with no history; their baseline is the program as it stands, since the
+ * starting numbers weren't kept.
+ */
+function migrate3to4(raw: unknown): unknown {
+  const s = obj(raw, "The saved session");
+  return { history: [], overtimeHours: 0, reports: [], baselineFromCurrent: true, ...s };
+}
+
 function parseSession(raw: unknown, scenarios: Scenario[], arcs: Arc[]): TrainingSession {
   const s = obj(raw, "The saved session");
   const known = new Set(scenarios.map((x) => x.id));
@@ -164,11 +176,57 @@ function parseSession(raw: unknown, scenarios: Scenario[], arcs: Arc[]): Trainin
     nextId: int(s, "nextId", 1),
     portfolio: parsePortfolio(s.portfolio),
     drafts: parseDrafts(s.drafts),
+    history: list(s, "history").map((r) => termRecord(r, "A term in the history")),
+    overtimeHours: int(s, "overtimeHours", 0),
+    reports: list(s, "reports").map((r) => {
+      const o = obj(r, "A saved report");
+      if (typeof o.termIndex !== "number" || !Array.isArray(o.sections) || typeof o.submittedAt !== "string") {
+        throw new Error("A saved report is damaged.");
+      }
+      return o as unknown as TrainingSession["reports"][number];
+    }),
+    baseline: s.baselineFromCurrent
+      ? recordTerm({ program, termIndex, adminHoursRemaining: 0, overtimeHours: 0 })
+      : termRecord(s.baseline, "The saved baseline"),
+    ...(s.reportDraft !== undefined && { reportDraft: reportDraft(s.reportDraft) }),
+    ...(s.ending !== undefined && { ending: ending(s.ending) }),
   };
   if (session.adminHoursRemaining > session.adminHoursPerTerm) {
     throw new Error("The save's admin hours don't add up.");
   }
   return session;
+}
+
+function termRecord(raw: unknown, what: string): TrainingSession["history"][number] {
+  const r = obj(raw, what);
+  const dfw = r.dfw as Record<string, unknown> | undefined;
+  if (
+    typeof r.termIndex !== "number" ||
+    typeof r.budgetBalance !== "number" ||
+    typeof r.adminHoursUnspent !== "number" ||
+    typeof dfw?.mid !== "number" ||
+    !Array.isArray(r.trust) ||
+    !Array.isArray(r.instructors)
+  ) {
+    throw new Error(`${what} is damaged.`);
+  }
+  return r as unknown as TrainingSession["history"][number];
+}
+
+function reportDraft(raw: unknown): TrainingSession["reportDraft"] {
+  const r = obj(raw, "The saved report draft");
+  if (typeof r.termIndex !== "number" || typeof r.startedAt !== "string" || typeof r.sections !== "object" || r.sections === null) {
+    throw new Error("The saved report draft is damaged.");
+  }
+  return r as unknown as TrainingSession["reportDraft"];
+}
+
+function ending(raw: unknown): TrainingSession["ending"] {
+  const r = obj(raw, "The saved ending");
+  if (typeof r.id !== "string" || typeof r.score !== "number" || !Array.isArray(r.factors)) {
+    throw new Error("The saved ending is damaged.");
+  }
+  return r as unknown as TrainingSession["ending"];
 }
 
 function arcId(v: unknown, arcs: Arc[]): string {

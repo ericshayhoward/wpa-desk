@@ -4,7 +4,7 @@
  * The training layer reads the program model and proposes ProgramChanges to
  * it. The model never imports from here.
  */
-import type { Program, ProgramChange, Rank, StakeholderId, Term, TermComparison } from "../model";
+import type { Program, ProgramChange, Range, Rank, StakeholderId, Term, TermComparison } from "../model";
 import type { DraftInProgress, DraftVersion, ReflectionVersion } from "./drafts";
 
 /** Assistant director under the WPA, then (in the standard arc) interim WPA. */
@@ -165,6 +165,62 @@ export interface Arc {
   startStage: CareerStage;
   stageChanges: ArcStageChange[];
   calendar: ArcEntry[];
+  /** Hours taken from a term before the player can spend them (e.g., job applications). */
+  timeCosts: TimeCost[];
+  /** Annual reports due at the end of a year. */
+  yearEnd: YearEndSpec[];
+  /** Arcs where the player is a graduate student track a dissertation fed by unspent admin hours. */
+  dissertation: DissertationSpec | null;
+  /** How the arc ends, decided when the capstone report is submitted. */
+  endings: EndingsSpec | null;
+}
+
+export interface TimeCost {
+  term: number;
+  hours: number;
+  label: string;
+  /** Shown when the term begins. */
+  note: string;
+}
+
+export interface DissertationSpec {
+  /** Unspent admin hours needed to finish. */
+  hoursToFinish: number;
+  /** Share of that needed to be on track to defend by summer (0–1). */
+  onTrackAt: number;
+}
+
+export type ReportSectionId = "program_data" | "assessment" | "initiatives" | "requests" | "looking_back";
+
+/** An annual report due in a given term: who writes it, and which sections are the player's. */
+export interface YearEndSpec {
+  term: number;
+  /** The report's author of record: a stakeholder (the player's supervisor) or the player. */
+  from: StakeholderId | "player";
+  to: StakeholderId;
+  /** Admin hours it takes to write the player's sections. */
+  hours: number;
+  /** The request that arrives, asking for the player's part. */
+  request: ScenarioDocument;
+  sections: ReportSectionId[];
+  playerSections: ReportSectionId[];
+  /** Acknowledgment after submission. Reports are never scored. */
+  reply: Reply | null;
+  /** Submitting the capstone ends the arc. */
+  capstone: boolean;
+}
+
+export type EndingId = "tenure_track" | "two_year" | "rotated_out";
+
+export interface EndingsSpec {
+  /** Score (0–100) needed for each outcome; below twoYearAt is rotated out. */
+  tenureTrackAt: number;
+  twoYearAt: number;
+  /** Stakeholders whose trust makes up the "campus relationships" factor. */
+  relationships: StakeholderId[];
+  /** The supervisor whose trust stands in for the recommendation letter. */
+  recommender: StakeholderId;
+  outcomes: Record<EndingId, { title: string; narrative: string }>;
 }
 
 export interface ArcStageChange {
@@ -329,6 +385,85 @@ export interface PortfolioInfo {
   course: string;
 }
 
+// ---------------------------------------------------------------------------
+// Term history, reports, and endings
+// ---------------------------------------------------------------------------
+
+/** The program's numbers at the end of a term (or at the start of play, for the baseline). */
+export interface TermRecord {
+  termIndex: number;
+  term: Term;
+  totalSections: number;
+  unstaffedSections: number;
+  seatsUnserved: number;
+  dfw: Range;
+  budgetBalance: number;
+  instructors: { rank: Rank; headcount: number; morale: number }[];
+  trust: { stakeholder: StakeholderId; trust: number }[];
+  /** Admin hours left unused at term's end, minus any overtime; feeds the dissertation. */
+  adminHoursUnspent: number;
+}
+
+export interface ReportSection {
+  id: ReportSectionId;
+  title: string;
+  author: StakeholderId | "player";
+  body: string;
+  /** Drafting history, for sections the player wrote. */
+  history?: DraftVersion[];
+}
+
+export interface AnnualReport {
+  termIndex: number;
+  year: number;
+  from: StakeholderId | "player";
+  to: StakeholderId;
+  capstone: boolean;
+  sections: ReportSection[];
+  /** Data appendix generated from the term history. */
+  appendix: string[];
+  startedAt?: string;
+  submittedAt: string;
+  reply: { from: StakeholderId; body: string } | null;
+}
+
+/** The player's sections of a report not yet submitted, kept so drafts survive reloads. */
+export interface ReportInProgress {
+  termIndex: number;
+  startedAt: string;
+  sections: Partial<Record<ReportSectionId, { body: string; history: DraftVersion[] }>>;
+}
+
+export interface EndingFactor {
+  id: string;
+  label: string;
+  points: number;
+  max: number;
+  explanation: string;
+}
+
+/** How the arc ended, fixed when the capstone was submitted. */
+export interface EndingResult {
+  id: EndingId;
+  title: string;
+  narrative: string;
+  score: number;
+  factors: EndingFactor[];
+  dissertation: DissertationStatus;
+  /** Why a higher outcome was out of reach despite the score, if it was. */
+  gateNote: string | null;
+  thresholds: { tenureTrackAt: number; twoYearAt: number };
+  termIndex: number;
+}
+
+export interface DissertationStatus {
+  hours: number;
+  hoursToFinish: number;
+  /** 0–1. */
+  progress: number;
+  status: "finished" | "on_track" | "behind";
+}
+
 export interface TrainingSession {
   program: Program;
   /** 1 = fall of year 1, 2 = spring of year 1, … */
@@ -349,6 +484,15 @@ export interface TrainingSession {
   portfolio?: PortfolioInfo;
   /** Unsent memos, by scenario id, so drafts survive reloads. */
   drafts?: Record<string, DraftInProgress>;
+  /** The program when play began, for comparisons at the end. */
+  baseline: TermRecord;
+  /** One record per completed term. */
+  history: TermRecord[];
+  /** Hours spent this term beyond the admin hours available (e.g., a report written on your own time). */
+  overtimeHours: number;
+  reports: AnnualReport[];
+  reportDraft?: ReportInProgress;
+  ending?: EndingResult;
 }
 
 /** Everything the outcome screen needs to explain a decision. */

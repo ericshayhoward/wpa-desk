@@ -9,9 +9,10 @@ Living list of what's next and what's further out. Design details live in
   files (class overview with CSV download, per-scenario choice summary,
   per-student case files). Follow-ups: sortable columns; remembering opened
   files between visits.
-- **The standard arc** — 3 years ending in a Year 3 annual report (see
-  "Arcs" in `DESIGN.md`). Order: arc format and richer triggers, then the
-  ending and year-end structure, then the remaining v1 scenarios.
+- ~~**The standard arc**~~ — done: 3 years with a calendar, the interim
+  year, year-end reports, the dissertation meter, and three endings (see
+  "Arcs" in `DESIGN.md`). Follow-ups: a more beautiful ending screen;
+  recurring events; recalibrating hours and scoring as scenarios are added.
 - **Instructor feedback round-trip** — comments on memos and reflections,
   saved as a feedback file the student imports and sees in their case files.
 - **Memory** — characters quote the player's past memos and commitments back

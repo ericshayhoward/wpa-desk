@@ -13,9 +13,14 @@ import {
   extendCommitment,
   resolveScenario,
   STAGE_LABELS,
+  dissertationStatus,
+  reportDue,
+  setReportDraft,
   startSession,
+  submitReport,
   termLabel,
   termOf,
+  type AnnualReport,
   type DecisionOutcome,
   type EvidenceDraft,
   type MemoDraft,
@@ -28,10 +33,13 @@ import { Desk } from "./Desk";
 import { Dossier } from "./Dossier";
 import { OutcomeView } from "./OutcomeView";
 import { ScenarioView } from "./ScenarioView";
+import { EndingView } from "./EndingView";
+import { ReportComposer } from "./ReportComposer";
+import { ReportView } from "./ReportView";
 import { ReviewMode } from "./ReviewMode";
 import { SavesPanel } from "./SavesPanel";
 import { StaffingPlanner } from "./StaffingPlanner";
-import { usd } from "./format";
+import { stakeholderName, usd } from "./format";
 import { AUTOSAVE, readSlot, writeSlot } from "./storage";
 
 type Tab = "desk" | "dossier" | "tools" | "saves";
@@ -64,6 +72,8 @@ export function App() {
   const [tool, setTool] = useState<Tool>("caps");
   const [openScenario, setOpenScenario] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<DecisionOutcome | null>(null);
+  const [writingReport, setWritingReport] = useState(false);
+  const [submitted, setSubmitted] = useState<AnnualReport | null>(null);
   const NOTHING_LANDED = {
     effects: [] as PendingEffect[],
     missed: [] as Commitment[],
@@ -78,6 +88,9 @@ export function App() {
     [program, session.termIndex],
   );
   const scenario = SCENARIOS.find((s) => s.id === openScenario) ?? null;
+  const arc = arcOf(session);
+  const due = reportDue(session, arc);
+  const dissertation = arc && dissertationStatus(session, arc);
 
   // Autosave every change to the session.
   useEffect(() => {
@@ -88,9 +101,20 @@ export function App() {
     setSession(next);
     setOutcome(null);
     setOpenScenario(null);
+    setWritingReport(false);
+    setSubmitted(null);
     setLanded(NOTHING_LANDED);
     setTab("desk");
     setNote(message);
+  };
+
+  const submit = () => {
+    if (!arc) return;
+    const result = submitReport(session, arc, SCENARIOS, new Date());
+    setSession(result.session);
+    setWritingReport(false);
+    // A capstone goes straight to the ending, which shows the report.
+    setSubmitted(result.report.capstone ? null : result.report);
   };
 
   const saveEvidence = (draft: EvidenceDraft) => setSession((s) => addEvidence(s, draft));
@@ -104,7 +128,7 @@ export function App() {
   };
 
   const nextTerm = () => {
-    const result = advanceTerm(session, SCENARIOS, arcOf(session));
+    const result = advanceTerm(session, SCENARIOS, arc);
     setSession(result.session);
     setLanded({ effects: result.applied, missed: result.missed, drift: result.drift, milestones: result.milestones });
     setOutcome(null);
@@ -162,6 +186,12 @@ export function App() {
               {session.adminHoursRemaining} / {session.adminHoursPerTerm}
             </dd>
           </div>
+          {dissertation && (
+            <div title="Admin hours you leave unspent each term go to your dissertation.">
+              <dt>Dissertation</dt>
+              <dd>{Math.round(dissertation.progress * 100)}%</dd>
+            </div>
+          )}
           <div>
             <dt>Political capital</dt>
             <dd>{program.politicalCapital}</dd>
@@ -202,7 +232,42 @@ export function App() {
 
       <main>
         {tab === "desk" &&
-          (outcome ? (
+          (session.ending ? (
+            <EndingView
+              ending={session.ending}
+              report={session.reports.find((r) => r.capstone)}
+              program={program}
+              author={session.portfolio?.author}
+              onDossier={() => setTab("dossier")}
+              onNewSession={() => replaceSession(startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC), "Started a new session.")}
+            />
+          ) : submitted ? (
+            <div className="outcome">
+              <p className="muted small">Year-end report</p>
+              <h2>Report submitted</h2>
+              {submitted.reply && (
+                <blockquote className="reply">
+                  <p>{submitted.reply.body}</p>
+                  <footer>— {stakeholderName(program, submitted.reply.from)}</footer>
+                </blockquote>
+              )}
+              <ReportView report={submitted} program={program} author={session.portfolio?.author} />
+              <div className="row-end">
+                <button className="primary" onClick={() => setSubmitted(null)}>
+                  Back to desk
+                </button>
+              </div>
+            </div>
+          ) : writingReport && due ? (
+            <ReportComposer
+              session={session}
+              spec={due}
+              scenarios={SCENARIOS}
+              onDraft={(d) => setSession((s) => setReportDraft(s, d))}
+              onSubmit={submit}
+              onBack={() => setWritingReport(false)}
+            />
+          ) : outcome ? (
             <OutcomeView
               outcome={outcome}
               program={program}
@@ -226,7 +291,12 @@ export function App() {
           ) : (
             <Desk
               session={session}
-              arc={arcOf(session)}
+              arc={arc}
+              reportDue={due}
+              onOpenReport={() => {
+                setWritingReport(true);
+                setLanded(NOTHING_LANDED);
+              }}
               landed={landed}
               onOpen={(id) => {
                 setOpenScenario(id);
