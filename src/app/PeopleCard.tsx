@@ -1,6 +1,7 @@
 import { RANK_LABELS, type StakeholderId } from "../model";
 import { CAST } from "../content";
 import { DEFAULT_PERSUASION, MORALE_ATTRITION, characterFor, type TrainingSession } from "../training";
+import { Avatar, CardTitle } from "./ui";
 
 /** The people you work with: named characters first, then groups, then instructor morale. */
 export function PeopleCard({ session }: { session: TrainingSession }) {
@@ -10,7 +11,7 @@ export function PeopleCard({ session }: { session: TrainingSession }) {
 
   return (
     <section className="card people">
-      <h2>People</h2>
+      <CardTitle icon="users">People</CardTitle>
       <ul className="people-list">
         {people.map((s) => {
           const c = characterFor(CAST, s.id)!;
@@ -18,6 +19,7 @@ export function PeopleCard({ session }: { session: TrainingSession }) {
             <li key={s.id}>
               <details>
                 <summary>
+                  <Avatar program={program} id={s.id} size={38} />
                   <span className="person">
                     <strong>{c.name}</strong>
                     <span className="muted small">{c.title}</span>

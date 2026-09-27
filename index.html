@@ -3,7 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A training simulator for writing program administrators." />
+    <meta name="theme-color" content="#1c2046" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>WPA Desk</title>
+    <script>
+      // Apply a saved theme before first paint (see readTheme in src/app/storage.ts).
+      try {
+        var t = localStorage.getItem("wpa-desk:theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

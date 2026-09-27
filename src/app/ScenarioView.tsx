@@ -14,6 +14,9 @@ import { CapCalculator } from "./CapCalculator";
 import { MemoComposer } from "./MemoComposer";
 import { StaffingPlanner } from "./StaffingPlanner";
 import { stakeholderByline } from "./format";
+import { CardTitle, Icon, Prose } from "./ui";
+
+const GENRE_LABELS = { memo: "Memo", email: "Email", report: "Report", note: "Note" } as const;
 
 interface Props {
   scenario: Scenario;
@@ -40,13 +43,21 @@ export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onDr
 
   return (
     <div className="scenario">
-      <button className="link" onClick={onBack}>
-        ← Back to desk
+      <button className="link back-link" onClick={onBack}>
+        <Icon name="back" size={16} />
+        Back to desk
       </button>
+      <p className="scenario-kicker">
+        {scenario.urgent && <span className="badge urgent">urgent</span>}
+        {scenario.documents.length} document{scenario.documents.length === 1 ? "" : "s"} on your desk
+      </p>
       <h2 className="scenario-title">{scenario.title}</h2>
 
       {scenario.documents.map((d, i) => (
         <article key={i} className={`document ${d.genre}`}>
+          <span className="doc-genre" aria-hidden="true">
+            {GENRE_LABELS[d.genre]}
+          </span>
           <header>
             <div>
               <span className="muted small">From</span> {stakeholderByline(program, d.from)}
@@ -55,9 +66,7 @@ export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onDr
               <span className="muted small">Re</span> {fillTemplate(d.subject, session)}
             </div>
           </header>
-          {fillTemplate(d.body, session).split(/\n\s*\n/).map((para, j) => (
-            <p key={j}>{para}</p>
-          ))}
+          <Prose text={fillTemplate(d.body, session)} />
         </article>
       ))}
 
@@ -83,9 +92,11 @@ export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onDr
 
       {!writing && (
         <section className="card">
-          <h3>How do you respond?</h3>
+          <CardTitle icon="pen" level={3}>
+            How do you respond?
+          </CardTitle>
           <ul className="options">
-            {scenario.options.map((o) => {
+            {scenario.options.map((o, i) => {
               const blocked = unavailableReason(session, o);
               return (
                 <li key={o.id}>
@@ -95,12 +106,25 @@ export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onDr
                     aria-pressed={chosen?.id === o.id}
                     onClick={() => choose(o)}
                   >
+                    <span className="option-key" aria-hidden="true">
+                      {chosen?.id === o.id ? <Icon name="check" size={16} /> : String.fromCharCode(65 + i)}
+                    </span>
                     <strong>{o.label}</strong>
                     <span>{o.description}</span>
                     <span className="costs small">
-                      {o.cost.adminHours} admin hr
-                      {o.cost.politicalCapital > 0 && ` · ${o.cost.politicalCapital} political capital`}
-                      {o.memo?.required && " · memo required"}
+                      <span className="cost-chip">
+                        <Icon name="clock" size={12} /> {o.cost.adminHours} admin hr
+                      </span>
+                      {o.cost.politicalCapital > 0 && (
+                        <span className="cost-chip capital">
+                          <Icon name="capital" size={12} /> {o.cost.politicalCapital} political capital
+                        </span>
+                      )}
+                      {o.memo?.required && (
+                        <span className="cost-chip memo">
+                          <Icon name="pen" size={12} /> memo required
+                        </span>
+                      )}
                     </span>
                     {blocked && <span className="down small">{blocked}</span>}
                   </button>

@@ -2,6 +2,7 @@ import { RANK_LABELS, type Program } from "../model";
 import { persuasionSummary, type DecisionOutcome } from "../training";
 import { ReflectionEditor } from "./ReflectionEditor";
 import { namesFor, signed, stakeholderName, usd } from "./format";
+import { Avatar, CardTitle, Icon, Prose } from "./ui";
 
 interface Props {
   outcome: DecisionOutcome;
@@ -35,8 +36,17 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
 
   return (
     <div className="outcome">
-      <p className="muted small">{scenario.title}</p>
-      <h2>You chose: {option.label}</h2>
+      <div className="outcome-head">
+        <div>
+          <p className="scenario-kicker">{scenario.title}</p>
+          <h2>You chose: {option.label}</h2>
+        </div>
+        {persuasion && (
+          <span className={`stamp ${persuaded ? "good" : "bad"}`} aria-hidden="true">
+            {persuaded ? "Persuaded" : "Not persuaded"}
+          </span>
+        )}
+      </div>
 
       {persuasion && (
         <p className={`banner ${persuaded ? "good" : "bad"}`}>
@@ -44,10 +54,8 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
         </p>
       )}
 
-      <section className="card">
-        {consequence.narrative.split(/\n\s*\n/).map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
+      <section className="card narrative">
+        <Prose text={consequence.narrative} />
         {reply && (
           <blockquote className="reply">
             <p>{reply.body}</p>
@@ -58,7 +66,9 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
 
       <div className="grid-2">
         <section className="card">
-          <h3>Relationships</h3>
+          <CardTitle icon="users" level={3}>
+            Relationships
+          </CardTitle>
           {trustChanges.length === 0 ? (
             <p className="muted">No change in trust.</p>
           ) : (
@@ -66,9 +76,9 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
               {trustChanges.map((t) => (
                 <li key={t.stakeholder}>
                   <span>{stakeholderName(program, t.stakeholder)}</span>
-                  <span className="num">
+                  <span className="num trust-change">
                     {t.before} → {t.after}{" "}
-                    <span className={t.after > t.before ? "up" : "down"}>({signed(t.after - t.before)})</span>
+                    <span className={`pill-delta ${t.after > t.before ? "up" : "down"}`}>({signed(t.after - t.before)})</span>
                   </span>
                 </li>
               ))}
@@ -80,7 +90,9 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
         </section>
 
         <section className="card">
-          <h3>Projected effect this {impact.term}</h3>
+          <CardTitle icon="sliders" level={3}>
+            Projected effect this {impact.term}
+          </CardTitle>
           {changeDescriptions.length > 0 && (
             <ul className="plan small">
               {changeDescriptions.map((d, i) => (
@@ -137,7 +149,9 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
       </div>
 
       <section className="card debrief">
-        <h3>Debrief</h3>
+        <CardTitle icon="sparkle" level={3}>
+          Debrief
+        </CardTitle>
         <p className="muted">There's no single right answer here. Experienced WPAs weigh:</p>
         <ul>
           {scenario.debrief.weighs.map((w, i) => (
@@ -151,7 +165,10 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
             <ul className="perspectives">
               {scenario.debrief.perspectives.map((p, i) => (
                 <li key={i}>
-                  <strong>{stakeholderName(program, p.stakeholder)}:</strong> “{p.view}”
+                  <Avatar program={program} id={p.stakeholder} size={34} />
+                  <span>
+                    <strong>{stakeholderName(program, p.stakeholder)}:</strong> <span className="view-quote">“{p.view}”</span>
+                  </span>
                 </li>
               ))}
             </ul>
@@ -171,7 +188,9 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
       </section>
 
       <section className="card">
-        <h3>Reflect</h3>
+        <CardTitle icon="pen" level={3}>
+          Reflect
+        </CardTitle>
         <ReflectionEditor key={reflection ?? ""} scenarioTitle={scenario.title} saved={reflection} onSave={onReflect} />
       </section>
 
@@ -181,6 +200,7 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
         </button>
         <button className="primary" onClick={onDone}>
           Back to desk
+          <Icon name="arrow" size={16} />
         </button>
       </div>
     </div>

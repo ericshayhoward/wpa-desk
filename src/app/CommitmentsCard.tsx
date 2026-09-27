@@ -6,6 +6,7 @@ import {
   type TrainingSession,
 } from "../training";
 import { stakeholderName } from "./format";
+import { CardTitle } from "./ui";
 
 interface Props {
   session: TrainingSession;
@@ -24,7 +25,7 @@ export function CommitmentsCard({ session, onDeliver, onExtend, onAbandon }: Pro
 
   return (
     <section className="card commitments">
-      <h2>Commitments</h2>
+      <CardTitle icon="promise">Commitments</CardTitle>
       <p className="muted small">
         Promises from your memos. Delivering takes admin hours and earns trust with the reader (+
         {COMMITMENT_EFFECTS.keptTrust}) and political capital (+{COMMITMENT_EFFECTS.keptCapital}); anything still open when the

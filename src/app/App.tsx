@@ -42,11 +42,39 @@ import { ReviewMode } from "./ReviewMode";
 import { SavesPanel } from "./SavesPanel";
 import { StaffingPlanner } from "./StaffingPlanner";
 import { stakeholderName, usd } from "./format";
-import { AUTOSAVE, readSlot, writeSlot } from "./storage";
+import { AUTOSAVE, readSlot, readTheme, writeSlot, writeTheme, type Theme } from "./storage";
+import { Bar, Icon, Logo, TermTrack, type IconName } from "./ui";
 
 type Tab = "desk" | "dossier" | "tools" | "saves";
 
 const TAB_LABELS: Record<Tab, string> = { desk: "Desk", dossier: "Dossier", tools: "Tools", saves: "Saves" };
+const TAB_ICONS: Record<Tab, IconName> = { desk: "desk", dossier: "folder", tools: "sliders", saves: "save" };
+
+/** The theme in effect: the viewer's choice, else the system setting. */
+function useTheme(): [Theme, () => void] {
+  const [chosen, setChosen] = useState<Theme | null>(readTheme);
+  const system: Theme =
+    typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  const theme = chosen ?? system;
+  useEffect(() => {
+    if (chosen) document.documentElement.dataset.theme = chosen;
+  }, [chosen]);
+  const toggle = () => {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    writeTheme(next);
+    setChosen(next);
+  };
+  return [theme, toggle];
+}
+
+function ThemeToggle() {
+  const [theme, toggle] = useTheme();
+  return (
+    <button className="theme-toggle" onClick={toggle} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}>
+      <Icon name={theme === "dark" ? "sun" : "moon"} size={17} />
+    </button>
+  );
+}
 
 /** Resume from the autosave if there is a readable one; otherwise start fresh. */
 function initialSession(): { session: TrainingSession; note: string | null } {
@@ -83,6 +111,8 @@ export function App() {
     milestones: [] as string[],
   };
   const [landed, setLanded] = useState(NOTHING_LANDED);
+  // The term just advanced into, for the brief term-change card.
+  const [arrived, setArrived] = useState<number | null>(null);
 
   const program = session.program;
   const analysis = useMemo(
@@ -107,6 +137,7 @@ export function App() {
     setWritingReport(false);
     setSubmitted(null);
     setLanded(NOTHING_LANDED);
+    setArrived(null);
     setTab("desk");
     setNote(message);
   };
@@ -135,16 +166,46 @@ export function App() {
     setSession(result.session);
     setLanded({ effects: result.applied, missed: result.missed, drift: result.drift, milestones: result.milestones });
     setOutcome(null);
+    setArrived(result.session.termIndex);
   };
+
+  const hoursLeft = session.adminHoursRemaining / Math.max(1, session.adminHoursPerTerm);
+  const view = session.ending
+    ? "ending"
+    : submitted
+      ? "submitted"
+      : writingReport
+        ? "report"
+        : outcome
+          ? `outcome-${outcome.scenario.id}`
+          : scenario
+            ? `scenario-${scenario.id}`
+            : "desk";
+
+  // Each new view starts at the top, not wherever the last one was scrolled to.
+  const viewKey = tab === "desk" ? view : tab;
+  useEffect(() => {
+    document.scrollingElement?.scrollTo?.({ top: 0 });
+  }, [viewKey]);
 
   if (reviewing) {
     return (
-      <div className="page">
+      <div className="app">
         <header className="masthead no-print">
-          <h1>WPA Desk</h1>
-          <p className="muted">Instructor review</p>
+          <div className="masthead-inner">
+            <div className="masthead-row">
+              <div className="brand">
+                <Logo />
+                <div>
+                  <h1>WPA Desk</h1>
+                  <p className="brand-sub">Instructor review</p>
+                </div>
+              </div>
+              <ThemeToggle />
+            </div>
+          </div>
         </header>
-        <main>
+        <main className="page view">
           <ReviewMode onExit={() => setReviewing(false)} />
         </main>
       </div>
@@ -152,75 +213,117 @@ export function App() {
   }
 
   return (
-    <div className="page">
+    <div className="app">
       <header className="masthead">
-        <div className="masthead-row">
-          <div>
-            <h1>WPA Desk</h1>
-            <p>
-              {program.institution}
-              {program.fictional && <span className="badge illustrative">fictional program</span>}
-            </p>
-          </div>
-          <nav className="tabs" aria-label="Sections">
-            {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
-              <button key={t} aria-current={tab === t ? "page" : undefined} onClick={() => setTab(t)}>
-                {t === "dossier" ? `Dossier (${session.decisions.length})` : TAB_LABELS[t]}
-              </button>
-            ))}
-            <button className="review-link" onClick={() => setReviewing(true)}>
-              Instructor review
-            </button>
-          </nav>
-        </div>
-
-        <dl className="status">
-          <div>
-            <dt>Term</dt>
-            <dd>{termLabel(session.termIndex)}</dd>
-          </div>
-          <div>
-            <dt>Role</dt>
-            <dd>{STAGE_LABELS[session.stage]}</dd>
-          </div>
-          <div>
-            <dt>Admin hours left</dt>
-            <dd>
-              {session.adminHoursRemaining} / {session.adminHoursPerTerm}
-            </dd>
-          </div>
-          {dissertation && (
-            <div title="Admin hours you leave unspent each term go to your dissertation.">
-              <dt>Dissertation</dt>
-              <dd>{Math.round(dissertation.progress * 100)}%</dd>
+        <div className="masthead-inner">
+          <div className="masthead-row">
+            <div className="brand">
+              <Logo />
+              <div>
+                <h1>WPA Desk</h1>
+                <p className="brand-sub">
+                  {program.institution}
+                  {program.fictional && <span className="badge illustrative">fictional program</span>}
+                </p>
+              </div>
             </div>
-          )}
-          <div>
-            <dt>Political capital</dt>
-            <dd>{program.politicalCapital}</dd>
+            <div className="masthead-actions">
+              <nav className="tabs" aria-label="Sections">
+                {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
+                  <button key={t} aria-current={tab === t ? "page" : undefined} onClick={() => setTab(t)}>
+                    <Icon name={TAB_ICONS[t]} size={16} />
+                    {t === "dossier" ? `Dossier (${session.decisions.length})` : TAB_LABELS[t]}
+                  </button>
+                ))}
+              </nav>
+              <button className="review-link" onClick={() => setReviewing(true)}>
+                <Icon name="cap" size={16} />
+                Instructor review
+              </button>
+              <ThemeToggle />
+            </div>
           </div>
-          <div>
-            <dt>Instruction budget</dt>
-            <dd className={analysis.budgetBalance < 0 ? "down" : ""}>
-              {analysis.budgetBalance < 0
-                ? `${usd(-analysis.budgetBalance)} deficit`
-                : analysis.budgetBalance === 0
-                  ? "Balanced"
-                  : `${usd(analysis.budgetBalance)} surplus`}
-            </dd>
-          </div>
-          {analysis.unstaffedSections > 0 && (
-            <div>
-              <dt>Unstaffed sections</dt>
-              <dd className="down">
-                {analysis.unstaffedSections} of {analysis.totalSections}
+
+          <dl className="status">
+            <div className="stat stat-term">
+              <dt>
+                <Icon name="calendar" size={14} /> Term
+              </dt>
+              <dd>{termLabel(session.termIndex)}</dd>
+              {arc && <TermTrack terms={arc.terms} current={session.termIndex} />}
+            </div>
+            <div className="stat">
+              <dt>
+                <Icon name="user" size={14} /> Role
+              </dt>
+              <dd>{STAGE_LABELS[session.stage]}</dd>
+            </div>
+            <div className="stat">
+              <dt>
+                <Icon name="clock" size={14} /> Admin hours left
+              </dt>
+              <dd>
+                {session.adminHoursRemaining} / {session.adminHoursPerTerm}
+              </dd>
+              <Bar value={hoursLeft} tone={hoursLeft < 0.25 ? "warn" : "accent"} />
+            </div>
+            {dissertation && (
+              <div className="stat" title="Admin hours you leave unspent each term go to your dissertation.">
+                <dt>
+                  <Icon name="book" size={14} /> Dissertation
+                </dt>
+                <dd>{Math.round(dissertation.progress * 100)}%</dd>
+                <Bar value={dissertation.progress} tone="good" />
+              </div>
+            )}
+            <div className="stat">
+              <dt>
+                <Icon name="capital" size={14} /> Political capital
+              </dt>
+              <dd>{program.politicalCapital}</dd>
+            </div>
+            <div className="stat">
+              <dt>
+                <Icon name="wallet" size={14} /> Instruction budget
+              </dt>
+              <dd className={analysis.budgetBalance < 0 ? "down" : analysis.budgetBalance > 0 ? "up" : ""}>
+                {analysis.budgetBalance < 0
+                  ? `${usd(-analysis.budgetBalance)} deficit`
+                  : analysis.budgetBalance === 0
+                    ? "Balanced"
+                    : `${usd(analysis.budgetBalance)} surplus`}
               </dd>
             </div>
-          )}
-        </dl>
+            {analysis.unstaffedSections > 0 && (
+              <div className="stat stat-alert">
+                <dt>
+                  <Icon name="alert" size={14} /> Unstaffed sections
+                </dt>
+                <dd className="down">
+                  {analysis.unstaffedSections} of {analysis.totalSections}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      </header>
+
+      {arrived !== null && (
+        <div key={arrived} className="term-flip" aria-hidden="true">
+          <div>
+            <span data-text="A new term begins" />
+            {/* Drawn from attributes so the labels aren't duplicated in the DOM's text. */}
+            <strong data-text={termLabel(arrived)} />
+            <em data-text={STAGE_LABELS[session.stage]} />
+          </div>
+        </div>
+      )}
+
+      <div className="page">
         {note && (
-          <p className="session-note small" role="status">
-            {note}{" "}
+          <p className="session-note toast" role="status">
+            <Icon name="sparkle" size={16} />
+            <span>{note}</span>{" "}
             <button className="link small" onClick={() => setNote(null)}>
               Dismiss
             </button>
@@ -231,126 +334,126 @@ export function App() {
             {saveError}
           </p>
         )}
-      </header>
 
-      <main>
-        {tab === "desk" &&
-          (session.ending ? (
-            <EndingView
-              ending={session.ending}
-              report={session.reports.find((r) => r.capstone)}
-              program={program}
-              author={session.portfolio?.author}
-              onDossier={() => setTab("dossier")}
+        <main key={viewKey} className="view">
+          {tab === "desk" &&
+            (session.ending ? (
+              <EndingView
+                ending={session.ending}
+                report={session.reports.find((r) => r.capstone)}
+                program={program}
+                author={session.portfolio?.author}
+                onDossier={() => setTab("dossier")}
+                onNewSession={() => replaceSession(startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC), "Started a new session.")}
+              />
+            ) : submitted ? (
+              <div className="outcome">
+                <p className="muted small">Year-end report</p>
+                <h2>Report submitted</h2>
+                {submitted.reply && (
+                  <blockquote className="reply">
+                    <p>{submitted.reply.body}</p>
+                    <footer>— {stakeholderName(program, submitted.reply.from)}</footer>
+                  </blockquote>
+                )}
+                <ReportView report={submitted} program={program} author={session.portfolio?.author} />
+                <div className="row-end">
+                  <button className="primary" onClick={() => setSubmitted(null)}>
+                    Back to desk
+                  </button>
+                </div>
+              </div>
+            ) : writingReport && due ? (
+              <ReportComposer
+                session={session}
+                spec={due}
+                scenarios={SCENARIOS}
+                onDraft={(d) => setSession((s) => setReportDraft(s, d))}
+                onSubmit={submit}
+                onBack={() => setWritingReport(false)}
+              />
+            ) : outcome ? (
+              <OutcomeView
+                outcome={outcome}
+                program={program}
+                reflection={session.decisions.find((d) => d.scenarioId === outcome.scenario.id)?.reflection}
+                onReflect={(text) => setSession((s) => addReflection(s, outcome.scenario.id, text, new Date()))}
+                onDone={() => setOutcome(null)}
+                onDossier={() => {
+                  setOutcome(null);
+                  setTab("dossier");
+                }}
+              />
+            ) : scenario ? (
+              <ScenarioView
+                scenario={scenario}
+                session={session}
+                onSaveEvidence={saveEvidence}
+                onDecide={decide}
+                onDraft={(d) => setSession((s) => setDraftInProgress(s, scenario.id, d))}
+                onBack={() => setOpenScenario(null)}
+              />
+            ) : (
+              <Desk
+                session={session}
+                arc={arc}
+                reportDue={due}
+                staffingDue={staffing}
+                onStaffing={(choice) => {
+                  const r = resolveStaffing(session, arc, SCENARIOS, choice);
+                  setSession(r.session);
+                  setNote(r.note);
+                }}
+                onOpenReport={() => {
+                  setWritingReport(true);
+                  setLanded(NOTHING_LANDED);
+                }}
+                landed={landed}
+                onOpen={(id) => {
+                  setOpenScenario(id);
+                  setLanded(NOTHING_LANDED);
+                }}
+                onNextTerm={nextTerm}
+                onDeliver={(id) => setSession((s) => deliverCommitment(s, id))}
+                onExtend={(id) => setSession((s) => extendCommitment(s, id))}
+                onAbandon={(id) => setSession((s) => abandonCommitment(s, id))}
+              />
+            ))}
+          {tab === "dossier" && (
+            <Dossier
+              session={session}
+              scenarios={SCENARIOS}
+              onReflect={(id, text) => setSession((s) => addReflection(s, id, text, new Date()))}
+              onRevise={(memoId, content, note) => setSession((s) => reviseMemo(s, memoId, content, note, new Date()))}
+              onPortfolio={(info) => setSession((s) => setPortfolio(s, info))}
+            />
+          )}
+          {tab === "saves" && (
+            <SavesPanel
+              session={session}
+              onLoad={replaceSession}
               onNewSession={() => replaceSession(startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC), "Started a new session.")}
             />
-          ) : submitted ? (
-            <div className="outcome">
-              <p className="muted small">Year-end report</p>
-              <h2>Report submitted</h2>
-              {submitted.reply && (
-                <blockquote className="reply">
-                  <p>{submitted.reply.body}</p>
-                  <footer>— {stakeholderName(program, submitted.reply.from)}</footer>
-                </blockquote>
-              )}
-              <ReportView report={submitted} program={program} author={session.portfolio?.author} />
-              <div className="row-end">
-                <button className="primary" onClick={() => setSubmitted(null)}>
-                  Back to desk
+          )}
+          {tab === "tools" && (
+            <>
+              <div className="segmented tool-switch" role="group" aria-label="Tool">
+                <button aria-pressed={tool === "caps"} onClick={() => setTool("caps")}>
+                  Class cap calculator
+                </button>
+                <button aria-pressed={tool === "staffing"} onClick={() => setTool("staffing")}>
+                  Staffing planner
                 </button>
               </div>
-            </div>
-          ) : writingReport && due ? (
-            <ReportComposer
-              session={session}
-              spec={due}
-              scenarios={SCENARIOS}
-              onDraft={(d) => setSession((s) => setReportDraft(s, d))}
-              onSubmit={submit}
-              onBack={() => setWritingReport(false)}
-            />
-          ) : outcome ? (
-            <OutcomeView
-              outcome={outcome}
-              program={program}
-              reflection={session.decisions.find((d) => d.scenarioId === outcome.scenario.id)?.reflection}
-              onReflect={(text) => setSession((s) => addReflection(s, outcome.scenario.id, text, new Date()))}
-              onDone={() => setOutcome(null)}
-              onDossier={() => {
-                setOutcome(null);
-                setTab("dossier");
-              }}
-            />
-          ) : scenario ? (
-            <ScenarioView
-              scenario={scenario}
-              session={session}
-              onSaveEvidence={saveEvidence}
-              onDecide={decide}
-              onDraft={(d) => setSession((s) => setDraftInProgress(s, scenario.id, d))}
-              onBack={() => setOpenScenario(null)}
-            />
-          ) : (
-            <Desk
-              session={session}
-              arc={arc}
-              reportDue={due}
-              staffingDue={staffing}
-              onStaffing={(choice) => {
-                const r = resolveStaffing(session, arc, SCENARIOS, choice);
-                setSession(r.session);
-                setNote(r.note);
-              }}
-              onOpenReport={() => {
-                setWritingReport(true);
-                setLanded(NOTHING_LANDED);
-              }}
-              landed={landed}
-              onOpen={(id) => {
-                setOpenScenario(id);
-                setLanded(NOTHING_LANDED);
-              }}
-              onNextTerm={nextTerm}
-              onDeliver={(id) => setSession((s) => deliverCommitment(s, id))}
-              onExtend={(id) => setSession((s) => extendCommitment(s, id))}
-              onAbandon={(id) => setSession((s) => abandonCommitment(s, id))}
-            />
-          ))}
-        {tab === "dossier" && (
-          <Dossier
-            session={session}
-            scenarios={SCENARIOS}
-            onReflect={(id, text) => setSession((s) => addReflection(s, id, text, new Date()))}
-            onRevise={(memoId, content, note) => setSession((s) => reviseMemo(s, memoId, content, note, new Date()))}
-            onPortfolio={(info) => setSession((s) => setPortfolio(s, info))}
-          />
-        )}
-        {tab === "saves" && (
-          <SavesPanel
-            session={session}
-            onLoad={replaceSession}
-            onNewSession={() => replaceSession(startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC), "Started a new session.")}
-          />
-        )}
-        {tab === "tools" && (
-          <>
-            <div className="segmented tool-switch" role="group" aria-label="Tool">
-              <button aria-pressed={tool === "caps"} onClick={() => setTool("caps")}>
-                Class cap calculator
-              </button>
-              <button aria-pressed={tool === "staffing"} onClick={() => setTool("staffing")}>
-                Staffing planner
-              </button>
-            </div>
-            {tool === "caps" ? (
-              <CapCalculator key={JSON.stringify(program.policies.caps)} program={program} />
-            ) : (
-              <StaffingPlanner key={JSON.stringify([program.instructors, program.cancellations])} program={program} />
-            )}
-          </>
-        )}
-      </main>
+              {tool === "caps" ? (
+                <CapCalculator key={JSON.stringify(program.policies.caps)} program={program} />
+              ) : (
+                <StaffingPlanner key={JSON.stringify([program.instructors, program.cancellations])} program={program} />
+              )}
+            </>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

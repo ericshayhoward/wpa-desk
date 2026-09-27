@@ -1,6 +1,8 @@
 import type { Program } from "../model";
 import { DISSERTATION_LABELS, type AnnualReport, type EndingResult } from "../training";
 import { ReportView } from "./ReportView";
+import { CardTitle, Prose } from "./ui";
+import type { CSSProperties } from "react";
 
 interface Props {
   ending: EndingResult;
@@ -16,17 +18,27 @@ export function EndingView({ ending, report, program, author, onDossier, onNewSe
   const { tenureTrackAt, twoYearAt } = ending.thresholds;
   return (
     <div className="ending">
-      <p className="muted small">The end of the arc</p>
-      <h2>{ending.title}</h2>
-      <section className="card">
-        {ending.narrative.split(/\n\s*\n/).map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
+      <header className="ending-hero">
+        <div>
+          <p className="muted small">The end of the arc</p>
+          <h2>{ending.title}</h2>
+        </div>
+        <div className="score-ring" style={{ "--p": ending.score } as CSSProperties} aria-hidden="true">
+          <div>
+            <strong>{ending.score}</strong>
+            <span>of 100</span>
+          </div>
+        </div>
+      </header>
+      <section className="card narrative">
+        <Prose text={ending.narrative} />
       </section>
 
       {ending.workOn && ending.workOn.length > 0 && (
-        <section className="card feedback" aria-labelledby="work-on">
-          <h3 id="work-on">What you need to work on</h3>
+        <section className="card feedback work-on" aria-labelledby="work-on">
+          <CardTitle icon="flag" level={3} id="work-on">
+            What you need to work on
+          </CardTitle>
           {ending.gateNote && <p className="banner bad">{ending.gateNote}</p>}
           {ending.workOn.map((f) => (
             <div key={f.factorId} className="feedback-item">
@@ -38,8 +50,10 @@ export function EndingView({ ending, report, program, author, onDossier, onNewSe
       )}
 
       {ending.didWell && ending.didWell.length > 0 && (
-        <section className="card feedback" aria-labelledby="did-well">
-          <h3 id="did-well">What you did well</h3>
+        <section className="card feedback did-well" aria-labelledby="did-well">
+          <CardTitle icon="sparkle" level={3} id="did-well">
+            What you did well
+          </CardTitle>
           {ending.didWell.map((f) => (
             <div key={f.factorId} className="feedback-item">
               <h4>{f.heading}</h4>
@@ -50,7 +64,9 @@ export function EndingView({ ending, report, program, author, onDossier, onNewSe
       )}
 
       <section className="card">
-        <h3>Why this ending</h3>
+        <CardTitle icon="book" level={3}>
+          Why this ending
+        </CardTitle>
         <p>
           Your record scored <strong>{ending.score}</strong> of 100. A university tenure-track job needed {tenureTrackAt} and a
           dissertation finished or on track; a two-year college position needed {twoYearAt}.

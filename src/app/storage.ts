@@ -64,3 +64,23 @@ export function importFile(text: string): SaveFile {
   }
   return parseSave(raw, SCENARIOS, ARCS);
 }
+
+export type Theme = "light" | "dark";
+
+/** The viewer's chosen color theme, or null to follow the system setting. */
+export function readTheme(): Theme | null {
+  try {
+    const t = localStorage.getItem(PREFIX + "theme");
+    return t === "light" || t === "dark" ? t : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeTheme(theme: Theme): void {
+  try {
+    localStorage.setItem(PREFIX + "theme", theme);
+  } catch {
+    // The choice just won't persist past this page load.
+  }
+}

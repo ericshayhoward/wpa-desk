@@ -17,6 +17,7 @@ import {
 import { CommitmentsCard } from "./CommitmentsCard";
 import { PeopleCard } from "./PeopleCard";
 import { stakeholderName } from "./format";
+import { Avatar, CardTitle, Icon } from "./ui";
 
 interface Props {
   session: TrainingSession;
@@ -47,8 +48,10 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
   return (
     <div className="desk">
       {(landed.effects.length > 0 || landed.missed.length > 0 || landed.drift.length > 0 || landed.milestones.length > 0) && (
-        <section className="notice" aria-live="polite">
-          <h2>Since last term</h2>
+        <section className="notice since" aria-live="polite">
+          <h2>
+            <Icon name="bulletin" size={18} /> Since last term
+          </h2>
           {landed.milestones.map((m, i) => (
             <p key={`m${i}`}>
               <strong>{m}</strong>
@@ -77,7 +80,10 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
 
       {staffingDue && onStaffing && (
         <section className="card staffing" aria-labelledby="staffing-heading">
-          <h2 id="staffing-heading">
+          <h2 id="staffing-heading" className="card-title">
+            <span className="icon-chip alert-chip" aria-hidden="true">
+              <Icon name="alert" size={16} />
+            </span>
             {staffingDue.unstaffed} section{staffingDue.unstaffed === 1 ? "" : "s"} without an instructor
             <span className="badge urgent">due this term</span>
           </h2>
@@ -89,7 +95,11 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
               <button className="option" onClick={() => onStaffing("hire")}>
                 <strong>{STAFFING_LABELS.hire}</strong>
                 <span>Post the sections and hire from the adjunct pool. New instructors, less experience.</span>
-                <span className="costs small">{STAFFING_EFFECTS.hireHours} admin hr</span>
+                <span className="costs small">
+                  <span className="cost-chip">
+                    <Icon name="clock" size={12} /> {STAFFING_EFFECTS.hireHours} admin hr
+                  </span>
+                </span>
               </button>
             </li>
             <li>
@@ -99,14 +109,22 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
                   Take one section on top of your job{staffingDue.unstaffed > 1 ? " and hire for the rest" : ""}. Instructors notice.
                   Hours past what you have come out of dissertation time.
                 </span>
-                <span className="costs small">{STAFFING_EFFECTS.teachHours} admin hr</span>
+                <span className="costs small">
+                  <span className="cost-chip">
+                    <Icon name="clock" size={12} /> {STAFFING_EFFECTS.teachHours} admin hr
+                  </span>
+                </span>
               </button>
             </li>
             <li>
               <button className="option" onClick={() => onStaffing("cancel")}>
                 <strong>{STAFFING_LABELS.cancel}</strong>
                 <span>Students lose their seats this term. The sections come back next term.</span>
-                <span className="costs small">0 admin hr</span>
+                <span className="costs small">
+                  <span className="cost-chip">
+                    <Icon name="clock" size={12} /> 0 admin hr
+                  </span>
+                </span>
               </button>
             </li>
           </ul>
@@ -114,39 +132,66 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
       )}
 
       <section className="card">
-        <h2>Inbox</h2>
+        <CardTitle icon="mail">
+          Inbox
+          {inbox.length + (reportDue ? 1 : 0) > 0 && (
+            <span className="count-pill" aria-label={`${inbox.length + (reportDue ? 1 : 0)} waiting`}>
+              {inbox.length + (reportDue ? 1 : 0)}
+            </span>
+          )}
+        </CardTitle>
         {reportDue && (
           <ul className="inbox">
             <li>
-              <button className="inbox-item" onClick={onOpenReport} disabled={!!staffingDue}>
-                <span className="inbox-from">
-                  {stakeholderName(program, reportDue.request.from)}
-                  <span className="badge urgent">due this term</span>
+              <button className="inbox-item is-urgent" onClick={onOpenReport} disabled={!!staffingDue}>
+                <Avatar program={program} id={reportDue.request.from} size={42} />
+                <span className="inbox-text">
+                  <span className="inbox-from">
+                    {stakeholderName(program, reportDue.request.from)}
+                    <span className="badge urgent">due this term</span>
+                  </span>
+                  <span className="inbox-subject">{reportDue.request.subject}</span>
+                  <span className="muted small">
+                    Year-end report · {reportDue.hours} admin hours
+                    {staffingDue ? " · cover this term's sections first" : ""}
+                  </span>
                 </span>
-                <span className="inbox-subject">{reportDue.request.subject}</span>
-                <span className="muted small">
-                  Year-end report · {reportDue.hours} admin hours
-                  {staffingDue ? " · cover this term's sections first" : ""}
+                <span className="inbox-side">
+                  <Icon name="arrow" className="inbox-go" />
                 </span>
               </button>
             </li>
           </ul>
         )}
         {inbox.length === 0 ? (
-          !reportDue && <p className="muted">Nothing waiting on you this term.</p>
+          !reportDue && (
+            <div className="inbox-empty">
+              <span className="icon-chip" aria-hidden="true">
+                <Icon name="check" size={22} />
+              </span>
+              <strong>Inbox zero.</strong>
+              <p className="muted">Nothing waiting on you this term.</p>
+            </div>
+          )
         ) : (
           <ul className="inbox">
             {inbox.map((s) => {
               const doc = s.documents[0]!;
               return (
                 <li key={s.id}>
-                  <button className="inbox-item" onClick={() => onOpen(s.id)}>
-                    <span className="inbox-from">
-                      {stakeholderName(program, doc.from)}
-                      {s.urgent && <span className="badge urgent">urgent</span>}
+                  <button className={`inbox-item ${s.urgent ? "is-urgent" : ""}`} onClick={() => onOpen(s.id)}>
+                    <Avatar program={program} id={doc.from} size={42} />
+                    <span className="inbox-text">
+                      <span className="inbox-from">
+                        {stakeholderName(program, doc.from)}
+                        {s.urgent && <span className="badge urgent">urgent</span>}
+                      </span>
+                      <span className="inbox-subject">{fillTemplate(doc.subject, session)}</span>
                     </span>
-                    <span className="inbox-subject">{fillTemplate(doc.subject, session)}</span>
-                    <span className="muted small">{s.title}</span>
+                    <span className="inbox-side">
+                      <span className="inbox-tag">{s.title}</span>
+                      <Icon name="arrow" className="inbox-go" />
+                    </span>
                   </button>
                 </li>
               );
@@ -161,11 +206,12 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
         ) : (
           <div className="row-end">
             <button
-              className={inbox.length ? "secondary" : "primary"}
+              className={`advance ${inbox.length ? "secondary" : "primary"}`}
               disabled={blocking.length > 0 || !!reportDue || !!staffingDue}
               onClick={onNextTerm}
             >
               {inbox.length ? "Leave these for next term and advance" : `Advance to ${termLabel(session.termIndex + 1)}`}
+              <Icon name="arrow" size={17} />
             </button>
           </div>
         )}
@@ -187,15 +233,17 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
         <PeopleCard session={session} />
 
         <section className="card">
-          <h2>On the horizon</h2>
+          <CardTitle icon="hourglass">On the horizon</CardTitle>
           {session.pending.length === 0 ? (
             <p className="muted">Nothing from past decisions is still unfolding.</p>
           ) : (
             <ul className="horizon">
               {session.pending.map((p, i) => (
                 <li key={`p${i}`}>
-                  <span className="badge illustrative">{termLabel(p.dueTerm)}</span> A consequence of{" "}
-                  <em>{titleOf(p.scenarioId)}</em> is still unfolding.
+                  <span className="badge illustrative">{termLabel(p.dueTerm)}</span>
+                  <span>
+                    A consequence of <em>{titleOf(p.scenarioId)}</em> is still unfolding.
+                  </span>
                 </li>
               ))}
             </ul>
