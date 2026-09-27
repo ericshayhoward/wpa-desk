@@ -144,7 +144,15 @@ export function App() {
 
   const submit = () => {
     if (!arc) return;
-    const result = submitReport(session, arc, SCENARIOS, new Date());
+    let result: ReturnType<typeof submitReport>;
+    try {
+      result = submitReport(session, arc, SCENARIOS, new Date());
+    } catch (err) {
+      // The desk guards these cases; if one slips through, say why instead of doing nothing.
+      setNote((err as Error).message);
+      setWritingReport(false);
+      return;
+    }
     setSession(result.session);
     setWritingReport(false);
     // A capstone goes straight to the ending, which shows the report.

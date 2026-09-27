@@ -44,6 +44,8 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
   const titleOf = (id: string) => SCENARIOS.find((s) => s.id === id)?.title ?? (id === "staffing" ? "Staffing" : id);
   const blocking = blockingScenarios(session, SCENARIOS);
   const final = isFinalTerm(session, arc);
+  // The capstone closes the arc, so urgent items have to be resolved first.
+  const reportBlocked = !!staffingDue || (!!reportDue?.capstone && blocking.length > 0);
 
   return (
     <div className="desk">
@@ -143,7 +145,7 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
         {reportDue && (
           <ul className="inbox">
             <li>
-              <button className="inbox-item is-urgent" onClick={onOpenReport} disabled={!!staffingDue}>
+              <button className="inbox-item is-urgent" onClick={onOpenReport} disabled={reportBlocked}>
                 <Avatar program={program} id={reportDue.request.from} size={42} />
                 <span className="inbox-text">
                   <span className="inbox-from">
@@ -153,7 +155,11 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
                   <span className="inbox-subject">{reportDue.request.subject}</span>
                   <span className="muted small">
                     Year-end report · {reportDue.hours} admin hours
-                    {staffingDue ? " · cover this term's sections first" : ""}
+                    {staffingDue
+                      ? " · cover this term's sections first"
+                      : reportBlocked
+                        ? " · resolve the urgent items first"
+                        : ""}
                   </span>
                 </span>
                 <span className="inbox-side">

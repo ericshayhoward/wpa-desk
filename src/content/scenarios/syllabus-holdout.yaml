@@ -57,7 +57,7 @@ options:
     memo:
       required: false
       audience: fyw_director
-      prompt: Summarize the agreement for Dr. Cherry, so there's a record of what Alan agreed to and what Alan didn't.
+      prompt: Summarize the agreement for Dr. Cherry, so there's a record of what was agreed and what wasn't.
     consequence:
       narrative: |
         You bring the outcomes statement and the ENGL 102 syllabus, and you
@@ -65,7 +65,7 @@ options:
         them do. The timed final stays, but after forty minutes Alan agrees
         to add a short portfolio with a reflective cover letter, in exchange
         for choosing the readings. Alan calls it a reasonable compromise,
-        which from Alan is warm.
+        which, coming from Alan, is warm.
 
         Some adjuncts hear that a full professor got to keep a personal
         syllabus, and wonder why they didn't.
@@ -153,7 +153,7 @@ options:
     description: It's one section. Pick your battles and revisit it next year.
     consequence:
       narrative: |
-        You don't raise it, and Alan's section runs on Alan's own syllabus.
+        You don't raise it, and Alan's section runs on the old syllabus.
         By mid-term, adjuncts know about it, and a few point out that they
         were told the portfolio was non-negotiable when they were hired.
         Alan's students
