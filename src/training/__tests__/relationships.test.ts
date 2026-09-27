@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_ASSUMPTIONS as A, MIDLAND_STATE, analyzeTerm, applyChanges, type ProgramChange } from "../../model";
-import { CAST, SCENARIOS, scenarioById } from "../../content";
+import { CAST, SCENARIOS as ALL_SCENARIOS, scenarioById } from "../../content";
+
+/** Only the scenarios under test; others (e.g., urgent spring scenarios) would interrupt the calendar. */
+const SCENARIOS = ALL_SCENARIOS.filter((s) => ["cap-memo", "late-hire"].includes(s.id));
 import {
   addEvidence,
   advanceTerm,

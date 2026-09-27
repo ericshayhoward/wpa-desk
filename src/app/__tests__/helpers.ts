@@ -11,3 +11,13 @@ export async function submitYearEndReport(user: UserEvent, text = "The numbers s
   const back = screen.queryByRole("button", { name: "Back to desk" });
   if (back) await user.click(back);
 }
+
+/** If The Grade Appeal Escalation is waiting (it's urgent in spring), resolve it through the appeal process. */
+export async function resolveGradeAppeal(user: UserEvent) {
+  const item = screen.queryByRole("button", { name: /Grade complaint: I'm at CCCC/ });
+  if (!item) return;
+  await user.click(item);
+  await user.click(screen.getByRole("button", { name: /Route it through the appeal process/ }));
+  await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
+  await user.click(screen.getByRole("button", { name: "Back to desk" }));
+}

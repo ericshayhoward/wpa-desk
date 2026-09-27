@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../App";
-import { submitYearEndReport } from "./helpers";
+import { resolveGradeAppeal, submitYearEndReport } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
@@ -35,6 +35,7 @@ describe("playing the standard arc through the UI", () => {
         await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
         await user.click(screen.getByRole("button", { name: "Back to desk" }));
       }
+      await resolveGradeAppeal(user);
       if (screen.queryByText("Submit the year-end report before the term ends.")) await submitYearEndReport(user);
       await user.click(screen.getByRole("button", { name: new RegExp(`Advance to ${term}`) }));
     }

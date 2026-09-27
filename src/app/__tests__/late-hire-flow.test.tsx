@@ -15,9 +15,10 @@ it("The Late Hire: urgent, blocks the term, resolved by adding seats", async () 
   await user.click(screen.getByRole("button", { name: "Leave these for next term and advance" }));
   expect(screen.getByText("Spring, Year 1")).toBeTruthy();
   expect(screen.getByText("3 of 60")).toBeTruthy(); // unstaffed, in the status bar
-  expect(screen.getByText("urgent")).toBeTruthy();
+  // Two urgent items this spring: The Late Hire and The Grade Appeal Escalation.
+  expect(screen.getAllByText("urgent")).toHaveLength(2);
   expect((screen.getByRole("button", { name: /advance/i }) as HTMLButtonElement).disabled).toBe(true);
-  expect(screen.getByText(/The Late Hire can't wait/)).toBeTruthy();
+  expect(screen.getByText(/The Grade Appeal Escalation, The Late Hire can't wait/)).toBeTruthy();
 
   // The email states the real gap.
   await user.click(screen.getByRole("button", { name: /Spring sections without instructors/ }));
@@ -40,7 +41,7 @@ it("The Late Hire: urgent, blocks the term, resolved by adding seats", async () 
 
   await user.click(screen.getByRole("button", { name: "Back to desk" }));
   expect(screen.queryByText("3 of 60")).toBeNull();
-  // The crisis no longer blocks the term; only the year-end report does.
-  expect(screen.queryByText(/The Late Hire can't wait/)).toBeNull();
+  // The staffing crisis no longer blocks the term; the grade appeal and the year-end report still do.
+  expect(screen.getByText(/^The Grade Appeal Escalation can't wait/)).toBeTruthy();
   expect(screen.getByText("Submit the year-end report before the term ends.")).toBeTruthy();
 });

@@ -29,6 +29,7 @@ calendar:
   - { scenario: cap-memo, from: 1, until: 1 }
   - { scenario: syllabus-holdout, from: 1, until: 1 }
   - { scenario: late-hire, from: 2 }
+  - { scenario: grade-appeal, from: 2, until: 2 }
 
 # Hours taken from a term before the player can spend them.
 timeCosts:

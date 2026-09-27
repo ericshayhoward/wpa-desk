@@ -1,0 +1,214 @@
+# The Grade Appeal Escalation — a parent goes over everyone's head.
+#
+# A first-year GTA failed a student for a late portfolio, against the common
+# syllabus's late policy. The parent skipped the appeal process and wrote to
+# the president. The complaint has merit; the route doesn't. The player
+# handles it while Dr. Cherry is away, and the teaching points are FERPA
+# (the student, not the parent, holds the record), process under pressure,
+# and supporting a new instructor while correcting their error.
+
+id: grade-appeal
+title: The Grade Appeal Escalation
+stages: [assistant_director, wpa]
+trigger:
+  minTerm: 2
+  term: spring
+urgent: true
+
+documents:
+  - from: fyw_director
+    genre: email
+    subject: "Grade complaint: I'm at CCCC, can you handle it?"
+    body: |
+      I'm at CCCC all week and mostly unreachable, so you'll need to handle
+      this one with Grace Okafor. Her email is below.
+
+      Our appeal policy is on the program website: the student talks to the
+      instructor first, then to the director (you, this week), then the
+      chair, then the college appeals committee. Grades change only through
+      the instructor or that process.
+
+      I asked Jordan Reyes what happened. Jordan's note to me:
+
+      "Dylan turned the portfolio in a day late. My syllabus says no late
+      portfolios, so it got a zero, and without it the course grade is an F.
+      I'm sorry this has turned into such a mess. I didn't know it would go
+      to the president."
+
+      Jordan is in their first year teaching. Before you do anything, look at
+      the late policy in the common syllabus.
+
+      — Nora
+
+  - from: provost_office
+    genre: email
+    subject: "Fwd: My son's grade in ENGL 101"
+    body: |
+      The president's office forwarded me the email below and asked for a
+      resolution by Friday. I'd like to know what happened and what the
+      program intends to do. I'd also like this handled in a way that
+      doesn't bring the president's office back into it.
+
+      — Grace Okafor
+
+      ---
+
+      My son Dylan failed ENGL 101 because his instructor, a graduate
+      student, refused to accept a portfolio that was one day late. He was
+      sick that week. We are paying for him to be taught by professionals,
+      not students. I expect the grade to be changed, and if it isn't, I will
+      be contacting the board of trustees.
+
+      — Richard Marsh
+
+options:
+  - id: follow-process
+    label: Route it through the appeal process
+    description: Tell Okafor you can't discuss a student's record with a parent, invite Dylan to file an appeal, and review the grade against the common syllabus with Jordan.
+    cost: { adminHours: 6, politicalCapital: 1 }
+    memo:
+      required: false
+      audience: provost_office
+      prompt: |
+        Tell Associate Provost Okafor what the program will do and why. She
+        needs something she can say to the president's office by Friday,
+        and she needs to know why you won't simply change the grade.
+    consequence:
+      narrative: |
+        You write to Dylan, not his father, and explain how to appeal. He
+        files the next day, and signs a release so his father can be copied.
+        Reviewing the grade with Jordan, you find that the common syllabus
+        allows late portfolios for 48 hours with a penalty. Jordan regrades
+        the portfolio with the penalty, and Dylan passes with a C−.
+
+        Mr. Marsh is unhappy that it took two weeks. Okafor tells the
+        president's office the program followed its own policy, found an
+        error, and corrected it. Jordan is embarrassed, and grateful you
+        handled it without making it public.
+      changes:
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 3 }
+        - { kind: adjustTrust, stakeholder: students, delta: 3 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: 3 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
+      response:
+        from: provost_office
+        body: Thank you. "We followed our policy, found an error, and fixed it" is an answer I can give the president's office.
+        warm: Thank you. This is exactly why I send these to your program. "We followed our policy, found an error, and fixed it" is an answer the president's office respects.
+      delayed:
+        - inTerms: 1
+          note: |
+            Jordan asks you to look over their fall syllabus before it goes
+            out, and several other first-year GTAs ask if you'll do the same.
+          changes:
+            - { kind: adjustTrust, stakeholder: gta_cohort, delta: 2 }
+            - { kind: adjustMorale, rank: gta, delta: 2 }
+
+  - id: change-grade
+    label: Ask Jordan to change the grade now
+    description: End it before Friday. Ask Jordan to change the F to a passing grade and tell Okafor it's resolved.
+    cost: { adminHours: 2 }
+    consequence:
+      narrative: |
+        Jordan changes the grade the same afternoon, without being told
+        why, and asks another GTA whether this is what happens when a parent
+        complains. By the end of the week every graduate instructor has
+        heard the story. Okafor is relieved. Nobody reviews the late policy,
+        so the actual error goes uncorrected in Jordan's syllabus.
+
+        When Dr. Cherry gets back, she wants to know why a grade changed
+        outside the appeal process.
+      changes:
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 4 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -8 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -5 }
+        - { kind: adjustMorale, rank: gta, delta: -6 }
+        - { kind: adjustPoliticalCapital, delta: 2 }
+      response:
+        from: provost_office
+        body: Thank you for the quick turnaround.
+      delayed:
+        - inTerms: 1
+          note: |
+            Two more parents contact the president's office about grades this
+            term, and one of them mentions "what happened last spring."
+          changes:
+            - { kind: adjustTrust, stakeholder: provost_office, delta: -4 }
+
+  - id: call-parent
+    label: Call Mr. Marsh to calm things down
+    description: A phone call might defuse this faster than a round of emails.
+    cost: { adminHours: 2 }
+    consequence:
+      narrative: |
+        Ten minutes into the call, you realize you can't discuss Dylan's
+        grade with him: Dylan hasn't signed a release, and at a university
+        the record belongs to the student, not the parent. You try to talk
+        around it. Mr. Marsh hears evasion and writes to a trustee that
+        evening.
+
+        Okafor gets a call from the general counsel's office asking whether
+        anyone discussed a student record without consent, and has to find
+        out from you.
+      changes:
+        - { kind: adjustTrust, stakeholder: provost_office, delta: -5 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -3 }
+        - { kind: adjustTrust, stakeholder: students, delta: -2 }
+      response:
+        from: provost_office
+        body: Please don't call parents about student records. Next time, come to me or the registrar first.
+        warm: I know you were trying to help. But we can't discuss a student's record with a parent without consent, and now counsel is involved. Come to me first next time.
+
+  - id: back-instructor
+    label: Back Jordan's grade and close the matter
+    description: Tell Okafor the instructor's grade stands. New GTAs need to know the program has their backs.
+    cost: { adminHours: 2 }
+    memo:
+      required: false
+      audience: provost_office
+      prompt: Explain why the grade stands and why the program supports its instructors' judgment.
+    consequence:
+      narrative: |
+        Graduate instructors hear that you stood up for one of their own,
+        and it means a lot to them. Okafor takes your answer to the
+        president's office, a little uneasy.
+
+        Two weeks later, Dylan files a formal appeal on his own. The college
+        committee reads the common syllabus, finds the late policy, and
+        overturns the grade, with a note asking why the program didn't catch
+        it.
+      changes:
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: 5 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: -2 }
+      response:
+        from: provost_office
+        body: All right. I'll tell the president's office the grade stands. I hope we're on solid ground.
+      delayed:
+        - inTerms: 1
+          note: |
+            The college appeals committee overturned the grade in Dylan
+            Marsh's case, citing the common syllabus's late policy. Okafor
+            forwards you the committee's note without comment.
+          changes:
+            - { kind: adjustTrust, stakeholder: provost_office, delta: -5 }
+            - { kind: adjustTrust, stakeholder: students, delta: -3 }
+            - { kind: adjustTrust, stakeholder: fyw_director, delta: -2 }
+
+debrief:
+  weighs:
+    - Who owns the record. At a university, rights over education records belong to the student, not the parent. Without the student's written consent, the program can't discuss grades with a parent, however loud the complaint.
+    - Process under pressure. An appeal process protects students and instructors alike. Bypassing it for a president's office teaches everyone that escalation works.
+    - The merits and the manner. A rude, escalated complaint can still be right. Here the instructor's policy contradicted the program's own syllabus.
+    - Supporting new instructors. Backing a GTA and correcting them aren't opposites. Correcting an error privately, and helping them fix their syllabus, is support.
+    - Who can change a grade. Only the instructor, or the appeal process, changes a grade. An administrator asking for a change carries pressure a first-year GTA can't easily refuse.
+  perspectives:
+    - stakeholder: provost_office
+      view: I need an answer for the president's office, and I need it to be defensible. Fast and wrong is worse than slow and right.
+    - stakeholder: gta_cohort
+      view: We're teaching our first classes while taking our own. We need to know the program will back us, and tell us privately when we've made a mistake.
+    - stakeholder: students
+      view: Grading rules should be the same in every section, and there should be a fair way to challenge a grade without your parents calling the president.
+    - stakeholder: fyw_director
+      view: I left you in charge of this knowing the policy was on your side. The question was whether you'd use the process or go around it.
+  readings:
+    - U.S. Department of Education, Student Privacy Policy Office, FERPA General Guidance for Students
+    - CCCC, Statement on Preparing Teachers of College Writing (2015)
