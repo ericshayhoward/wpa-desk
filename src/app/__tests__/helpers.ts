@@ -18,7 +18,7 @@ const URGENT: [subject: RegExp, option: RegExp][] = [
   [/Spring sections without instructors/, /Cancel the uncovered sections/],
   [/Accreditation visit, evidence for first-year writing/, /Report grades and D\/F\/W rates/],
   [/The Cap Review/, /Settle at 25/],
-  [/Writing support budget for next year/, /Split it evenly/],
+  [/Writing support budget for spring/, /Split it evenly/],
 ];
 
 /** Resolves any urgent scenario waiting in the inbox (without a memo), and hires for uncovered sections. */

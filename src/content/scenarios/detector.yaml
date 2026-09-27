@@ -58,7 +58,6 @@ options:
         Others ask what a score of 70% is supposed to mean, and nobody has a
         good answer.
       changes:
-        - { kind: setPolicy, policy: aiPolicy, value: detector }
         - { kind: adjustTrust, stakeholder: provost_office, delta: 6 }
         - { kind: adjustTrust, stakeholder: students, delta: -5 }
         - { kind: adjustTrust, stakeholder: gta_cohort, delta: -2 }
@@ -67,6 +66,11 @@ options:
         from: provost_office
         body: Thank you. Faculty have been asking for this, and it helps to have writing leading it.
       delayed:
+        - inTerms: 1
+          announced: true
+          note: Detector scores go live in first-year writing sections this fall.
+          changes:
+            - { kind: setPolicy, policy: aiPolicy, value: detector }
         - inTerms: 1
           note: |
             A multilingual student in ENGL 102 is reported for academic

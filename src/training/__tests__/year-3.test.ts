@@ -14,6 +14,7 @@ import {
   type TrainingSession,
 } from "../index";
 import { closeOutTerm } from "../../test-fixtures/reports";
+import { landed } from "../../test-fixtures/scheduled";
 
 const stipend = scenarioById("gta-stipend")!;
 const swap = scenarioById("wc-budget-swap")!;
@@ -85,13 +86,17 @@ describe("The GTA Stipend Campaign", () => {
 });
 
 describe("The Writing Center Budget Swap", () => {
-  const budget = (s: TrainingSession) => s.program.budgetPerTerm - MIDLAND_STATE.budgetPerTerm;
+  // The program's share of the cut is announced for spring.
+  const budget = (s: TrainingSession) => landed(s).budgetPerTerm - MIDLAND_STATE.budgetPerTerm;
 
   it("each answer puts the cut somewhere", () => {
     expect(budget(decide(to(5), swap, "cut-writing-center").session)).toBe(0);
     expect(trust(decide(to(5), swap, "cut-writing-center").session, "writing_center")).toBe(53);
     expect(budget(decide(to(5), swap, "cut-program").session)).toBe(-15000);
     expect(budget(decide(to(5), swap, "split").session)).toBe(-7500);
+    const program = decide(to(5), swap, "cut-program").session;
+    expect(program.program.budgetPerTerm).toBe(MIDLAND_STATE.budgetPerTerm);
+    expect(program.pending.find((p) => p.scenarioId === "wc-budget-swap")).toMatchObject({ dueTerm: 6, announced: true });
   });
 
   it("a joint plan needs Dr. Raman's trust and a memo, and shrinks the cut", () => {

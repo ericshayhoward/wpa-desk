@@ -9,6 +9,9 @@
 # the studio choose standard ENGL 101 instead. Illustrative shift: studio demand × 0.8,
 # ENGL 101 demand × 1.04 (roughly the same students moving). D/F/W effects
 # of placement aren't modeled; the documents report the pilot's own results.
+#
+# Timing: the decision is for fall placement, so placement changes are
+# announced now and land in the fall (delayed, announced: true).
 
 id: dsp-pilot
 title: The DSP Pilot
@@ -73,9 +76,6 @@ options:
         choose ENGL 101 instead. Nobody has planned any extra support for
         them yet.
       changes:
-        - { kind: setPolicy, policy: placement, value: directed_self_placement }
-        - { kind: scaleSeatDemand, courseId: ENGL101S, factor: 0.8 }
-        - { kind: scaleSeatDemand, courseId: ENGL101, factor: 1.04 }
         - { kind: adjustTrust, stakeholder: students, delta: 4 }
         - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
         - { kind: adjustTrust, stakeholder: writing_center, delta: -2 }
@@ -83,6 +83,13 @@ options:
         from: fyw_director
         body: I'll take it to Grace. I hope we're ready for the students who choose up.
       delayed:
+        - inTerms: 1
+          announced: true
+          note: Fall students are placed by directed self-placement.
+          changes:
+            - { kind: setPolicy, policy: placement, value: directed_self_placement }
+            - { kind: scaleSeatDemand, courseId: ENGL101S, factor: 0.8 }
+            - { kind: scaleSeatDemand, courseId: ENGL101, factor: 1.04 }
         - inTerms: 2
           note: |
             Instructors report that some students who chose ENGL 101 over
@@ -109,10 +116,6 @@ options:
         calls it the first time the program asked the writing center before
         the students showed up at its door.
       changes:
-        - { kind: setPolicy, policy: placement, value: directed_self_placement }
-        - { kind: scaleSeatDemand, courseId: ENGL101S, factor: 0.8 }
-        - { kind: scaleSeatDemand, courseId: ENGL101, factor: 1.04 }
-        - { kind: adjustBudget, delta: -4000 }
         - { kind: adjustTrust, stakeholder: students, delta: 5 }
         - { kind: adjustTrust, stakeholder: writing_center, delta: 6 }
         - { kind: adjustTrust, stakeholder: provost_office, delta: 4 }
@@ -121,6 +124,14 @@ options:
         from: provost_office
         body: Choice with support is a student-success story I can tell. Let's look at the pass rates together next spring.
       delayed:
+        - inTerms: 1
+          announced: true
+          note: Fall students are placed by directed self-placement, with embedded tutors in ENGL 101.
+          changes:
+            - { kind: setPolicy, policy: placement, value: directed_self_placement }
+            - { kind: scaleSeatDemand, courseId: ENGL101S, factor: 0.8 }
+            - { kind: scaleSeatDemand, courseId: ENGL101, factor: 1.04 }
+            - { kind: adjustBudget, delta: -4000 }
         - inTerms: 2
           note: |
             Pass rates for students who chose ENGL 101 over the studio are
@@ -140,18 +151,23 @@ options:
       prompt: Recommend multiple measures, and explain why not DSP alone or test scores alone.
     consequence:
       narrative: |
-        Placement moves to multiple measures. Students who fall near a line
-        get a conversation with an advisor instead of a cutoff. It takes
+        Placement moves to multiple measures for fall. Students who fall
+        near a line get a conversation with an advisor instead of a cutoff. It takes
         more coordination with advising than anyone expected, and it
         satisfies almost everyone a little.
       changes:
-        - { kind: setPolicy, policy: placement, value: multiple_measures }
         - { kind: adjustTrust, stakeholder: students, delta: 2 }
         - { kind: adjustTrust, stakeholder: provost_office, delta: 3 }
         - { kind: adjustTrust, stakeholder: fyw_director, delta: 1 }
       response:
         from: fyw_director
         body: Not what I expected you to recommend, but I can defend it. Advising will want to meet.
+      delayed:
+        - inTerms: 1
+          announced: true
+          note: Fall students are placed by multiple measures.
+          changes:
+            - { kind: setPolicy, policy: placement, value: multiple_measures }
 
   - id: extend-pilot
     label: Extend the pilot another year
@@ -181,13 +197,18 @@ options:
         evaluations, and Dr. Cherry is disappointed, though she says she
         understands.
       changes:
-        - { kind: setPolicy, policy: placement, value: test_scores }
         - { kind: adjustTrust, stakeholder: students, delta: -4 }
         - { kind: adjustTrust, stakeholder: fyw_director, delta: -4 }
         - { kind: adjustTrust, stakeholder: provost_office, delta: 1 }
       response:
         from: fyw_director
         body: I understand. I'm not sure the pass rates tell the whole story, but it's a defensible call.
+      delayed:
+        - inTerms: 1
+          announced: true
+          note: Fall students are placed by test scores again.
+          changes:
+            - { kind: setPolicy, policy: placement, value: test_scores }
 
 debrief:
   weighs:

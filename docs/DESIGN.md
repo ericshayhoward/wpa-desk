@@ -113,6 +113,14 @@ pass/DFW ranges, stakeholder reactions, and a human-readable "why" trace.
 - **Political capital & stakeholder trust** — the real currency of WPA work.
 - **Delayed consequences** — a decision in fall shows up in spring's numbers
   or next year's program review.
+- **Announced changes land when they say** — decisions about next term's
+  schedule, budget, or placement (caps "for spring", a cut "starting in
+  spring") take effect in that term, as real ones do. They're `announced`
+  delayed effects: the outcome screen previews that term ("Scheduled for
+  Spring, Year 1"), the horizon card names what's coming, and the new-term
+  card calls it out when it lands. Unannounced consequences stay surprises.
+  The lead time is part of what the sim teaches: a WPA builds next year's
+  schedule while living with last year's decisions.
 - **Career arc** — Assistant Director → interim WPA, each stage giving more
   authority and harder problems (reuses the "eras" idea from
   Retention.edu). See "Arcs" for the standard arc.
@@ -384,12 +392,15 @@ options:
     memo: { required: false, audience: dean, prompt: "..." }
     consequence:
       narrative: ...
-      changes:                       # ProgramChange objects
-        - { kind: setCap, courseId: ENGL101, cap: 27 }
+      changes:                       # ProgramChange objects, applied now
         - { kind: adjustTrust, stakeholder: dean, delta: 8 }
       response: { from: dean, body: "..." }   # in-character reply
       delayed:                       # belongs to this consequence only
-        - { inTerms: 2, note: "...", changes: [...] }
+        - inTerms: 1                 # the spring schedule: known to everyone
+          announced: true
+          note: Caps of 27 take effect with the {{next_term}} schedule.
+          changes: [{ kind: setCap, courseId: ENGL101, cap: 27 }]
+        - { inTerms: 2, note: "...", changes: [...] }   # a surprise
   - id: counter-with-data
     memo: { required: true, audience: dean, prompt: "..." }
     persuasion:                      # decided by attached evidence, not prose
@@ -484,6 +495,11 @@ Groundwork already in place:
   replies, and delayed notes), so text stays true when starting conditions
   vary. Fixed numbers are fine for a scenario's own parameters when they
   match its changes ("caps of 27", "$20,000 a term").
+- **Named amounts, not fixed numbers.** The same goes for changes: an effect
+  that depends on the program names the value (`delta: { of: deficit }`,
+  `costPerSection: { of: pay, rank: adjunct }`). It's worked out when the
+  player decides and frozen, so a later revert undoes exactly what was
+  given.
 - **Relative scoring.** The ending compares against the session's own
   baseline, so varied starting points don't need separate calibration.
 - **Everything is data.** Program, cast, arcs, and scenarios are content, so

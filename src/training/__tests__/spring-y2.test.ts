@@ -13,6 +13,7 @@ import {
   type TrainingSession,
 } from "../index";
 import { closeOutTerm } from "../../test-fixtures/reports";
+import { landed } from "../../test-fixtures/scheduled";
 
 const capMemo = scenarioById("cap-memo")!;
 const review = scenarioById("cap-review")!;
@@ -92,8 +93,11 @@ describe("The DSP Pilot", () => {
 
   it("adopting DSP moves students out of the studio", () => {
     const s = resolveScenario(springY2(), dsp, "adopt-dsp", null, CAST).session;
-    expect(s.program.policies.placement).toBe("directed_self_placement");
-    expect(s.program.courses.find((c) => c.id === "ENGL101S")!.seatDemand.fall).toBe(144);
+    // Placement is for fall's incoming students: announced now, in effect next term.
+    expect(s.program.policies.placement).toBe(MIDLAND_STATE.policies.placement);
+    expect(landed(s).policies.placement).toBe("directed_self_placement");
+    expect(landed(s).courses.find((c) => c.id === "ENGL101S")!.seatDemand.fall).toBe(144);
+    expect(advance(s, list, 5).program.policies.placement).toBe("directed_self_placement");
     expect(trust(s, "writing_center")).toBe(63);
   });
 
@@ -104,16 +108,16 @@ describe("The DSP Pilot", () => {
     const cool = springY2(applyChanges(MIDLAND_STATE, [{ kind: "adjustTrust", stakeholder: "writing_center", delta: -10 }]));
     expect(unavailableReason(cool, support)).toMatch(/Needs trust of 60/);
     const r = resolveScenario(s, dsp, "adopt-with-support", null, CAST).session;
-    expect(r.program.budgetPerTerm).toBe(MIDLAND_STATE.budgetPerTerm - 4000);
+    expect(landed(r).budgetPerTerm).toBe(MIDLAND_STATE.budgetPerTerm - 4000);
     expect(trust(r, "writing_center")).toBe(71);
   });
 
   it("multiple measures and returning to tests set placement accordingly", () => {
-    expect(resolveScenario(springY2(), dsp, "multiple-measures", null, CAST).session.program.policies.placement).toBe(
+    expect(landed(resolveScenario(springY2(), dsp, "multiple-measures", null, CAST).session).policies.placement).toBe(
       "multiple_measures",
     );
     const back = resolveScenario(springY2(), dsp, "return-to-tests", null, CAST).session;
-    expect(back.program.policies.placement).toBe("test_scores");
+    expect(landed(back).policies.placement).toBe("test_scores");
     expect(trust(back, "fyw_director")).toBe(56);
   });
 });
@@ -124,9 +128,11 @@ describe("The Detector", () => {
 
   it("piloting the detector pleases the provost's office, then a false accusation lands", () => {
     let s = resolveScenario(springY2(), detector, "pilot-detector", null, CAST).session;
-    expect(s.program.policies.aiPolicy).toBe("detector");
+    expect(s.program.policies.aiPolicy).toBe("instructor_choice");
+    expect(landed(s).policies.aiPolicy).toBe("detector");
     expect(trust(s, "provost_office")).toBe(56);
     s = advance(s, list, 5);
+    expect(s.program.policies.aiPolicy).toBe("detector");
     expect(trust(s, "students")).toBe(46);
     expect(trust(s, "provost_office")).toBe(53);
   });

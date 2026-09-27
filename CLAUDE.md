@@ -33,7 +33,10 @@ npm run build
   `baselineSectionSize`; only the change from baseline moves it.
 - Scenarios are YAML in `src/content/scenarios/`, validated by
   `parseScenario()` on load (errors name the exact field). Delayed effects
-  belong to a specific consequence, not to the option.
+  belong to a specific consequence, not to the option. A change that starts
+  next term (next term's schedule, a cut "starting in spring") is a delayed
+  effect with `announced: true`, and its text names the term through
+  `{{next_term}}` when the scenario can be decided in either term.
 - Persuasion is decided mechanically by attached evidence kinds plus the
   reader's trust against their persuasion profile (`src/content/cast/`),
   never by grading memo prose. Pass `CAST` to `resolveScenario`; without it

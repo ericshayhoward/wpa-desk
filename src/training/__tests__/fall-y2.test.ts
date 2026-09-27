@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_ASSUMPTIONS as A, MIDLAND_STATE, analyzeTerm } from "../../model";
+import { DEFAULT_ASSUMPTIONS as A, MIDLAND_STATE, analyzeTerm, applyChanges } from "../../model";
 import { CAST, STANDARD_ARC, scenarioById } from "../../content";
 import {
   addEvidence,
@@ -47,6 +47,11 @@ describe("Fall, Year 2", () => {
 });
 
 describe("The Dual-Enrollment Drop", () => {
+  /** The spring balance once this decision's announced cut lands. */
+  const springOnceCut = (s: TrainingSession) =>
+    analyzeTerm(applyChanges(s.program, s.pending.filter((p) => p.scenarioId === "dual-enrollment").flatMap((p) => p.changes)), "spring", A)
+      .budgetBalance;
+
   it("cuts 14 fall sections, turns fall into a surplus, and barely moves spring", () => {
     const s = fallY2();
     expect(analyzeTerm(s.program, "fall", A).totalSections).toBe(46);
@@ -56,8 +61,12 @@ describe("The Dual-Enrollment Drop", () => {
   });
 
   it("accepting the cut sized to fall puts spring into deficit", () => {
-    const s = resolveScenario(fallY2(), dual, "accept-cut", null, CAST).session;
-    expect(balance(s, "spring")).toBe(-17800);
+    const { session: s, outcome } = resolveScenario(fallY2(), dual, "accept-cut", null, CAST);
+    // The cut is announced for spring; this fall's line is untouched.
+    expect(balance(s, "fall")).toBe(41800);
+    expect(outcome.scheduled).toMatchObject([{ dueTerm: 4, term: "spring", descriptions: ["Instruction budget −$20,000 per term"] }]);
+    expect(outcome.scheduled[0]!.comparison.budgetBalance).toBe(-20000);
+    expect(springOnceCut(s)).toBe(-17800);
     expect(trust(s, "dean")).toBe(61);
   });
 
@@ -67,13 +76,13 @@ describe("The Dual-Enrollment Drop", () => {
     s = addEvidence(s, staffingPlanEvidence(s.program, [], spring, spring));
     const r = resolveScenario(s, dual, "show-spring", memo("dean", [s.evidence[0]!.id]), CAST);
     expect(r.outcome.persuaded).toBe(true);
-    expect(balance(r.session, "spring")).toBe(-2800);
+    expect(springOnceCut(r.session)).toBe(-2800);
   });
 
   it("without the spring numbers, the full cut goes ahead", () => {
     const r = resolveScenario(fallY2(), dual, "show-spring", memo("dean"), CAST);
     expect(r.outcome.persuaded).toBe(false);
-    expect(balance(r.session, "spring")).toBe(-17800);
+    expect(springOnceCut(r.session)).toBe(-17800);
   });
 
   it("a cap analysis can keep the line and lower ENGL 101 caps to 20", () => {
@@ -95,7 +104,7 @@ describe("The Dual-Enrollment Drop", () => {
     const cooler = { ...s, program: { ...s.program, stakeholders: s.program.stakeholders.map((x) => (x.id === "dean" ? { ...x, trust: 50 } : x)) } };
     expect(unavailableReason(cooler, fund)).toMatch(/Needs trust of 55/);
     const r = resolveScenario(s, dual, "fund-assessment", null, CAST).session;
-    expect(balance(r, "spring")).toBe(-7800);
+    expect(springOnceCut(r)).toBe(-7800);
     expect(trust(r, "accreditor")).toBe(52);
   });
 });

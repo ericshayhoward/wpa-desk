@@ -30,7 +30,7 @@ it("Year 3: the stipend campaign, the budget swap, and the handoff, as interim d
 
   // The budget swap blocks the term; take the cut from the instruction line.
   expect(screen.getByText(/The Writing Center Budget Swap can't wait/)).toBeTruthy();
-  await user.click(screen.getByRole("button", { name: /Writing support budget for next year/ }));
+  await user.click(screen.getByRole("button", { name: /Writing support budget for spring/ }));
   await user.click(screen.getByRole("button", { name: /Take the cut from the instruction line/ }));
   await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
   expect(screen.getByText(/I know what this costs your program/)).toBeTruthy();
