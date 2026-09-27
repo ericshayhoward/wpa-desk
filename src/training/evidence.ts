@@ -1,4 +1,4 @@
-import { RANK_LABELS, compareTerms, describeChange, type Program, type ProgramChange, type TermAnalysis } from "../model";
+import { RANK_LABELS, compareTerms, describeChange, rangeLabel, type Program, type ProgramChange, type TermAnalysis } from "../model";
 import type { Evidence } from "./types";
 
 export type EvidenceDraft = Omit<Evidence, "id" | "termIndex">;
@@ -21,8 +21,8 @@ export function capAnalysisEvidence(program: Program, proposedCaps: Record<strin
     `Sections: ${before.totalSections} → ${after.totalSections} (${signed(diff.sections)}).`,
     `Program instruction cost: ${usd(before.cost.program)} → ${usd(after.cost.program)}; ` +
       `budget balance ${usd(before.budgetBalance)} → ${usd(after.budgetBalance)}.`,
-    `Projected D/F/W: ${pct(before.dfw.mid)} → ${pct(after.dfw.mid)} ` +
-      `(plausible range ${pct(after.dfw.low)}–${pct(after.dfw.high)}).`,
+    `Projected D/F/W: ${pct(before.dfw.mid)} → ${pct(after.dfw.mid)}` +
+      (pct(after.dfw.low) === pct(after.dfw.high) ? "." : ` (plausible range ${rangeLabel(after.dfw, pct)}).`),
   ];
   if (adjBefore && adjAfter) {
     const lost = adjAfter.sectionsAssigned - adjBefore.sectionsAssigned;

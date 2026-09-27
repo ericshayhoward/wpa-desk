@@ -423,7 +423,7 @@ export function App() {
                 }}
                 onNextTerm={nextTerm}
                 onDeliver={(id) => setSession((s) => deliverCommitment(s, id))}
-                onExtend={(id) => setSession((s) => extendCommitment(s, id))}
+                onExtend={(id) => setSession((s) => extendCommitment(s, id, arc))}
                 onAbandon={(id) => setSession((s) => abandonCommitment(s, id))}
               />
             ))}

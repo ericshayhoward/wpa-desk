@@ -3,6 +3,7 @@ import {
   DEFAULT_ASSUMPTIONS,
   MIDLAND_STATE,
   analyzeTerm,
+  rangeLabel,
   applyChanges,
   compareTerms,
 } from "../index";
@@ -138,5 +139,15 @@ describe("applyChanges", () => {
   it("clamps stakeholder trust to 0–100", () => {
     const p = applyChanges(MIDLAND_STATE, [{ kind: "adjustTrust", stakeholder: "dean", delta: 500 }]);
     expect(p.stakeholders.find((s) => s.id === "dean")!.trust).toBe(100);
+  });
+});
+
+describe("rangeLabel", () => {
+  const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
+  it("shows both ends of a real range", () => {
+    expect(rangeLabel({ low: 0.183, high: 0.211 }, pct)).toBe("18.3%–21.1%");
+  });
+  it("shows one value when the range collapses at display precision", () => {
+    expect(rangeLabel({ low: 0.1830001, high: 0.1830004 }, pct)).toBe("18.3%");
   });
 });

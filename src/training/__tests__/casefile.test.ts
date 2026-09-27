@@ -18,7 +18,7 @@ import {
 
 const names: Names = {
   short: (id) => ({ dean: "Dean Alvarez", chair: "Dr. Hale" })[id as "dean" | "chair"] ?? id,
-  byline: (id) => ({ dean: "Elena Alvarez, Dean of Arts & Sciences", chair: "Marcus Hale, Chair" })[id as "dean" | "chair"] ?? id,
+  byline: (id) => ({ dean: "Edwin Alvarez, Dean of Arts & Sciences", chair: "Marcus Hale, Chair" })[id as "dean" | "chair"] ?? id,
 };
 
 /** Fall: compromise at 25 with a memo. Spring: The Late Hire arrives (gap 2), resolved by adding seats. */
@@ -72,7 +72,7 @@ describe("case files", () => {
       `> ${PORTFOLIO_NOTICE}`,
       "1. The Cap Memo (Fall, Year 1)",
       "2. The Late Hire (Spring, Year 1)",
-      "**From:** Elena Alvarez, Dean of Arts & Sciences  ",
+      "**From:** Edwin Alvarez, Dean of Arts & Sciences  ",
       "> I'd like to raise caps in ENGL 101 and ENGL 102 from 24 to 27 beginning",
       "**Propose a compromise at 25.** Offer caps of 25 for one year while you study the effects.",
       "**The ask:** Caps of 25 for one year.",

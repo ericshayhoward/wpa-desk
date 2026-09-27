@@ -233,7 +233,7 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
         )}
       </section>
 
-      <CommitmentsCard session={session} onDeliver={onDeliver} onExtend={onExtend} onAbandon={onAbandon} />
+      <CommitmentsCard session={session} arc={arc} onDeliver={onDeliver} onExtend={onExtend} onAbandon={onAbandon} />
 
       <div className="grid-2">
         <PeopleCard session={session} />

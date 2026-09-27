@@ -21,7 +21,7 @@ export function stakeholderName(program: Program, id: StakeholderId): string {
   return characterFor(CAST, id)?.shortName ?? program.stakeholders.find((s) => s.id === id)?.name ?? id;
 }
 
-/** Full name and role, for letterheads: "Elena Alvarez, Dean of Arts & Sciences". */
+/** Full name and role, for letterheads: "Edwin Alvarez, Dean of Arts & Sciences". */
 export function stakeholderByline(program: Program, id: StakeholderId): string {
   const c = characterFor(CAST, id);
   return c ? `${c.name}, ${c.title}` : stakeholderName(program, id);

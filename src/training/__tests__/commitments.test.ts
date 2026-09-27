@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MIDLAND_STATE } from "../../model";
-import { SCENARIOS as ALL_SCENARIOS, scenarioById } from "../../content";
+import { SCENARIOS as ALL_SCENARIOS, STANDARD_ARC, scenarioById } from "../../content";
 
 /** Only the scenarios under test; others (e.g., urgent spring scenarios) would interrupt the calendar. */
 const SCENARIOS = ALL_SCENARIOS.filter((s) => ["cap-memo", "late-hire"].includes(s.id));
@@ -75,6 +75,14 @@ describe("commitments", () => {
     expect(ext.commitments[0]).toMatchObject({ dueTerm: 3, extended: true, status: "open" });
     expect(dean(ext)).toBe(dean(s) + COMMITMENT_EFFECTS.extensionTrust);
     expect(() => extendCommitment(ext, ext.commitments[0]!.id)).toThrow(/already asked for an extension/);
+  });
+
+  it("no extensions in an arc's final term: there's no next term to push into", () => {
+    const spring = next(committed()).session;
+    const endsNow = { ...STANDARD_ARC, terms: spring.termIndex };
+    expect(() => extendCommitment(spring, spring.commitments[0]!.id, endsNow)).toThrow(/No extensions in your last term/);
+    // Earlier in the same arc, the extension is still there.
+    expect(extendCommitment(spring, spring.commitments[0]!.id, STANDARD_ARC).commitments[0]!.extended).toBe(true);
   });
 
   it("extensions are only for commitments that are due", () => {

@@ -339,7 +339,7 @@ simulation. The design keeps them meaningful without anything grading prose.
 
 Stakeholders with a single decision-maker have a named character, authored
 in `src/content/cast/*.yaml` (content, not program data, so the model can
-hold real programs). Midland's cast: Dean Elena Alvarez, Dr. Marcus Hale
+hold real programs). Midland's cast: Dean Edwin Alvarez, Dr. Marcus Hale
 (chair), Dr. Nora Cherry (Director of First-Year Writing), Associate
 Provost Grace Okafor, Dr. Priya Raman (writing center).
 Groups (adjuncts, GTAs, students, senate, accreditor) remain groups.

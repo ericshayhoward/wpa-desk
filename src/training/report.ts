@@ -4,7 +4,7 @@
  * recorded data. Reports are reflective: they're kept, exported, and read by
  * instructors, but never scored.
  */
-import { RANK_LABELS, type StakeholderId } from "../model";
+import { RANK_LABELS, rangeLabel, type StakeholderId } from "../model";
 import { missOverdue } from "./commitments";
 import { wordCount, type DraftVersion } from "./drafts";
 import { computeEnding } from "./ending";
@@ -75,7 +75,7 @@ export function reportFacts(session: TrainingSession, spec: YearEndSpec, scenari
   if (spec.capstone) {
     const b = session.baseline;
     lines.unshift(
-      `When you started: ${b.totalSections} sections per term; projected D/F/W ${pct(b.dfw.low)}–${pct(b.dfw.high)}; ${budget(b.budgetBalance)}.`,
+      `When you started: ${b.totalSections} sections per term; projected D/F/W ${rangeLabel(b.dfw, pct)}; ${budget(b.budgetBalance)}.`,
     );
   }
   lines.push(
@@ -117,13 +117,13 @@ export function generatedSection(
         unstaffed.length
           ? `Staffing fell short in ${unstaffed.map((r) => termLabel(r.termIndex)).join(" and ")}, leaving sections without an instructor at some point.`
           : "Every section had an instructor.",
-        `Projected D/F/W across first-year writing was ${pct(last.dfw.low)}–${pct(last.dfw.high)} by year's end, against ${pct(first.dfw.low)}–${pct(first.dfw.high)} at its start.`,
+        `Projected D/F/W across first-year writing was ${rangeLabel(last.dfw, pct)} by year's end, against ${rangeLabel(first.dfw, pct)} at its start.`,
         `The instruction line ended the year with ${budget(last.budgetBalance)}.`,
       ].join(" ");
     case "assessment":
       return session.program.policies.portfolioAssessment
         ? "The program assessed a sample of student portfolios against its outcomes this year; results are summarized in the appendix."
-        : `The program has no program-wide assessment of student writing yet, so this year's evidence is limited to course completion. Projected D/F/W stands at ${pct(last.dfw.low)}–${pct(last.dfw.high)}. Building a direct assessment of student writing, ahead of the accreditation visit, remains a priority.`;
+        : `The program has no program-wide assessment of student writing yet, so this year's evidence is limited to course completion. Projected D/F/W stands at ${rangeLabel(last.dfw, pct)}. Building a direct assessment of student writing, ahead of the accreditation visit, remains a priority.`;
     case "initiatives": {
       const decided = session.decisions
         .filter((d) => d.termIndex >= first.termIndex)
@@ -212,7 +212,7 @@ function sentHistory(history: DraftVersion[], title: string, body: string, at: D
 }
 
 function termLine(r: TermRecord): string {
-  return `${termLabel(r.termIndex)}: ${r.totalSections} sections${r.unstaffedSections ? ` (${r.unstaffedSections} without an instructor)` : ""}; projected D/F/W ${pct(r.dfw.low)}–${pct(r.dfw.high)}; ${budget(r.budgetBalance)}.`;
+  return `${termLabel(r.termIndex)}: ${r.totalSections} sections${r.unstaffedSections ? ` (${r.unstaffedSections} without an instructor)` : ""}; projected D/F/W ${rangeLabel(r.dfw, pct)}; ${budget(r.budgetBalance)}.`;
 }
 
 function pct(x: number): string {

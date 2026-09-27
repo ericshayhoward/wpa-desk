@@ -1,5 +1,6 @@
 import { applyChanges } from "../model";
-import type { Commitment, TrainingSession } from "./types";
+import { isFinalTerm } from "./arc";
+import type { Arc, Commitment, TrainingSession } from "./types";
 
 /**
  * How commitments move trust with the memo's reader. Missing a promise costs
@@ -42,12 +43,21 @@ export function deliverCommitment(session: TrainingSession, id: string): Trainin
   return settle(spent, c, { status: "kept" }, COMMITMENT_EFFECTS.keptTrust);
 }
 
-/** Pushes a due commitment back one term, once, at a small trust cost. */
-export function extendCommitment(session: TrainingSession, id: string): TrainingSession {
+/** Why a commitment can't be extended right now, or null if it can. */
+export function cannotExtend(session: TrainingSession, c: Commitment, arc?: Arc): string | null {
+  if (c.status !== "open") return "Already resolved.";
+  if (c.extended) return "You've already asked for an extension on this one.";
+  if (c.dueTerm > session.termIndex) return "It isn't due yet.";
+  // There's no next term to push it into, so an extension would dodge the miss.
+  if (isFinalTerm(session, arc)) return "No extensions in your last term: there's no next term to push it to.";
+  return null;
+}
+
+/** Pushes a due commitment back one term, once, at a small trust cost. Not in an arc's final term. */
+export function extendCommitment(session: TrainingSession, id: string, arc?: Arc): TrainingSession {
   const c = find(session, id);
-  if (c.status !== "open") throw new Error("Already resolved.");
-  if (c.extended) throw new Error("You've already asked for an extension on this one.");
-  if (c.dueTerm > session.termIndex) throw new Error("It isn't due yet.");
+  const blocked = cannotExtend(session, c, arc);
+  if (blocked) throw new Error(blocked);
   return settle(session, c, { dueTerm: c.dueTerm + 1, extended: true }, COMMITMENT_EFFECTS.extensionTrust);
 }
 

@@ -8,6 +8,16 @@ export interface Range {
   high: number;
 }
 
+/**
+ * A range as text: "18.3%–21.1%", or one value when both ends print the same
+ * (as D/F/W does at a course's baseline section size, where nothing moves it).
+ */
+export function rangeLabel(r: { low: number; high: number }, fmt: (n: number) => string): string {
+  const low = fmt(r.low);
+  const high = fmt(r.high);
+  return low === high ? low : `${low}–${high}`;
+}
+
 export interface CourseLine {
   courseId: string;
   title: string;
@@ -108,7 +118,7 @@ export function analyzeTerm(program: Program, term: Term, assumptions: Assumptio
       trace.push(
         `${c.id}: average section size ${avgSectionSize.toFixed(1)} vs. baseline ` +
           `${c.baselineSectionSize} moves D/F/W from ${pct(c.baselineDfw)} to ${pct(dfw.mid)} ` +
-          `(range ${pct(dfw.low)}–${pct(dfw.high)}).`,
+          `(range ${rangeLabel(dfw, pct)}).`,
       );
     }
     return {

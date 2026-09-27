@@ -40,7 +40,7 @@ describe("playing The Cap Memo through the UI", () => {
     expect(screen.getByText("Fall, Year 1")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Dr. Cherry.*FYC section caps/ })).toBeTruthy();
     // The People card names the characters and shows what moves them.
-    expect(screen.getByText("Elena Alvarez")).toBeTruthy();
+    expect(screen.getByText("Edwin Alvarez")).toBeTruthy();
     expect(screen.getByText("Chair, Department of English")).toBeTruthy();
     expect(screen.getByLabelText("Adjunct faculty morale")).toBeTruthy();
   });
@@ -116,7 +116,7 @@ describe("playing The Cap Memo through the UI", () => {
     await user.click(screen.getByRole("button", { name: "See the case file" }));
     const filed = screen.getByRole("article", { name: "1. The Cap Memo" });
     // The dean appears twice: sender of the memo you received, recipient of yours.
-    expect(within(filed).getAllByText(/Elena Alvarez, Dean of Arts & Sciences/)).toHaveLength(2);
+    expect(within(filed).getAllByText(/Edwin Alvarez, Dean of Arts & Sciences/)).toHaveLength(2);
     expect(within(filed).getByText(/I'd like to raise caps in ENGL 101 and ENGL 102/)).toBeTruthy();
     expect(within(filed).getByText("Counter with a cost-and-impact memo.")).toBeTruthy();
     expect(within(filed).getByText(/Hold caps at 24 for one year/)).toBeTruthy();

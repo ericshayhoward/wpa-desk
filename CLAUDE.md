@@ -24,7 +24,9 @@ npm run build
 - Every numeric relationship lives in `src/model/assumptions.ts` with a
   range, a confidence label, and sources. Don't hide magic numbers in
   calculations.
-- Projections report ranges (`Range`), never a lone number.
+- Projections report ranges (`Range`), never a lone number. Display text goes
+  through `rangeLabel()`, which shows one value only when both ends print the
+  same (D/F/W at a course's baseline section size).
 - State changes go through `ProgramChange` + `applyChanges()` (immutable).
   Scenario effects and what-if tools share this vocabulary.
 - D/F/W is calibrated to each course's observed `baselineDfw` at

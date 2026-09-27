@@ -5,6 +5,7 @@ import {
   analyzeTerm,
   applyChanges,
   compareTerms,
+  rangeLabel,
   type Program,
   type ProgramChange,
   type Range,
@@ -218,5 +219,7 @@ export function CapCalculator({ program, onSaveEvidence, initialCaps }: Props) {
 // ---------------------------------------------------------------------------
 
 function rangeText(r: Range): string {
-  return `${(r.mid * 100).toFixed(1)}% (${(r.low * 100).toFixed(1)}–${(r.high * 100).toFixed(1)})`;
+  const one = (n: number) => (n * 100).toFixed(1);
+  const spread = rangeLabel(r, one);
+  return spread === one(r.mid) ? `${spread}%` : `${one(r.mid)}% (${spread})`;
 }
