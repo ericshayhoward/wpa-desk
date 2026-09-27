@@ -390,6 +390,8 @@ Other scenario features (see `late-hire.yaml`):
   produced.
 - `cancelUnstaffed` — a scenario-only change resolved at decision time to
   cancel exactly the sections still uncovered.
+- `setPolicy` turns an on/off program policy (`commonSyllabus`,
+  `portfolioAssessment`) on or off; see `syllabus-holdout.yaml`.
 - Relative changes (`adjustCap`, `adjustBudget`) compose with earlier
   decisions; prefer them over absolute ones (`setCap`) for temporary effects
   that revert later.

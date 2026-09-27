@@ -58,7 +58,7 @@ describe("the standard arc", () => {
     const s = startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC);
     expect(s.arcId).toBe("standard");
     expect(s.stage).toBe("assistant_director");
-    expect(s.inbox).toEqual(["cap-memo"]);
+    expect(s.inbox).toEqual(["cap-memo", "syllabus-holdout"]);
   });
 
   it("makes the player interim director in Fall, Year 3, with a note", () => {

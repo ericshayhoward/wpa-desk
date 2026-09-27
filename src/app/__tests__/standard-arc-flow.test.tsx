@@ -21,6 +21,10 @@ describe("playing the standard arc through the UI", () => {
     await user.click(screen.getByRole("button", { name: /Accept the increase/ }));
     await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
     await user.click(screen.getByRole("button", { name: "Back to desk" }));
+    await user.click(screen.getByRole("button", { name: /Alan Pruitt and the common syllabus/ }));
+    await user.click(screen.getByRole("button", { name: /Let it go this year/ }));
+    await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
+    await user.click(screen.getByRole("button", { name: "Back to desk" }));
 
     // Raising caps drives adjuncts away, so The Late Hire arrives in Spring,
     // Year 2 and has to be handled before the term can end.

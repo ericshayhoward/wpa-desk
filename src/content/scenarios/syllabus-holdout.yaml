@@ -1,0 +1,245 @@
+# The Syllabus Holdout — a tenured colleague abandons the common syllabus.
+#
+# Dr. Cherry hands this to the player, a graduate student assistant
+# director, which is itself the problem: responsibility for program
+# coherence without the rank to enforce it. No option is simply right. The
+# accreditation visit in Year 2 is where letting it slide shows up.
+
+id: syllabus-holdout
+title: The Syllabus Holdout
+stages: [assistant_director, wpa]
+
+documents:
+  - from: fyw_director
+    genre: email
+    subject: Alan Pruitt and the common syllabus
+    body: |
+      Could you take this one? At Tuesday's department meeting, Alan Pruitt
+      announced that he's going back to his own syllabus for his ENGL 101
+      section: literary essays and a timed in-class final, no portfolio. His
+      note to me is below.
+
+      The common syllabus isn't a formality. ENGL 102 instructors build on
+      the portfolio and the reflective writing from 101, and two of Alan's
+      students have already turned up at the writing center confused about
+      what they're supposed to be doing. The accreditation team will sample
+      sections next year, too.
+
+      I know you're a graduate student and he's a full professor. That's
+      part of why I'm asking. Someday you'll have to do this without rank on
+      your side, and I'd rather you learn it here, where I can back you up.
+
+      I'd rather you not go to Marcus first; he'll protect Alan. But it's
+      your call.
+
+      — Nora
+
+  - from: fyw_director
+    genre: email
+    subject: "Fwd: Re: ENGL 101 this fall"
+    body: |
+      Nora,
+
+      I've taught composition for twenty-two years, longer than this program
+      has had a syllabus. I'm happy to meet the program's outcomes, but I'll
+      meet them my way. My students read serious prose and learn to write
+      under pressure, which is more than I can say for a semester of
+      "reflection." Academic freedom still means something in this
+      department, I hope.
+
+      — Alan
+
+options:
+  - id: outcomes-conversation
+    label: Meet with him about outcomes, not the syllabus
+    description: Offer to let him keep his readings and assignments if his course meets the shared outcomes and keeps the portfolio that ENGL 102 builds on.
+    cost: { adminHours: 5, politicalCapital: 2 }
+    memo:
+      required: false
+      audience: fyw_director
+      prompt: Summarize the agreement for Dr. Cherry, so there's a record of what he agreed to and what he didn't.
+    consequence:
+      narrative: |
+        You bring the outcomes statement and the ENGL 102 syllabus, and you
+        ask him to show you where his assignments meet each outcome. Most of
+        them do. He won't give up the timed final, but after forty minutes
+        he agrees to add a short portfolio with a reflective cover letter, if
+        he can choose the readings. He calls it a reasonable compromise,
+        which from him is warm.
+
+        Some adjuncts hear that a full professor got to keep his own
+        syllabus, and wonder why they didn't.
+      changes:
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 4 }
+        - { kind: adjustTrust, stakeholder: chair, delta: 1 }
+        - { kind: adjustTrust, stakeholder: students, delta: 2 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -2 }
+      response:
+        from: fyw_director
+        body: That's the conversation I hoped you'd have. You got the portfolio, which is what 102 actually needs. Let's write down what flexibility looks like for everyone, so it isn't just for Alan.
+        warm: That's exactly the conversation I hoped you'd have, and more than I got out of him last year. You got the portfolio, which is what 102 actually needs.
+      delayed:
+        - inTerms: 2
+          note: |
+            The accreditation team's sample includes a portfolio from Alan
+            Pruitt's section. The reflective letter is thin, but it's there,
+            and it maps to the outcomes like everyone else's.
+          changes:
+            - { kind: adjustTrust, stakeholder: accreditor, delta: 3 }
+
+  - id: hand-back
+    label: Tell Dr. Cherry this needs her authority
+    description: Explain that a graduate student can't direct a full professor, and ask her to have the conversation, with you in the room if she wants.
+    cost: { adminHours: 1 }
+    memo:
+      required: false
+      audience: fyw_director
+      prompt: Explain why this conversation needs her rank, and what you can do to help.
+    consequence:
+      narrative: |
+        Dr. Cherry is quiet for a moment, then agrees. She meets with Alan
+        herself and brings you along to take notes. He keeps his readings but
+        adds the portfolio, mostly because she makes clear the request comes
+        from the director, not the assistant.
+
+        She's a little disappointed you didn't try first, and you've learned
+        where the edges of your authority are. Both things are true.
+      changes:
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -1 }
+        - { kind: adjustTrust, stakeholder: students, delta: 1 }
+      response:
+        from: fyw_director
+        body: Fair enough. I'll take it. Next time, I'd like to see you try the first conversation, even if I have to finish it.
+        warm: You're right, and I shouldn't have put you in that position without more cover. Come with me; you'll learn more watching than I'd like to admit.
+        cool: All right. I'll take it. I did hope you'd at least try.
+
+  - id: escalate-chair
+    label: Ask Dr. Hale to direct him to use the syllabus
+    description: Go to the chair and ask him to tell Professor Pruitt that the common syllabus isn't optional.
+    cost: { adminHours: 3, politicalCapital: 3 }
+    memo:
+      required: false
+      audience: chair
+      prompt: Make the case to the chair for why the common syllabus matters, and what you're asking him to do.
+    consequence:
+      narrative: |
+        Dr. Hale hears you out and declines. He won't direct a full professor
+        on how to teach his section, and he mentions the conversation to
+        Alan, who writes you a sharp email and copies Dr. Cherry. Nothing
+        changes in Alan's section.
+
+        Instructors who hear about it think you tried. Dr. Cherry wishes you
+        had come to her first, as she asked.
+      changes:
+        - { kind: adjustTrust, stakeholder: chair, delta: -3 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -4 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 2 }
+        - { kind: adjustMorale, rank: tt, delta: -6 }
+      response:
+        from: chair
+        body: I'm not going to tell a full professor how to teach his own section. If the program has a problem with Alan, that's a conversation for Nora to have with him.
+        warm: I understand why you came to me, and I don't disagree about the syllabus. But it's Nora's conversation to have, not mine to order.
+      delayed:
+        - inTerms: 2
+          note: |
+            The accreditation team's sample includes a section with no
+            portfolio. Their preliminary notes ask how the program ensures
+            that every section of ENGL 101 meets the same outcomes.
+          changes:
+            - { kind: adjustTrust, stakeholder: accreditor, delta: -4 }
+
+  - id: let-it-go
+    label: Let it go this year
+    description: It's one section. Pick your battles and revisit it next year.
+    consequence:
+      narrative: |
+        You don't raise it. Alan teaches his section his way. By mid-term,
+        adjuncts know about it, and a few point out that they were told the
+        portfolio was non-negotiable when they were hired. His students
+        arrive in ENGL 102 in the spring having never written a reflective
+        letter.
+      changes:
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -5 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -2 }
+        - { kind: adjustTrust, stakeholder: students, delta: -2 }
+        - { kind: adjustMorale, rank: adjunct, delta: -3 }
+      delayed:
+        - inTerms: 2
+          note: |
+            The accreditation team's sample includes a section with no
+            portfolio. Their preliminary notes ask how the program ensures
+            that every section of ENGL 101 meets the same outcomes, and Dr.
+            Cherry asks why this never came up.
+          changes:
+            - { kind: adjustTrust, stakeholder: accreditor, delta: -6 }
+            - { kind: adjustTrust, stakeholder: fyw_director, delta: -3 }
+
+  - id: common-outcomes
+    label: Propose common outcomes for everyone
+    description: Turn the fight into a program change. Replace the common syllabus with shared outcomes and a common portfolio, and let every instructor choose readings and assignments.
+    cost: { adminHours: 10, politicalCapital: 3 }
+    requires: { stakeholder: fyw_director, minTrust: 60 }
+    memo:
+      required: true
+      audience: fyw_director
+      prompt: |
+        Propose the change to Dr. Cherry. Say what stays common (outcomes,
+        the portfolio), what becomes each instructor's choice, and how new
+        graduate instructors, who lean on the common syllabus, will be
+        supported.
+    consequence:
+      narrative: |
+        Dr. Cherry takes your proposal to the program committee, which adopts
+        it for next year: shared outcomes, a common portfolio with a
+        reflective letter, and readings and assignments left to each
+        instructor. Alan grumbles that it's the same thing with a new name,
+        and signs on.
+
+        Experienced adjuncts are delighted to have their own syllabi back.
+        First-year graduate instructors are less sure; the common syllabus
+        was what made their first semester survivable.
+      changes:
+        - { kind: setPolicy, policy: commonSyllabus, value: false }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 4 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -3 }
+        - { kind: adjustMorale, rank: adjunct, delta: 3 }
+        - { kind: adjustMorale, rank: ntt, delta: 4 }
+        - { kind: adjustMorale, rank: tt, delta: 3 }
+      response:
+        from: fyw_director
+        body: I've wanted to make this change for two years and never had the occasion. You'll be writing the outcomes guide, you realize.
+      delayed:
+        - inTerms: 2
+          note: |
+            The first year under common outcomes. New graduate instructors
+            adopt the model syllabus you wrote for them almost word for word,
+            and the accreditation team notes that outcomes, not syllabi, are
+            what the program assesses.
+          changes:
+            - { kind: adjustTrust, stakeholder: gta_cohort, delta: 3 }
+            - { kind: adjustTrust, stakeholder: accreditor, delta: 3 }
+
+debrief:
+  weighs:
+    - Rank and responsibility. A graduate assistant director is responsible for program coherence but has no authority over tenured faculty. Knowing when to act, and when a problem needs someone with rank, is part of the job.
+    - Academic freedom and program coherence. Academic freedom protects how faculty teach, but a course in a required sequence also has obligations to the students and instructors who come after it.
+    - Fairness. An exception for a tenured professor is seen by contingent instructors who were told the syllabus was non-negotiable.
+    - Students downstream. ENGL 102 builds on what ENGL 101 teaches; a missing portfolio becomes someone else's problem the next term.
+    - Turning a conflict into policy. Sometimes one holdout shows a rule is too rigid, and sometimes the rule is right and the holdout is wrong.
+  perspectives:
+    - stakeholder: fyw_director
+      view: I gave you this partly because it was hard. I wanted to see whether you'd try, and whether you'd know when to bring me in.
+    - stakeholder: chair
+      view: Senior colleagues have earned some latitude, and I'm not going to police a full professor's syllabus. I'd rather the program solved this itself.
+    - stakeholder: adjunct_faculty
+      view: We follow the common syllabus because our contracts depend on it. When a tenured professor doesn't, we notice who the rules are for.
+    - stakeholder: students
+      view: We just want to know that ENGL 101 prepared us for ENGL 102, whichever section we were in.
+    - stakeholder: accreditor
+      view: We don't require identical syllabi. We do require evidence that every section meets the stated outcomes.
+  readings:
+    - CWPA, WPA Outcomes Statement for First-Year Composition (v3.0, 2014)
+    - AAUP, 1940 Statement of Principles on Academic Freedom and Tenure
+    - 'Edward M. White, "Use It or Lose It: Power and the WPA," WPA: Writing Program Administration 15.1–2 (1991)'
+    - CCCC, Principles for the Postsecondary Teaching of Writing (2015)

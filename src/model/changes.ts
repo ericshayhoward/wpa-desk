@@ -21,7 +21,16 @@ export type ProgramChange =
   | { kind: "adjustBudget"; delta: number }
   | { kind: "adjustMorale"; rank: Rank; delta: number }
   | { kind: "adjustTrust"; stakeholder: StakeholderId; delta: number }
-  | { kind: "adjustPoliticalCapital"; delta: number };
+  | { kind: "adjustPoliticalCapital"; delta: number }
+  | { kind: "setPolicy"; policy: BooleanPolicy; value: boolean };
+
+/** Program policies that are simply on or off. */
+export type BooleanPolicy = "commonSyllabus" | "portfolioAssessment";
+export const BOOLEAN_POLICIES: readonly BooleanPolicy[] = ["commonSyllabus", "portfolioAssessment"];
+const POLICY_LABELS: Record<BooleanPolicy, string> = {
+  commonSyllabus: "Common syllabus",
+  portfolioAssessment: "Program-wide portfolio assessment",
+};
 
 /** Returns a new program with the changes applied in order. The input is never mutated. */
 export function applyChanges(program: Program, changes: ProgramChange[]): Program {
@@ -106,6 +115,10 @@ function applyOne(p: Program, change: ProgramChange): void {
       p.politicalCapital = Math.max(0, p.politicalCapital + change.delta);
       return;
     }
+    case "setPolicy": {
+      p.policies[change.policy] = change.value;
+      return;
+    }
   }
 }
 
@@ -180,6 +193,14 @@ export function parseChange(raw: unknown, where = "change"): ProgramChange {
     }
     case "adjustPoliticalCapital":
       return { kind: "adjustPoliticalCapital", delta: num("delta") };
+    case "setPolicy": {
+      const policy = str("policy");
+      if (!(BOOLEAN_POLICIES as readonly string[]).includes(policy)) {
+        throw new Error(`${where}: "policy" must be one of ${BOOLEAN_POLICIES.join(", ")}`);
+      }
+      if (typeof r.value !== "boolean") throw new Error(`${where}: "value" must be true or false`);
+      return { kind: "setPolicy", policy: policy as BooleanPolicy, value: r.value };
+    }
     default:
       throw new Error(`${where}: unknown change kind "${String(r.kind)}"`);
   }
@@ -241,5 +262,7 @@ export function describeChange(program: Program, change: ProgramChange): string 
       }${Math.abs(change.delta)}`;
     case "adjustPoliticalCapital":
       return `Political capital ${change.delta >= 0 ? "+" : "−"}${Math.abs(change.delta)}`;
+    case "setPolicy":
+      return `${POLICY_LABELS[change.policy]}: ${program.policies[change.policy] ? "yes" : "no"} → ${change.value ? "yes" : "no"}`;
   }
 }

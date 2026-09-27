@@ -57,15 +57,17 @@ describe("playing The Cap Memo through the UI", () => {
     expect(screen.getByText(/Something from it will come back in 2 terms/)).toBeTruthy();
     expect(screen.getByText(/Who actually bears the savings/)).toBeTruthy();
 
-    // Back at the desk, the budget is now in surplus and the inbox is empty.
+    // Back at the desk, the budget is now in surplus; The Syllabus Holdout is still waiting.
     await user.click(screen.getByRole("button", { name: "Back to desk" }));
     expect(screen.getByText("$9,400 surplus")).toBeTruthy();
-    expect(screen.getByText("Nothing waiting on you this term.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /FYC section caps/ })).toBeNull();
+    expect(screen.getByRole("button", { name: /Alan Pruitt and the common syllabus/ })).toBeTruthy();
 
     // Two terms later, the delayed consequence lands.
-    await user.click(screen.getByRole("button", { name: /Advance to Spring, Year 1/ }));
+    await user.click(screen.getByRole("button", { name: "Leave these for next term and advance" }));
     await submitYearEndReport(user);
-    await user.click(screen.getByRole("button", { name: /Advance to Fall, Year 2/ }));
+    await user.click(screen.getByRole("button", { name: "Leave these for next term and advance" }));
+    expect(screen.getByText("Fall, Year 2")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Since last term" })).toBeTruthy();
     expect(screen.getByText(/Two experienced instructors take work elsewhere/)).toBeTruthy();
   });
