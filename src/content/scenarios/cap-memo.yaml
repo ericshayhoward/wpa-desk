@@ -1,0 +1,193 @@
+# The Cap Memo — the dean wants higher FYC caps to close a deficit.
+#
+# Numbers referenced in the prose come from the Midland State model:
+# a $8,600-per-term deficit; caps of 27 cut 5 fall sections, all adjunct.
+
+id: cap-memo
+title: The Cap Memo
+stages: [assistant_director, wpa]
+trigger:
+  minTerm: 1
+  requiresDeficit: true
+
+documents:
+  - from: dean
+    genre: memo
+    subject: FYC section caps for next fall
+    body: |
+      As you know, the college closed last year with a shortfall, and the
+      provost has asked every unit to find savings. First-year writing is one
+      of our largest instructional budgets, and your program is running about
+      $8,600 over its instruction line each term.
+
+      I'd like to raise caps in ENGL 101 and ENGL 102 from 24 to 27 beginning
+      next fall. Several of our peer institutions run these courses at 25 or
+      higher, and I don't see another lever of this size.
+
+      I need to confirm the schedule with the registrar by Friday. Let me know
+      if you see any problems.
+
+      — Dean Alvarez, College of Arts & Sciences
+
+suggestedTools: [cap_calculator]
+
+options:
+  - id: accept
+    label: Accept the increase
+    description: Confirm caps of 27 and let the registrar rebuild the schedule.
+    cost: { adminHours: 1 }
+    memo:
+      required: false
+      audience: dean
+      prompt: Confirm the change and set expectations for how it will be carried out.
+    consequence:
+      narrative: |
+        The registrar rebuilds the schedule. Five fall sections disappear, all
+        of them taught by adjuncts. The deficit closes on paper, and the dean
+        thanks you at the next chairs' meeting.
+      changes:
+        - { kind: setCap, courseId: ENGL101, cap: 27 }
+        - { kind: setCap, courseId: ENGL102, cap: 27 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 8 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -12 }
+        - { kind: adjustTrust, stakeholder: students, delta: -3 }
+        - { kind: adjustPoliticalCapital, delta: 4 }
+      response:
+        from: dean
+        body: Thank you for being a team player on this. It makes my conversation with the provost much easier.
+      delayed:
+        - inTerms: 2
+          note: |
+            Adjuncts learned about the lost sections from the schedule, not from
+            you. Two experienced instructors take work elsewhere, and those who
+            stay are responding to more student writing each term.
+          changes:
+            - { kind: adjustHeadcount, rank: adjunct, delta: -2 }
+            - { kind: adjustMorale, rank: adjunct, delta: -10 }
+            - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -3 }
+
+  - id: counter-with-data
+    label: Counter with a cost-and-impact memo
+    description: Make the case for holding caps, backed by your program's numbers.
+    cost: { adminHours: 6, politicalCapital: 5 }
+    memo:
+      required: true
+      audience: dean
+      prompt: |
+        Make the case for holding caps. The dean has to defend this decision
+        to the provost, so numbers that speak to the college's priorities
+        (budget, retention) will carry more weight than principle alone.
+    persuasion:
+      evidenceKinds: [cap_analysis]
+      persuaded:
+        narrative: |
+          The dean reads your analysis closely. Nearly all of the savings come
+          out of adjunct sections, while projected D/F/W in gateway courses
+          rises, and D/F/W is a retention number the provost watches. The dean
+          agrees to hold caps at 24 for one year and covers the gap from a
+          vacant staff line.
+        changes:
+          - { kind: adjustBudget, delta: 8600 }
+          - { kind: adjustTrust, stakeholder: dean, delta: 3 }
+          - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 6 }
+          - { kind: adjustTrust, stakeholder: students, delta: 2 }
+        response:
+          from: dean
+          body: |
+            Your numbers make a stronger case than I expected. I'll hold caps
+            for one year and cover the gap from the vacant coordinator line.
+            I'll want to see next year's D/F/W data, and I'd like you to find
+            at least part of this gap yourself by next fall.
+        delayed:
+          - inTerms: 2
+            note: |
+              The dean's one-year reprieve is up for review. The vacant line has
+              been filled, and without new savings the instruction budget
+              returns to its old level.
+            changes:
+              - { kind: adjustBudget, delta: -8600 }
+      unpersuaded:
+        narrative: |
+          Your memo argues from principle and professional standards but offers
+          no local numbers. The dean appreciates the conviction, but nothing in
+          it changes the math. Caps go to 27.
+        changes:
+          - { kind: setCap, courseId: ENGL101, cap: 27 }
+          - { kind: setCap, courseId: ENGL102, cap: 27 }
+          - { kind: adjustTrust, stakeholder: dean, delta: -4 }
+          - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 3 }
+        response:
+          from: dean
+          body: I share your values here, but I need numbers I can take to the provost. The change will go ahead.
+
+  - id: compromise-25
+    label: Propose a compromise at 25
+    description: Offer caps of 25 for one year while you study the effects.
+    cost: { adminHours: 3, politicalCapital: 2 }
+    memo:
+      required: false
+      audience: dean
+      prompt: Propose the compromise and say what you'll measure during the year.
+    consequence:
+      narrative: |
+        The dean accepts the middle ground. Caps of 25 trim about one section
+        per term and less than half the deficit; the rest is still yours to
+        solve. Adjuncts lose a little work, and you've implicitly promised to
+        study what happens.
+      changes:
+        - { kind: setCap, courseId: ENGL101, cap: 25 }
+        - { kind: setCap, courseId: ENGL102, cap: 25 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 3 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -4 }
+      response:
+        from: dean
+        body: A reasonable middle ground. Let's revisit after a year of data.
+      delayed:
+        - inTerms: 2
+          note: The one-year compromise is up for review, and the dean asks what the data showed.
+          changes: []
+
+  - id: consult-first
+    label: Ask for time to consult instructors
+    description: Tell the dean you need to hear from the people who teach these courses first.
+    cost: { adminHours: 4, politicalCapital: 3 }
+    memo:
+      required: false
+      audience: dean
+      prompt: Explain why you want to consult before the schedule is set.
+    consequence:
+      narrative: |
+        You ask for two weeks. The dean grants one, then raises caps to 27
+        anyway because the registrar's deadline won't move. But instructors
+        heard about the change from you first, and some of them noticed that
+        you asked.
+      changes:
+        - { kind: setCap, courseId: ENGL101, cap: 27 }
+        - { kind: setCap, courseId: ENGL102, cap: 27 }
+        - { kind: adjustTrust, stakeholder: dean, delta: -3 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 4 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: 2 }
+      response:
+        from: dean
+        body: I understand wanting to consult, but the registrar's deadline is real. We're going ahead at 27.
+
+debrief:
+  weighs:
+    - Who actually bears the savings. In a program staffed mostly by contingent faculty, fewer sections usually means lost income for adjuncts, not a cost spread evenly across the program.
+    - Class size and feedback. More students per section means more time responding to writing, which for adjuncts is usually unpaid.
+    - Credibility with the dean. Accepting builds goodwill; countering spends it, and works best when the evidence speaks to the dean's own priorities.
+    - Short-term fixes versus a structural deficit. A one-year reprieve moves the problem forward in time rather than solving it.
+    - Process. Who was consulted before the decision, and who found out afterward.
+  perspectives:
+    - stakeholder: dean
+      view: The deficit is real and caps are the lever I can see. I need a solution I can defend to the provost.
+    - stakeholder: adjunct_faculty
+      view: Fewer sections means less income, and bigger sections mean more unpaid grading. We rarely hear about these decisions until the schedule changes.
+    - stakeholder: students
+      view: Bigger classes mean less time with the instructor, especially for students who need it most.
+    - stakeholder: provost_office
+      view: We want the savings, and we also watch first-year retention. Rising D/F/W in gateway courses is a problem we'll notice.
+  readings:
+    - CCCC, Principles for the Postsecondary Teaching of Writing (2015)
+    - CCCC, Statement on Working Conditions for Non-Tenure-Track Writing Faculty (2016)
+    - CWPA, Portland Resolution — Guidelines for Writing Program Administrator Positions (1992)

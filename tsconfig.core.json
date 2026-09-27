@@ -1,0 +1,11 @@
+{
+  // The program model and training layer must stay pure: no DOM, no React,
+  // no UI types. Compiling them with only the ES library enforces that.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": ["src/model", "src/training"],
+  "exclude": ["src/**/__tests__"]
+}
