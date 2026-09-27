@@ -60,8 +60,7 @@ npm run build
 
 ## Environment notes
 
-- On this Mac, `/usr/bin/git` is blocked by an unaccepted Xcode license; use
-  `/Library/Developer/CommandLineTools/usr/bin/git` until it's accepted.
+- Remote: `origin` is the private GitHub repo `ericshayhoward/wpa-desk`.
 - The desktop app's preview server can't access Google Drive folders
   (EPERM on cwd), so browser previews of this repo fail there. Verify UI
   with the jsdom playthrough tests instead.
