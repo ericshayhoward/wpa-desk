@@ -24,13 +24,38 @@ export function EndingView({ ending, report, program, author, onDossier, onNewSe
         ))}
       </section>
 
+      {ending.workOn && ending.workOn.length > 0 && (
+        <section className="card feedback" aria-labelledby="work-on">
+          <h3 id="work-on">What you need to work on</h3>
+          {ending.gateNote && <p className="banner bad">{ending.gateNote}</p>}
+          {ending.workOn.map((f) => (
+            <div key={f.factorId} className="feedback-item">
+              <h4>{f.heading}</h4>
+              <p>{f.text}</p>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {ending.didWell && ending.didWell.length > 0 && (
+        <section className="card feedback" aria-labelledby="did-well">
+          <h3 id="did-well">What you did well</h3>
+          {ending.didWell.map((f) => (
+            <div key={f.factorId} className="feedback-item">
+              <h4>{f.heading}</h4>
+              <p>{f.text}</p>
+            </div>
+          ))}
+        </section>
+      )}
+
       <section className="card">
         <h3>Why this ending</h3>
         <p>
           Your record scored <strong>{ending.score}</strong> of 100. A university tenure-track job needed {tenureTrackAt} and a
           dissertation finished or on track; a two-year college position needed {twoYearAt}.
         </p>
-        {ending.gateNote && <p className="banner bad">{ending.gateNote}</p>}
+        {ending.gateNote && !ending.workOn?.length && <p className="banner bad">{ending.gateNote}</p>}
         <div className="table-scroll">
           <table className="compare">
             <thead>

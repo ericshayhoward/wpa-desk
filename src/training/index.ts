@@ -17,3 +17,4 @@ export * from "./history";
 export * from "./report";
 export * from "./ending";
 export * from "./staffing";
+export * from "./feedback";

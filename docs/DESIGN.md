@@ -240,6 +240,16 @@ Built so far (`src/content/arcs/standard.yaml`, `src/training/arc.ts`):
   also needs the dissertation finished or on track, and the ending screen
   says so when that gate is what held it back. Reports and the ending are
   in the dossier and the Markdown export.
+- **Honest feedback** (`src/training/feedback.ts`) — the ending screen leads
+  with "What you need to work on", weakest area first, before the score.
+  Each point names the player's own decisions and numbers (the choices that
+  cost the most trust, memos that failed and why, missed or absent
+  commitments, the terms that starved the dissertation) and says what to do
+  differently. The dissertation gate states the hours short and that it's
+  why the offer didn't come. "What you did well" follows, and doesn't
+  flatter: a finished dissertation next to a weak record is named for what
+  it is. Feedback is in the case files and export, so instructors see what
+  the student was told.
 - **Routine staffing** (`routineStaffing`; `src/training/staffing.ts`) —
   whenever a term has sections without an instructor and no scenario is
   handling it (The Late Hire), the director decides before the term (or the

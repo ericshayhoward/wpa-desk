@@ -378,3 +378,6 @@ del { background: var(--badge-illustrative); color: var(--muted); }
 .choice-bar { height: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; overflow: hidden; margin: 4px 0; }
 .choice-bar > div { height: 100%; background: var(--accent); }
 .choice-list p { margin: 2px 0 0; }
+
+.feedback-item h4 { margin: 12px 0 4px; }
+.feedback-item p { margin: 0; }

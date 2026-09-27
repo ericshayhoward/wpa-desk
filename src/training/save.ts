@@ -5,7 +5,7 @@ import { CAREER_STAGES, DEFAULT_SETTINGS, type Arc, type Scenario, type Training
 
 export const SAVE_FORMAT = "wpa-desk-save";
 /** Bump when the saved shape changes, and add a migration in parseSave. */
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 export interface SaveSummary {
   institution: string;
@@ -64,6 +64,7 @@ export function parseSave(raw: unknown, scenarios: Scenario[], arcs: Arc[] = [])
   if (f.version < 5) rawSession = { settings: DEFAULT_SETTINGS, ...obj(rawSession, "The saved session") };
   // v6 added routine staffing decisions.
   if (f.version < 6) rawSession = { staffingLog: [], ...obj(rawSession, "The saved session") };
+  // v7 added feedback to endings; it's optional, so earlier endings load as they were.
 
   const session = parseSession(rawSession, scenarios, arcs);
   return {

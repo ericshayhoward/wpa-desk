@@ -445,6 +445,13 @@ export interface EndingFactor {
   explanation: string;
 }
 
+/** One point of the ending's feedback, tied to a scoring factor. */
+export interface FeedbackItem {
+  factorId: string;
+  heading: string;
+  text: string;
+}
+
 /** How the arc ended, fixed when the capstone was submitted. */
 export interface EndingResult {
   id: EndingId;
@@ -457,6 +464,10 @@ export interface EndingResult {
   gateNote: string | null;
   thresholds: { tenureTrackAt: number; twoYearAt: number };
   termIndex: number;
+  /** What the player needs to work on, weakest first. Absent in endings from before feedback existed. */
+  workOn?: FeedbackItem[];
+  /** What they did well. */
+  didWell?: FeedbackItem[];
 }
 
 export interface DissertationStatus {

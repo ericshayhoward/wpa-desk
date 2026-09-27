@@ -60,7 +60,9 @@ describe("playing the standard arc through the UI", () => {
     await user.click(screen.getByRole("button", { name: "Submit the report and finish the arc" }));
     expect(screen.getByText("The end of the arc")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Why this ending" })).toBeTruthy();
-    expect(screen.getByText("Recommendation letter")).toBeTruthy();
+    expect(screen.getAllByText("Recommendation letter").length).toBeGreaterThan(0);
+    // The ending says plainly what to work on, before the score.
+    expect(screen.getByRole("heading", { name: "What you need to work on" })).toBeTruthy();
     expect(screen.getByRole("article", { name: "Year 3 annual report" })).toBeTruthy();
 
     // Reports and the ending are in the case files.

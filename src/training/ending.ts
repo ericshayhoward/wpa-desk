@@ -5,8 +5,9 @@
  * rather than a grade.
  */
 import type { StakeholderId } from "../model";
+import { endingFeedback } from "./feedback";
 import { dissertationStatus, DISSERTATION_LABELS } from "./history";
-import type { Arc, EndingFactor, EndingId, EndingResult, TermRecord, TrainingSession } from "./types";
+import type { Arc, EndingFactor, EndingId, EndingResult, Scenario, TermRecord, TrainingSession } from "./types";
 
 /**
  * Factor weights and scales. Illustrative: they set how much each part of a
@@ -22,8 +23,8 @@ export const ENDING_RULES = {
   dissertation: { max: 20 },
 } as const;
 
-/** Scores a session whose history includes its final term. */
-export function computeEnding(session: TrainingSession, arc: Arc): EndingResult {
+/** Scores a session whose history includes its final term. Pass the scenarios so feedback can name decisions. */
+export function computeEnding(session: TrainingSession, arc: Arc, scenarios: Scenario[] = []): EndingResult {
   const spec = arc.endings;
   if (!spec) throw new Error(`${arc.title} has no endings.`);
   const final = session.history[session.history.length - 1];
@@ -65,11 +66,14 @@ export function computeEnding(session: TrainingSession, arc: Arc): EndingResult 
   let gateNote: string | null = null;
   if (id === "tenure_track" && diss.status === "behind") {
     id = "two_year";
+    const needed = Math.round((arc.dissertation?.onTrackAt ?? 1) * diss.hoursToFinish);
     gateNote =
-      "Your record was strong enough for a university tenure-track job, but those searches need the dissertation finished or on track to defend by summer, and yours was behind.";
+      `Your record was strong enough for a university tenure-track job, but those searches need the dissertation finished or on track to defend by summer, and yours wasn't: ${diss.hours} of the ${needed} hours needed to be on track. The administrative record got you the interviews; the dissertation is why the offer didn't come.`;
   }
   const outcome = spec.outcomes[id];
+  const feedback = endingFeedback(session, arc, factors, diss, gateNote !== null, scenarios);
   return {
+    ...feedback,
     id,
     title: outcome.title,
     narrative: outcome.narrative,

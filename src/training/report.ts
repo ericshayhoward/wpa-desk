@@ -191,7 +191,7 @@ export function submitReport(
   };
   if (spec.capstone) {
     next = { ...next, history: [...next.history, recordTerm(next)] };
-    next = { ...next, ending: computeEnding(next, arc) };
+    next = { ...next, ending: computeEnding(next, arc, scenarios) };
   }
   return { session: next, report };
 }
