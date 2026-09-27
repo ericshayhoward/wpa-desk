@@ -15,9 +15,9 @@ documents:
     subject: Alan Pruitt and the common syllabus
     body: |
       Could you take this one? At Tuesday's department meeting, Alan Pruitt
-      announced that he's going back to his own syllabus for his ENGL 101
-      section: literary essays and a timed in-class final, no portfolio. His
-      note to me is below.
+      announced a return to a personal syllabus in one ENGL 101 section:
+      literary essays and a timed in-class final, no portfolio. Alan's note
+      to me is below.
 
       The common syllabus isn't a formality. ENGL 102 instructors build on
       the portfolio and the reflective writing from 101, and two of Alan's
@@ -25,11 +25,11 @@ documents:
       what they're supposed to be doing. The accreditation team will sample
       sections next year, too.
 
-      I know you're a graduate student and he's a full professor. That's
+      I know you're a graduate student and Alan is a full professor. That's
       part of why I'm asking. Someday you'll have to do this without rank on
       your side, and I'd rather you learn it here, where I can back you up.
 
-      I'd rather you not go to Marcus first; he'll protect Alan. But it's
+      I'd rather you not go to Marcus first; Marcus will protect Alan. But it's
       your call.
 
       — Nora
@@ -51,23 +51,23 @@ documents:
 
 options:
   - id: outcomes-conversation
-    label: Meet with him about outcomes, not the syllabus
-    description: Offer to let him keep his readings and assignments if his course meets the shared outcomes and keeps the portfolio that ENGL 102 builds on.
+    label: Meet with Alan about outcomes, not the syllabus
+    description: Offer to let Alan keep the readings and assignments if the course meets the shared outcomes and keeps the portfolio that ENGL 102 builds on.
     cost: { adminHours: 5, politicalCapital: 2 }
     memo:
       required: false
       audience: fyw_director
-      prompt: Summarize the agreement for Dr. Cherry, so there's a record of what he agreed to and what he didn't.
+      prompt: Summarize the agreement for Dr. Cherry, so there's a record of what Alan agreed to and what Alan didn't.
     consequence:
       narrative: |
         You bring the outcomes statement and the ENGL 102 syllabus, and you
-        ask him to show you where his assignments meet each outcome. Most of
-        them do. He won't give up the timed final, but after forty minutes
-        he agrees to add a short portfolio with a reflective cover letter, if
-        he can choose the readings. He calls it a reasonable compromise,
-        which from him is warm.
+        ask Alan to show you where each assignment meets an outcome. Most of
+        them do. The timed final stays, but after forty minutes Alan agrees
+        to add a short portfolio with a reflective cover letter, in exchange
+        for choosing the readings. Alan calls it a reasonable compromise,
+        which from Alan is warm.
 
-        Some adjuncts hear that a full professor got to keep his own
+        Some adjuncts hear that a full professor got to keep a personal
         syllabus, and wonder why they didn't.
       changes:
         - { kind: adjustTrust, stakeholder: fyw_director, delta: 4 }
@@ -77,7 +77,7 @@ options:
       response:
         from: fyw_director
         body: That's the conversation I hoped you'd have. You got the portfolio, which is what 102 actually needs. Let's write down what flexibility looks like for everyone, so it isn't just for Alan.
-        warm: That's exactly the conversation I hoped you'd have, and more than I got out of him last year. You got the portfolio, which is what 102 actually needs.
+        warm: That's exactly the conversation I hoped you'd have, and more than I got out of Alan last year. You got the portfolio, which is what 102 actually needs.
       delayed:
         - inTerms: 2
           note: |
@@ -98,8 +98,8 @@ options:
     consequence:
       narrative: |
         Dr. Cherry is quiet for a moment, then agrees. She meets with Alan
-        herself and brings you along to take notes. He keeps his readings but
-        adds the portfolio, mostly because she makes clear the request comes
+        herself and brings you along to take notes. Alan keeps the readings
+        but adds the portfolio, mostly because she makes clear the request comes
         from the director, not the assistant.
 
         She's a little disappointed you didn't try first, and you've learned
@@ -114,18 +114,18 @@ options:
         cool: All right. I'll take it. I did hope you'd at least try.
 
   - id: escalate-chair
-    label: Ask Dr. Hale to direct him to use the syllabus
-    description: Go to the chair and ask him to tell Professor Pruitt that the common syllabus isn't optional.
+    label: Ask Dr. Hale to direct Alan to use the syllabus
+    description: Go to the chair and ask for a directive to Professor Pruitt that the common syllabus isn't optional.
     cost: { adminHours: 3, politicalCapital: 3 }
     memo:
       required: false
       audience: chair
-      prompt: Make the case to the chair for why the common syllabus matters, and what you're asking him to do.
+      prompt: Make the case to the chair for why the common syllabus matters, and what you're asking the chair to do.
     consequence:
       narrative: |
-        Dr. Hale hears you out and declines. He won't direct a full professor
-        on how to teach his section, and he mentions the conversation to
-        Alan, who writes you a sharp email and copies Dr. Cherry. Nothing
+        Dr. Hale hears you out and declines to direct a full professor on
+        how to teach a section, then mentions the conversation to Alan, who
+        writes you a sharp email and copies Dr. Cherry. Nothing
         changes in Alan's section.
 
         Instructors who hear about it think you tried. Dr. Cherry wishes you
@@ -137,7 +137,7 @@ options:
         - { kind: adjustMorale, rank: tt, delta: -6 }
       response:
         from: chair
-        body: I'm not going to tell a full professor how to teach his own section. If the program has a problem with Alan, that's a conversation for Nora to have with him.
+        body: I'm not going to tell a full professor how to teach a section. If the program has a problem with Alan, that's a conversation for Nora to have.
         warm: I understand why you came to me, and I don't disagree about the syllabus. But it's Nora's conversation to have, not mine to order.
       delayed:
         - inTerms: 2
@@ -153,9 +153,10 @@ options:
     description: It's one section. Pick your battles and revisit it next year.
     consequence:
       narrative: |
-        You don't raise it. Alan teaches his section his way. By mid-term,
-        adjuncts know about it, and a few point out that they were told the
-        portfolio was non-negotiable when they were hired. His students
+        You don't raise it, and Alan's section runs on Alan's own syllabus.
+        By mid-term, adjuncts know about it, and a few point out that they
+        were told the portfolio was non-negotiable when they were hired.
+        Alan's students
         arrive in ENGL 102 in the spring having never written a reflective
         letter.
       changes:

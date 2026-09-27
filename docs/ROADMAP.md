@@ -22,8 +22,9 @@ Living list of what's next and what's further out. Design details live in
 - **Memory** — characters quote the player's past memos and commitments back
   ("Last fall you told me caps above 25 would raise D/F/W…"). Commitments
   link to the memo they came from.
-- **More scenarios** — The Detector, The Dual-Enrollment Drop, The DSP Pilot,
-  The Accreditation Ask, and the rest of the v1 set in `DESIGN.md`.
+- ~~**More scenarios**~~ — done: the v1 set in `DESIGN.md` (plus The Cap
+  Review and The Handoff) is in the standard arc. Follow-up: short minor
+  items to fill each term's inbox (see "Inbox density" in `DESIGN.md`).
 - **Named instructors** — a small cast of individual instructors alongside
   the aggregate pools.
 

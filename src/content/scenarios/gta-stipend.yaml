@@ -24,7 +24,8 @@ documents:
       section we teach, and our contracts allow one section a term. After
       fees, many of us take second jobs to pay rent.
 
-      We teach a quarter of the program's sections. We ask the university to
+      We teach {{sections_gta}} of the program's {{sections}} sections this
+      term. We ask the university to
       raise graduate stipends to a living wage, to waive the fees it charges
       us, and to guarantee funding for the full length of our degrees.
 
@@ -169,7 +170,7 @@ debrief:
     - What your peers will remember. Every option costs something with the people you work beside, and you'll be one of them again next year.
   perspectives:
     - stakeholder: gta_cohort
-      view: We're asking for enough to live on while we teach a quarter of the program. We hoped the person in that office, who is one of us, would stand with us.
+      view: We're asking for enough to live on while we teach a large share of the program. We hoped the person in that office, who is one of us, would stand with us.
     - stakeholder: dean
       view: I don't set stipends, and I can't have the program office taking public sides on a campaign aimed at the university. Bring me the case and I'll carry it.
     - stakeholder: chair

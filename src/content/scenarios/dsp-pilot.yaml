@@ -5,8 +5,8 @@
 # course, ENGL 101S, after a guided self-assessment. The results are
 # mixed, and the program has to decide how fall students will be placed.
 #
-# Model effect of DSP: some students test scores would place in the studio
-# choose standard ENGL 101 instead. Illustrative shift: studio demand × 0.8,
+# Model effect of DSP: some students whose test scores would place them in
+# the studio choose standard ENGL 101 instead. Illustrative shift: studio demand × 0.8,
 # ENGL 101 demand × 1.04 (roughly the same students moving). D/F/W effects
 # of placement aren't modeled; the documents report the pilot's own results.
 
