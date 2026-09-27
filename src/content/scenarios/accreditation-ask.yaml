@@ -1,0 +1,216 @@
+# The Accreditation Ask — direct evidence of student writing, in six weeks.
+#
+# Midland hasn't assessed first-year writing program-wide in three years,
+# and the last report promised it would. The accreditor's trust coming in
+# reflects earlier choices (The Syllabus Holdout lands its consequences at
+# the start of this term). The options are about what counts as evidence
+# and who does the work.
+
+id: accreditation-ask
+title: The Accreditation Ask
+stages: [assistant_director, wpa]
+trigger:
+  minTerm: 3
+  term: fall
+urgent: true
+
+documents:
+  - from: provost_office
+    genre: memo
+    subject: Accreditation visit, evidence for first-year writing
+    body: |
+      The accreditation team visits in six weeks. For general education
+      written communication, they'll ask four things: what the outcomes
+      are, how the program assesses them with direct evidence of student
+      work, what the results showed, and what the program changed because
+      of them.
+
+      Our last report said first-year writing would begin assessing student
+      portfolios. That was three years ago, and as far as I know it hasn't
+      happened. I need the program's evidence, or an honest account of why
+      there isn't any, four weeks before the visit.
+
+      — Grace Okafor
+      To: Dr. Nora Cherry, Director of First-Year Writing
+
+  - from: fyw_director
+    genre: note
+    subject: What can we do honestly in six weeks?
+    body: |
+      I'll host the team when they come. I need you to build the evidence.
+      We have a common portfolio, outcomes, and last spring's portfolios in
+      the archive. We don't have a rubric anyone has been trained on, or a
+      single reader.
+
+      What can we do honestly in six weeks? I'd rather show the team a small
+      real assessment than a big fake one.
+
+      — Nora
+
+options:
+  - id: paid-readers
+    label: Score a sample of portfolios with paid readers
+    description: Draw a random sample of last spring's portfolios, build a rubric from the outcomes, and pay eight instructors to norm and score them.
+    cost: { adminHours: 12, politicalCapital: 2 }
+    memo:
+      required: false
+      audience: provost_office
+      prompt: Tell Associate Provost Okafor what you assessed, how, what it showed, and what the program will do next.
+    consequence:
+      narrative: |
+        You draw 80 portfolios at random and build a rubric from the
+        outcomes with Dr. Cherry. Eight instructors, most of them adjuncts,
+        spend a paid Saturday norming and scoring. Students do well on
+        organization and poorly on using sources, and the readers have
+        ideas about why.
+
+        It's a small assessment and you say so. It's also real: direct
+        evidence, a finding, and a plan to change the source-use unit next
+        year. The readers are paid $150 each, which comes out of this
+        term's instruction line.
+      changes:
+        - { kind: setPolicy, policy: portfolioAssessment, value: true }
+        - { kind: adjustBudget, delta: -1200 }
+        - { kind: adjustTrust, stakeholder: accreditor, delta: 8 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 4 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 4 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 4 }
+        - { kind: adjustMorale, rank: adjunct, delta: 3 }
+      response:
+        from: provost_office
+        body: Small, honest, and with a finding you're acting on. That's what they want to see.
+        warm: This is the best thing I'll hand the team. Small, honest, and with a finding you're acting on.
+        cool: Thank you. I'll include it. I hope the program keeps this going after the visit.
+      delayed:
+        - inTerms: 1
+          note: |
+            The reader stipends are paid, and the instruction line returns to
+            its usual level. Two of the readers ask whether they can do it
+            again next year.
+          changes:
+            - { kind: adjustBudget, delta: 1200 }
+        - inTerms: 2
+          note: |
+            The accreditation team's report commends first-year writing's
+            "emerging culture of assessment" and recommends that it continue.
+          changes:
+            - { kind: adjustTrust, stakeholder: accreditor, delta: 3 }
+            - { kind: adjustTrust, stakeholder: provost_office, delta: 2 }
+
+  - id: volunteer-readers
+    label: Score a sample of portfolios with volunteer readers
+    description: The same assessment, without the stipends. Ask instructors to volunteer a Saturday for the program.
+    cost: { adminHours: 12, politicalCapital: 3 }
+    memo:
+      required: false
+      audience: provost_office
+      prompt: Tell Associate Provost Okafor what you assessed, how, what it showed, and what the program will do next.
+    consequence:
+      narrative: |
+        The assessment works. Eight readers score 80 portfolios, and the
+        findings on source use are real. But the volunteers are mostly
+        adjuncts and first-year GTAs, who felt they couldn't say no to the
+        program office, and they spent an unpaid Saturday doing it. Several
+        say so, not to you.
+      changes:
+        - { kind: setPolicy, policy: portfolioAssessment, value: true }
+        - { kind: adjustTrust, stakeholder: accreditor, delta: 8 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 3 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 2 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -5 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -2 }
+        - { kind: adjustMorale, rank: adjunct, delta: -4 }
+      response:
+        from: provost_office
+        body: This is exactly the kind of evidence they want. Please thank the readers for me.
+      delayed:
+        - inTerms: 2
+          note: |
+            The accreditation team's report commends first-year writing's
+            assessment. When you ask for readers again, only two volunteer.
+          changes:
+            - { kind: adjustTrust, stakeholder: accreditor, delta: 3 }
+
+  - id: grades-report
+    label: Report grades and D/F/W rates
+    description: Six weeks isn't enough to do assessment well. Report completion rates and grade distributions, and promise direct assessment next year.
+    cost: { adminHours: 3 }
+    memo:
+      required: false
+      audience: provost_office
+      prompt: Explain what the program can show now, why, and what it will do next year.
+    consequence:
+      narrative: |
+        You send grade distributions and D/F/W rates by course, with a
+        paragraph promising portfolio assessment next year. Okafor includes
+        it, and warns you that grades are indirect evidence: they show who
+        passed, not what students can do as writers.
+      changes:
+        - { kind: adjustTrust, stakeholder: accreditor, delta: -5 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: -2 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -2 }
+      response:
+        from: provost_office
+        body: I'll send it, but I'd be surprised if the team accepts grades as evidence of learning.
+      delayed:
+        - inTerms: 2
+          note: |
+            The accreditation team's final report requires a monitoring
+            report on direct assessment of general education writing within
+            two years. The provost's office asks who in the program will
+            write it.
+          changes:
+            - { kind: adjustTrust, stakeholder: accreditor, delta: -3 }
+            - { kind: adjustTrust, stakeholder: provost_office, delta: -3 }
+            - { kind: adjustPoliticalCapital, delta: -3 }
+
+  - id: standardized-test
+    label: License a standardized writing exam
+    description: Buy a commercial writing assessment, give it to a sample of ENGL 102 students, and report national percentiles.
+    cost: { adminHours: 4, politicalCapital: 2 }
+    memo:
+      required: false
+      audience: provost_office
+      prompt: Explain what the exam measures, and why the program chose it.
+    consequence:
+      narrative: |
+        The testing company delivers a report with national percentiles in
+        three weeks. The accreditation team accepts it as direct evidence,
+        without enthusiasm: the exam measures timed essay writing on a
+        prompt students hadn't seen, which is not what the program's
+        outcomes describe. Instructors ask why the program paid for a test
+        instead of reading their students' portfolios.
+
+        The license is $3,000 a term, and the company's contract renews
+        automatically.
+      changes:
+        - { kind: adjustBudget, delta: -3000 }
+        - { kind: adjustTrust, stakeholder: accreditor, delta: 3 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 2 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -4 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -3 }
+        - { kind: adjustTrust, stakeholder: students, delta: -2 }
+      response:
+        from: provost_office
+        body: Percentiles are easy to report. I'm not sure what they'll tell you about your own courses.
+
+debrief:
+  weighs:
+    - Direct and indirect evidence. Grades and completion rates show who passed; portfolios show what students can do as writers. Accreditors ask for direct evidence.
+    - Local and standardized assessment. An exam built elsewhere measures what its makers value. Assessment built from the program's own outcomes and students' own work can tell the program what to change.
+    - Small and honest beats big and hollow. A modest sample, scored carefully, with a finding the program acts on, is what "closing the loop" means.
+    - Who does the work. Assessment is labor. Asking contingent instructors to do it unpaid, when they can't easily refuse, has a cost that doesn't show up in the report.
+    - Promises in reports. A report that promised assessment three years ago is part of the record the accreditors read.
+  perspectives:
+    - stakeholder: accreditor
+      view: We don't prescribe a method. We ask whether the program knows what its students can do, and whether it uses what it learns.
+    - stakeholder: provost_office
+      view: I have to stand in front of the team for the whole university. I need evidence I can defend, from every program.
+    - stakeholder: adjunct_faculty
+      view: Reading portfolios together was the first time many of us talked about teaching with other instructors. We'd do it again, if it were part of the job and paid like it.
+    - stakeholder: fyw_director
+      view: I wanted to see whether you'd do something small and real, or something big to satisfy the team.
+  readings:
+    - CCCC, Writing Assessment - A Position Statement (2014)
+    - Edward M. White, Norbert Elliot, and Irvin Peckham, Very Like a Whale - The Assessment of Writing Programs (Utah State University Press, 2015)
+    - Brian Huot, (Re)Articulating Writing Assessment for Teaching and Learning (Utah State University Press, 2002)

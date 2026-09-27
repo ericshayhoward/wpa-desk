@@ -12,12 +12,21 @@ export async function submitYearEndReport(user: UserEvent, text = "The numbers s
   if (back) await user.click(back);
 }
 
-/** If The Grade Appeal Escalation is waiting (it's urgent in spring), resolve it through the appeal process. */
-export async function resolveGradeAppeal(user: UserEvent) {
-  const item = screen.queryByRole("button", { name: /Grade complaint: I'm at CCCC/ });
-  if (!item) return;
-  await user.click(item);
-  await user.click(screen.getByRole("button", { name: /Route it through the appeal process/ }));
-  await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
-  await user.click(screen.getByRole("button", { name: "Back to desk" }));
+/** Urgent scenarios that playthroughs meet along the way, and a quick way through each. */
+const URGENT: [subject: RegExp, option: RegExp][] = [
+  [/Grade complaint: I'm at CCCC/, /Route it through the appeal process/],
+  [/Spring sections without instructors/, /Cancel the uncovered sections/],
+  [/Accreditation visit, evidence for first-year writing/, /Report grades and D\/F\/W rates/],
+];
+
+/** Resolves any urgent scenario waiting in the inbox (without a memo), returning to the desk each time. */
+export async function resolveUrgent(user: UserEvent) {
+  for (const [subject, option] of URGENT) {
+    const item = screen.queryByRole("button", { name: subject });
+    if (!item) continue;
+    await user.click(item);
+    await user.click(screen.getByRole("button", { name: option }));
+    await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
+    await user.click(screen.getByRole("button", { name: "Back to desk" }));
+  }
 }

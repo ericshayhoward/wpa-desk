@@ -1,0 +1,211 @@
+# The Dual-Enrollment Drop — ENGL 101 enrollment falls 30%, and the dean
+# wants the savings.
+#
+# From Midland's baseline: 14 fall ENGL 101 sections close and the fall
+# balance swings from an $8,600 deficit to a $41,800 surplus, but spring
+# barely moves (+$2,200), because ENGL 101 is mostly a fall course. The
+# dean proposes cutting the line by $20,000 a term to match the fall number,
+# which would put spring into deficit. The staffing planner or cap
+# calculator run on spring shows the trap.
+
+id: dual-enrollment
+title: The Dual-Enrollment Drop
+stages: [assistant_director, wpa]
+trigger:
+  minTerm: 3
+  term: fall
+arrival:
+  - { kind: scaleSeatDemand, courseId: ENGL101, factor: 0.7 }
+  - { kind: adjustMorale, rank: adjunct, delta: -4 }
+
+documents:
+  - from: dean
+    genre: memo
+    subject: ENGL 101 enrollment and the instruction line
+    body: |
+      Fall enrollment in ENGL 101 came in about 30% below projection.
+      Admissions tells me more of this year's first-year class arrived with
+      dual-enrollment credit for composition from their high schools, and
+      they expect the trend to continue. The registrar has cancelled the
+      sections that didn't fill.
+
+      As a result, first-year writing is running a {{surplus}} surplus in
+      its instruction line this term. Given the college's budget, I intend
+      to reduce the program's instruction line by $20,000 per term,
+      starting in spring, and return the difference to the college.
+
+      If you see a problem with that, or a better use of the money that I
+      can defend to the provost, I need to hear it before the budget
+      meeting.
+
+      — Dean Alvarez
+      To: Dr. Nora Cherry, Director of First-Year Writing
+
+  - from: fyw_director
+    genre: note
+    subject: Your numbers, your recommendation
+    body: |
+      I'm buried in accreditation prep. Run the numbers on this, for both
+      terms, and tell me what we should say to the dean. The adjuncts whose
+      sections were cancelled have already been emailing me.
+
+      — Nora
+
+suggestedTools: [staffing_planner, cap_calculator]
+
+options:
+  - id: accept-cut
+    label: Accept the $20,000 cut
+    description: The enrollment is gone and the college needs the money. Agree to the reduced line.
+    cost: { adminHours: 1 }
+    memo:
+      required: false
+      audience: dean
+      prompt: Confirm the reduction and say how the program will manage it.
+    consequence:
+      narrative: |
+        The dean thanks the program for its flexibility and reports the
+        savings to the provost. The line drops by $20,000 a term.
+
+        The fall numbers made the cut look safe, but ENGL 101 is mostly a
+        fall course. In spring, when ENGL 102 carries the load, the reduced
+        line doesn't cover the sections the program still has to run.
+      changes:
+        - { kind: adjustBudget, delta: -20000 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 6 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -3 }
+        - { kind: adjustPoliticalCapital, delta: 3 }
+      response:
+        from: dean
+        body: Thank you. This is the kind of partnership that makes budget season easier.
+        warm: Thank you. I knew your program would see the bigger picture.
+
+  - id: show-spring
+    label: Show the dean the spring numbers
+    description: The surplus is a fall number. Make the case, with a spring staffing plan, for a much smaller cut that matches the real savings.
+    cost: { adminHours: 5, politicalCapital: 2 }
+    memo:
+      required: true
+      audience: dean
+      prompt: |
+        Show the dean why a cut sized to the fall surplus would put spring
+        in deficit. A staffing plan run on the spring term will speak to
+        the dean's priorities more than an argument will.
+    persuasion:
+      evidenceKinds: [staffing_plan]
+      persuaded:
+        narrative: |
+          The dean reads the spring numbers twice. ENGL 101 is a fall-heavy
+          course, so most of the savings disappear in spring. The dean takes a
+          $5,000-a-term reduction instead, which the program can absorb,
+          and asks you to send the same analysis to the college budget
+          officer.
+        changes:
+          - { kind: adjustBudget, delta: -5000 }
+          - { kind: adjustTrust, stakeholder: dean, delta: 3 }
+          - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
+          - { kind: adjustPoliticalCapital, delta: 2 }
+        response:
+          from: dean
+          body: This is exactly the analysis I needed. Five thousand a term, and please send your spring projection to the budget office.
+      unpersuaded:
+        narrative: |
+          Your memo says spring will be tighter than fall but doesn't show
+          it. The dean has a fall number to go on and no reason to doubt
+          it. The line drops by $20,000 a term.
+        changes:
+          - { kind: adjustBudget, delta: -20000 }
+          - { kind: adjustTrust, stakeholder: dean, delta: -2 }
+        response:
+          from: dean
+          body: I hear the concern, but I need numbers, not a forecast in words. The reduction goes ahead.
+
+  - id: lower-caps
+    label: Keep the line and lower ENGL 101 caps to 20
+    description: Use the drop to do what the program has wanted for years. Reopen sections at a cap of 20 and keep the money in writing instruction.
+    cost: { adminHours: 6, politicalCapital: 4 }
+    memo:
+      required: true
+      audience: dean
+      prompt: |
+        Propose keeping the instruction line and lowering ENGL 101 caps to
+        20. The dean will need to tell the provost what the college gets
+        for the money: a cap analysis that speaks to D/F/W and retention
+        will carry the most weight.
+    persuasion:
+      evidenceKinds: [cap_analysis]
+      persuaded:
+        narrative: |
+          The dean agrees to hold the line for a year and see what lower
+          caps do. The registrar reopens seven cancelled sections at a cap
+          of 20, and some of the adjuncts who lost sections get them back.
+          Projected D/F/W in ENGL 101 falls. Now you'll need to show it
+          actually does.
+        changes:
+          - { kind: setCap, courseId: ENGL101, cap: 20 }
+          - { kind: adjustTrust, stakeholder: dean, delta: 2 }
+          - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 5 }
+          - { kind: adjustMorale, rank: adjunct, delta: 4 }
+          - { kind: adjustTrust, stakeholder: students, delta: 3 }
+          - { kind: adjustTrust, stakeholder: provost_office, delta: 2 }
+          - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
+        response:
+          from: dean
+          body: All right. One year. I'll tell the provost we're investing in retention in the gateway course, so I'll need the D/F/W numbers next fall.
+      unpersuaded:
+        narrative: |
+          The dean appreciates the idea but can't take "smaller classes are
+          better" to the provost in a budget year. The line drops by $20,000
+          a term, and caps stay where they are.
+        changes:
+          - { kind: adjustBudget, delta: -20000 }
+          - { kind: adjustTrust, stakeholder: dean, delta: -3 }
+        response:
+          from: dean
+          body: I'd like to help, but I can't defend it without numbers. The reduction goes ahead.
+
+  - id: fund-assessment
+    label: Propose using part of it to pay for assessment
+    description: Offer the dean half the savings, and use the rest to pay instructors to read portfolios for this year's accreditation visit.
+    cost: { adminHours: 4, politicalCapital: 2 }
+    requires: { stakeholder: dean, minTrust: 55 }
+    memo:
+      required: false
+      audience: dean
+      prompt: Propose the split, and explain what paid assessment gets the college in an accreditation year.
+    consequence:
+      narrative: |
+        The dean takes $10,000 a term and agrees that the rest can pay
+        instructors to read and score portfolios this year. Adjuncts who
+        lost sections get paid assessment work instead, and the program
+        will have direct evidence of student learning for the accreditors.
+      changes:
+        - { kind: adjustBudget, delta: -10000 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 2 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 3 }
+        - { kind: adjustMorale, rank: adjunct, delta: 3 }
+        - { kind: adjustTrust, stakeholder: accreditor, delta: 2 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 2 }
+      response:
+        from: dean
+        body: A split I can defend, especially in an accreditation year. Send me a one-page summary of the assessment when it's done.
+
+debrief:
+  weighs:
+    - Seasonal budgets. ENGL 101 is mostly a fall course, so a fall surplus overstates what a lower enrollment saves over a year. A cut sized to the fall number can create a spring deficit.
+    - Use it or lose it. Money a program doesn't claim for a purpose is often money it loses permanently. Returning savings builds goodwill, and also sets the new baseline.
+    - Who absorbs an enrollment drop. Sections are cut from the last-hired, most contingent instructors first.
+    - Opportunity. A drop in demand can be a chance to lower caps or fund work the program has wanted, if the case is made with numbers the dean can take upstairs.
+    - What dual enrollment means. Students arriving with composition credit from high school raise questions about preparation and placement that the program will eventually have to answer.
+  perspectives:
+    - stakeholder: dean
+      view: The college is short, and a surplus in any unit is money I have to account for. Give me a better use I can defend, or I'll take it.
+    - stakeholder: adjunct_faculty
+      view: When enrollment drops, we lose sections first, often a week before the term, and no one asks what that does to us.
+    - stakeholder: provost_office
+      view: We care whether dual-enrollment students are ready for ENGL 102. Nobody has looked at that yet.
+    - stakeholder: fyw_director
+      view: I asked for both terms for a reason. The dean was looking at one.
+  readings:
+    - CCCC, Statement on Dual Credit/Concurrent Enrollment Composition - Policy and Best Practices (2012)
+    - 'Edward M. White, "Use It or Lose It: Power and the WPA," WPA: Writing Program Administration 15.1–2 (1991)'

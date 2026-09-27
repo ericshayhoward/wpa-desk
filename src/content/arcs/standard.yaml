@@ -30,6 +30,8 @@ calendar:
   - { scenario: syllabus-holdout, from: 1, until: 1 }
   - { scenario: late-hire, from: 2 }
   - { scenario: grade-appeal, from: 2, until: 2 }
+  - { scenario: accreditation-ask, from: 3, until: 3 }
+  - { scenario: dual-enrollment, from: 3, until: 3 }
 
 # Hours taken from a term before the player can spend them.
 timeCosts:

@@ -75,7 +75,7 @@ export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onDr
         <details className="tool-drawer">
           <summary>
             Open the staffing planner
-            <span className="muted small"> — build a plan to cover the gap, then save it as evidence</span>
+            <span className="muted small"> — check a term's staffing and budget, try a plan, then save it as evidence</span>
           </summary>
           <StaffingPlanner program={program} onSaveEvidence={onSaveEvidence} initialTerm={termOf(session.termIndex)} />
         </details>

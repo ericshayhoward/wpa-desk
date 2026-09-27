@@ -29,10 +29,12 @@ describe("student summary", () => {
 
 describe("scenario summaries", () => {
   it("show how the class split, and who persuaded", () => {
-    const [capMemo, lateHire] = scenarioSummaries(
+    const summaries = scenarioSummaries(
       [{ name: "Avery Chen", session: avery() }, { name: "Blake Ortiz", session: blake() }],
       SCENARIOS,
     );
+    const capMemo = summaries.find((x) => x.scenario.id === "cap-memo");
+    const lateHire = summaries.find((x) => x.scenario.id === "late-hire");
     expect(capMemo!.responded).toBe(2);
     expect(capMemo!.options.find((o) => o.id === "accept")).toMatchObject({ count: 1, persuaded: null, students: ["Blake Ortiz"] });
     expect(capMemo!.options.find((o) => o.id === "counter-with-data")).toMatchObject({ count: 1, persuaded: 1, students: ["Avery Chen"] });

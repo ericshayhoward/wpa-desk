@@ -386,7 +386,7 @@ Other scenario features (see `late-hire.yaml`):
   creates a crisis in the player's current program.
 - `urgent: true` — the term can't advance until it's resolved.
 - `{{placeholders}}` in document text (`{{unstaffed_sections}}`,
-  `{{deficit}}`, `{{term}}`) state the real numbers earlier decisions
+  `{{deficit}}`, `{{surplus}}`, `{{term}}`) state the real numbers earlier decisions
   produced.
 - `cancelUnstaffed` — a scenario-only change resolved at decision time to
   cancel exactly the sections still uncovered.

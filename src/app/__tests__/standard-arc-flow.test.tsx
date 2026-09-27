@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../App";
-import { resolveGradeAppeal, submitYearEndReport } from "./helpers";
+import { resolveUrgent, submitYearEndReport } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
@@ -35,14 +35,16 @@ describe("playing the standard arc through the UI", () => {
         await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
         await user.click(screen.getByRole("button", { name: "Back to desk" }));
       }
-      await resolveGradeAppeal(user);
+      await resolveUrgent(user);
       if (screen.queryByText("Submit the year-end report before the term ends.")) await submitYearEndReport(user);
-      await user.click(screen.getByRole("button", { name: new RegExp(`Advance to ${term}`) }));
+      // Non-urgent items (e.g., The Dual-Enrollment Drop) can wait, so the button may read "Leave these…".
+      await user.click(screen.getByRole("button", { name: /advance/i }));
+      expect(screen.getByText(term)).toBeTruthy();
     }
     expect(screen.getByText("Interim Director")).toBeTruthy();
     expect(screen.getByText(/Dr. Cherry begins her sabbatical/)).toBeTruthy();
 
-    await user.click(screen.getByRole("button", { name: /Advance to Spring, Year 3/ }));
+    await user.click(screen.getByRole("button", { name: /advance/i }));
     expect(screen.getByText(/Spring, Year 3 is the final term of The Standard Arc/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Advance to/ })).toBeNull();
 

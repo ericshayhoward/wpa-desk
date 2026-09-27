@@ -64,9 +64,12 @@ npm run build
 - In the standard arc a year-end report is due every spring and blocks the
   term. Engine tests use `submitDueReport` (`src/test-fixtures/reports.ts`);
   UI tests use `submitYearEndReport` (`src/app/__tests__/helpers.ts`).
-- Spring Y1 has two urgent scenarios (The Grade Appeal Escalation, and The
-  Late Hire if triggered). Engine tests pass only the scenarios they cover;
-  UI tests that reach spring call `resolveGradeAppeal` from the helpers.
+- Urgent scenarios block the term: The Grade Appeal Escalation and The Late
+  Hire (if triggered) in Spring Y1, The Accreditation Ask in Fall Y2.
+  Engine tests pass only the scenarios they cover; UI playthroughs call
+  `resolveUrgent` from the helpers (add new urgent scenarios to its list)
+  and advance with `getByRole("button", { name: /advance/i })`, since
+  non-urgent items left waiting change the button's label.
   Submitting the Spring Y3 capstone sets `session.ending` and ends play.
 - Scenarios interact (e.g., holding caps at 24 makes The Late Hire arrive in
   Spring Y1; raising them to 27 drives adjuncts away so it arrives in Spring

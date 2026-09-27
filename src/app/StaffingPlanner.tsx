@@ -187,7 +187,12 @@ export function StaffingPlanner({ program, onSaveEvidence, initialTerm = "fall" 
       )}
 
       {onSaveEvidence && (
-        <EvidenceBar changed={changed} build={() => staffingPlanEvidence(program, changes, before, after)} onSave={onSaveEvidence} />
+        <EvidenceBar
+          changed={changed}
+          allowUnchanged
+          build={() => staffingPlanEvidence(program, changes, before, after)}
+          onSave={onSaveEvidence}
+        />
       )}
 
       <table className="compare">

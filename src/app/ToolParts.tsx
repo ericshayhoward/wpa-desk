@@ -20,23 +20,40 @@ export function WhatIf({ what }: { what: string }) {
 }
 
 /** "Save as evidence" bar shown when a tool is opened from a scenario. */
-export function EvidenceBar({ changed, build, onSave }: { changed: boolean; build: () => EvidenceDraft; onSave: (d: EvidenceDraft) => void }) {
+export function EvidenceBar({
+  changed,
+  build,
+  onSave,
+  allowUnchanged = false,
+}: {
+  changed: boolean;
+  build: () => EvidenceDraft;
+  onSave: (d: EvidenceDraft) => void;
+  /** Let the current projection be saved as it stands (e.g., to show a term's numbers). */
+  allowUnchanged?: boolean;
+}) {
   const [saved, setSaved] = useState<string | null>(null);
   return (
     <div className="evidence-bar">
       <button
         className="primary"
-        disabled={!changed}
+        disabled={!changed && !allowUnchanged}
         onClick={() => {
           const draft = build();
           onSave(draft);
           setSaved(draft.label);
         }}
       >
-        Save this comparison as evidence
+        {changed || !allowUnchanged ? "Save this comparison as evidence" : "Save this projection as evidence"}
       </button>
       <span className="muted small" aria-live="polite">
-        {saved ? `Saved: ${saved}` : changed ? "You can attach saved evidence to a memo." : "Make a change to compare."}
+        {saved
+          ? `Saved: ${saved}`
+          : changed
+            ? "You can attach saved evidence to a memo."
+            : allowUnchanged
+              ? "Saves this term's numbers as they stand, or make a change to compare."
+              : "Make a change to compare."}
       </span>
     </div>
   );
