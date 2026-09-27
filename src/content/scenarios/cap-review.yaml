@@ -1,0 +1,150 @@
+# The Cap Review — the Cap Memo comes back.
+#
+# A follow-up that arrives only for players who kept caps below 27 in The
+# Cap Memo, through the dean's one-year reprieve or the compromise at 25.
+# A year and a half later, the dean has to set caps for next fall and wants
+# to know what the year showed.
+
+id: cap-review
+title: The Cap Review
+stages: [assistant_director, wpa]
+trigger:
+  after:
+    scenario: cap-memo
+    options: [counter-with-data, compromise-25]
+    inTerms: 3
+  conditions:
+    - { measure: cap, courseId: ENGL101, below: 27 }
+urgent: true
+
+documents:
+  - from: dean
+    genre: memo
+    subject: Section caps for next fall
+    body: |
+      A year ago, I agreed to keep first-year writing caps below 27 while
+      your program looked at the effects, and I told the provost I'd
+      revisit the decision. That time has come. The registrar needs next
+      fall's caps before the schedule is built this month.
+
+      What did the year show? If there's a case for keeping caps where they
+      are, I need it in a form I can take to the provost. If there isn't,
+      I'd like to move to 27.
+
+      — Dean Alvarez
+      To: Dr. Nora Cherry, Director of First-Year Writing
+
+  - from: fyw_director
+    genre: note
+    subject: "Re: Section caps for next fall"
+    body: |
+      You made the original argument, so you should make this one. I'll
+      sign whatever we send. Remember that the dean asked for the numbers
+      last time too.
+
+      — Nora
+
+suggestedTools: [cap_calculator]
+
+options:
+  - id: make-the-case
+    label: Make the case for keeping caps where they are
+    description: Show the dean what raising caps to 27 would cost in D/F/W and instructor workload, with the program's current numbers.
+    cost: { adminHours: 6, politicalCapital: 3 }
+    memo:
+      required: true
+      audience: dean
+      prompt: |
+        Make the case for keeping caps where they are. The dean needs
+        something to take to the provost: numbers that speak to retention
+        and cost, not principle alone.
+    persuasion:
+      evidenceKinds: [cap_analysis]
+      persuaded:
+        narrative: |
+          The dean reads the analysis and makes the current caps the
+          program's standard, not a reprieve. He tells the provost that
+          first-year writing caps are a retention decision, and uses your
+          numbers to say so.
+        changes:
+          - { kind: adjustTrust, stakeholder: dean, delta: 4 }
+          - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 4 }
+          - { kind: adjustTrust, stakeholder: provost_office, delta: 2 }
+          - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
+        response:
+          from: dean
+          body: This is the argument I can make upstairs. Current caps stay, and they're the standard now, not an exception.
+          warm: You've made this case well twice now. Current caps stay, and they're the standard now, not an exception.
+      unpersuaded:
+        narrative: |
+          The memo makes the case from principle again. The dean was clear
+          last year that he needed numbers, and he doesn't see new ones.
+          Caps go to 27 in the fall.
+        changes:
+          - { kind: setCap, courseId: ENGL101, cap: 27 }
+          - { kind: setCap, courseId: ENGL102, cap: 27 }
+          - { kind: adjustTrust, stakeholder: dean, delta: -2 }
+          - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -6 }
+        response:
+          from: dean
+          body: I asked for numbers last year, and I'm asking again. Without them, caps go to 27.
+
+  - id: settle-25
+    label: Settle at 25
+    description: Offer 25 as the standard. It saves the dean something and keeps caps below 27.
+    cost: { adminHours: 2, politicalCapital: 1 }
+    memo:
+      required: false
+      audience: dean
+      prompt: Propose 25 as the program's standard and say what you'll keep watching.
+    consequence:
+      narrative: |
+        The dean accepts 25 as the program's standard. It's a middle ground
+        everyone can live with, and a few sections fewer each term than the
+        program had when you started.
+      changes:
+        - { kind: setCap, courseId: ENGL101, cap: 25 }
+        - { kind: setCap, courseId: ENGL102, cap: 25 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 3 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -3 }
+      response:
+        from: dean
+        body: Twenty-five it is. Thank you for meeting me partway.
+
+  - id: accept-27
+    label: Agree to 27
+    description: The year's data isn't decisive, and the college still needs the savings. Agree to the dean's number.
+    cost: { adminHours: 1 }
+    consequence:
+      narrative: |
+        Caps go to 27 in the fall. The registrar rebuilds the schedule, and
+        the sections that disappear are adjunct sections. The dean thanks
+        the program for its patience, and adjuncts learn about it from the
+        schedule again.
+      changes:
+        - { kind: setCap, courseId: ENGL101, cap: 27 }
+        - { kind: setCap, courseId: ENGL102, cap: 27 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 6 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -8 }
+        - { kind: adjustMorale, rank: adjunct, delta: -6 }
+        - { kind: adjustPoliticalCapital, delta: 3 }
+      response:
+        from: dean
+        body: Thank you. I know this wasn't the answer you wanted to give.
+
+debrief:
+  weighs:
+    - Temporary decisions come back. A one-year reprieve or a compromise "while we study it" is a promise to produce evidence. The second conversation goes better if the program collected it.
+    - The same reader, a year later. The dean asked for numbers last time. Readers remember what they asked for and whether they got it.
+    - Standards and exceptions. A cap held as an exception has to be defended every year; a cap made the standard shifts the burden of proof.
+    - Who bears the cost. As before, sections cut by higher caps are adjunct sections.
+  perspectives:
+    - stakeholder: dean
+      view: I gave the program a year. Show me what it learned, and I can defend the cap. Show me principle again, and I can't.
+    - stakeholder: adjunct_faculty
+      view: Every cap decision is a decision about our income. We'd like to hear about it before the schedule changes.
+    - stakeholder: fyw_director
+      view: The first argument got us a year. This one decides whether that year meant anything.
+  readings:
+    - CCCC, Principles for the Postsecondary Teaching of Writing (2015)
+    - CCCC, Statement on Working Conditions for Non-Tenure-Track Writing Faculty (2016)

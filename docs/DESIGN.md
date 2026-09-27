@@ -211,6 +211,7 @@ Built so far (`src/content/arcs/standard.yaml`, `src/training/arc.ts`):
       - { measure: dfw, courseId: ENGL101, atLeast: 0.2 }  # fraction
       - { measure: politicalCapital, atLeast: 10 }
       - { measure: budgetBalance, below: 0 }
+      - { measure: cap, courseId: ENGL101, below: 27 }
   ```
 
   `after` references are checked across files on load.
@@ -390,8 +391,11 @@ Other scenario features (see `late-hire.yaml`):
   produced.
 - `cancelUnstaffed` — a scenario-only change resolved at decision time to
   cancel exactly the sections still uncovered.
-- `setPolicy` turns an on/off program policy (`commonSyllabus`,
-  `portfolioAssessment`) on or off; see `syllabus-holdout.yaml`.
+- `setPolicy` sets a program policy: on/off (`commonSyllabus`,
+  `portfolioAssessment`) or a named value (`placement`: test_scores,
+  directed_self_placement, multiple_measures; `aiPolicy`: none,
+  instructor_choice, program_guidance, detector). See
+  `syllabus-holdout.yaml`, `dsp-pilot.yaml`, `detector.yaml`.
 - Relative changes (`adjustCap`, `adjustBudget`) compose with earlier
   decisions; prefer them over absolute ones (`setCap`) for temporary effects
   that revert later.

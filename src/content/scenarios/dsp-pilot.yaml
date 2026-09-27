@@ -1,0 +1,211 @@
+# The DSP Pilot — a year of directed self-placement, with mixed results.
+#
+# Dr. Cherry ran a one-year pilot of directed self-placement (DSP) in which
+# incoming students chose between ENGL 101 and the four-credit studio
+# course, ENGL 101S, after a guided self-assessment. The results are
+# mixed, and the program has to decide how fall students will be placed.
+#
+# Model effect of DSP: some students test scores would place in the studio
+# choose standard ENGL 101 instead. Illustrative shift: studio demand × 0.8,
+# ENGL 101 demand × 1.04 (roughly the same students moving). D/F/W effects
+# of placement aren't modeled; the documents report the pilot's own results.
+
+id: dsp-pilot
+title: The DSP Pilot
+stages: [assistant_director, wpa]
+trigger:
+  minTerm: 4
+  term: spring
+
+documents:
+  - from: provost_office
+    genre: report
+    subject: Directed self-placement pilot, one-year results
+    body: |
+      Summary prepared by the Office of Institutional Research for the
+      first-year writing program.
+
+      Pilot students (n = 412) completed a guided self-assessment and chose
+      between ENGL 101 and ENGL 101S (Composition I with Studio).
+
+      Choices. 31% of students whose test scores would have placed them in
+      the studio chose ENGL 101 instead. 9% of students test-placed in ENGL
+      101 chose the studio.
+
+      Outcomes. Students who chose ENGL 101 over a studio placement passed
+      at 79%, compared with 84% for students test-placed in ENGL 101 and
+      81% in the studio. Students who chose the studio passed at 88%.
+
+      Who chose what. First-generation students chose the studio at higher
+      rates than their test scores predicted. Multilingual students chose
+      ENGL 101 at higher rates than predicted.
+
+      Satisfaction with placement: 86% (pilot) and 61% (test placement).
+
+  - from: fyw_director
+    genre: email
+    subject: What do we do with the DSP results?
+    body: |
+      This was my pilot, so I'm the wrong person to judge it. The registrar
+      needs to know by April how fall students will be placed. Read the
+      report and tell me what you think we should do. I'll take your
+      recommendation to Grace Okafor.
+
+      For what it's worth, Priya Raman at the writing center has offered to
+      partner on support for students who choose ENGL 101 over the studio,
+      if we can find money for embedded tutors.
+
+      — Nora
+
+options:
+  - id: adopt-dsp
+    label: Adopt directed self-placement for everyone
+    description: Students know things about themselves that test scores don't. Place every incoming student by guided self-assessment.
+    cost: { adminHours: 5, politicalCapital: 2 }
+    memo:
+      required: false
+      audience: fyw_director
+      prompt: Make your recommendation to Dr. Cherry, and say what the program should watch in the first year.
+    consequence:
+      narrative: |
+        Placement moves to DSP for fall. Students like choosing, and the
+        studio shrinks as some students who would have been placed there
+        choose ENGL 101 instead. Nobody has planned any extra support for
+        them yet.
+      changes:
+        - { kind: setPolicy, policy: placement, value: directed_self_placement }
+        - { kind: scaleSeatDemand, courseId: ENGL101S, factor: 0.8 }
+        - { kind: scaleSeatDemand, courseId: ENGL101, factor: 1.04 }
+        - { kind: adjustTrust, stakeholder: students, delta: 4 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
+        - { kind: adjustTrust, stakeholder: writing_center, delta: -2 }
+      response:
+        from: fyw_director
+        body: I'll take it to Grace. I hope we're ready for the students who choose up.
+      delayed:
+        - inTerms: 2
+          note: |
+            Instructors report that some students who chose ENGL 101 over
+            the studio are struggling, and the writing center is seeing them
+            late in the term, when it's hardest to help.
+          changes:
+            - { kind: adjustTrust, stakeholder: writing_center, delta: -3 }
+            - { kind: adjustTrust, stakeholder: provost_office, delta: -2 }
+
+  - id: adopt-with-support
+    label: Adopt DSP with embedded writing center support
+    description: Adopt DSP and fund embedded tutors in ENGL 101 sections, so students who choose up have support built in.
+    cost: { adminHours: 8, politicalCapital: 3 }
+    requires: { stakeholder: writing_center, minTrust: 60 }
+    memo:
+      required: false
+      audience: provost_office
+      prompt: Recommend DSP with support, and explain what the embedded tutors cost and what they're for.
+    consequence:
+      narrative: |
+        Placement moves to DSP for fall, and the writing center places
+        trained tutors in the ENGL 101 sections where students chose up.
+        The tutors cost $4,000 a term from the instruction line. Dr. Raman
+        calls it the first time the program asked the writing center before
+        the students showed up at its door.
+      changes:
+        - { kind: setPolicy, policy: placement, value: directed_self_placement }
+        - { kind: scaleSeatDemand, courseId: ENGL101S, factor: 0.8 }
+        - { kind: scaleSeatDemand, courseId: ENGL101, factor: 1.04 }
+        - { kind: adjustBudget, delta: -4000 }
+        - { kind: adjustTrust, stakeholder: students, delta: 5 }
+        - { kind: adjustTrust, stakeholder: writing_center, delta: 6 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 4 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 4 }
+      response:
+        from: provost_office
+        body: Choice with support is a student-success story I can tell. Let's look at the pass rates together next spring.
+      delayed:
+        - inTerms: 2
+          note: |
+            Pass rates for students who chose ENGL 101 over the studio are
+            close to everyone else's this fall. The embedded tutors say most
+            of their work was helping students plan and start drafts.
+          changes:
+            - { kind: adjustTrust, stakeholder: provost_office, delta: 2 }
+            - { kind: adjustTrust, stakeholder: writing_center, delta: 2 }
+
+  - id: multiple-measures
+    label: Place by multiple measures instead
+    description: Combine high school GPA, test scores, and a short guided self-assessment, with advisors helping students decide.
+    cost: { adminHours: 6, politicalCapital: 2 }
+    memo:
+      required: false
+      audience: fyw_director
+      prompt: Recommend multiple measures, and explain why not DSP alone or test scores alone.
+    consequence:
+      narrative: |
+        Placement moves to multiple measures. Students who fall near a line
+        get a conversation with an advisor instead of a cutoff. It takes
+        more coordination with advising than anyone expected, and it
+        satisfies almost everyone a little.
+      changes:
+        - { kind: setPolicy, policy: placement, value: multiple_measures }
+        - { kind: adjustTrust, stakeholder: students, delta: 2 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 3 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 1 }
+      response:
+        from: fyw_director
+        body: Not what I expected you to recommend, but I can defend it. Advising will want to meet.
+
+  - id: extend-pilot
+    label: Extend the pilot another year
+    description: One year of data, with mixed results, isn't enough. Run the pilot again and look at two years together.
+    cost: { adminHours: 3 }
+    consequence:
+      narrative: |
+        The pilot runs another year. Institutional research agrees to
+        follow the first cohort into ENGL 102. The provost's office accepts
+        the extension, and asks, pointedly, what a second year will tell
+        the program that the first didn't.
+      changes:
+        - { kind: adjustTrust, stakeholder: provost_office, delta: -2 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 1 }
+      response:
+        from: provost_office
+        body: All right, one more year. I'd like to know what question the second year answers.
+
+  - id: return-to-tests
+    label: Return to placement by test scores
+    description: Students who chose up passed at lower rates. Go back to the method the program knows.
+    cost: { adminHours: 2 }
+    consequence:
+      narrative: |
+        Placement returns to test scores for fall. The studio fills as it
+        used to. Students who liked choosing say so in the course
+        evaluations, and Dr. Cherry is disappointed, though she says she
+        understands.
+      changes:
+        - { kind: setPolicy, policy: placement, value: test_scores }
+        - { kind: adjustTrust, stakeholder: students, delta: -4 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -4 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 1 }
+      response:
+        from: fyw_director
+        body: I understand. I'm not sure the pass rates tell the whole story, but it's a defensible call.
+
+debrief:
+  weighs:
+    - What "mixed" means. Lower pass rates for students who chose up are real, and so is higher satisfaction. Which matters more depends on what placement is for.
+    - Who chooses what. When first-generation and multilingual students choose differently from what their scores predict, the question is whether the scores or the choices were the better guide, and for whom.
+    - Placement and support are one decision. Letting students choose a harder course without planning support for them moves the risk onto students and the writing center.
+    - Evidence and time. Another year of data is sometimes wise and sometimes a way to avoid deciding.
+    - Whose pilot it is. Evaluating a supervisor's project honestly is a real test of an assistant director.
+  perspectives:
+    - stakeholder: students
+      view: We know whether we're ready for a class better than a test does. Most of the time.
+    - stakeholder: writing_center
+      view: If you're going to send more students into ENGL 101 who might struggle, tell me before the semester starts, not after midterm.
+    - stakeholder: provost_office
+      view: I care about pass rates and about students feeling the university respects their judgment. I'd like both.
+    - stakeholder: fyw_director
+      view: I wanted this pilot to work. That's exactly why I asked someone else to read the results.
+  readings:
+    - Daniel J. Royer and Roger Gilles, "Directed Self-Placement - An Attitude of Orientation," College Composition and Communication 50.1 (1998)
+    - Asao B. Inoue, Antiracist Writing Assessment Ecologies (WAC Clearinghouse and Parlor Press, 2015)
+    - CCCC, Writing Assessment - A Position Statement (2014)

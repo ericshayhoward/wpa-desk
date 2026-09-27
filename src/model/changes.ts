@@ -1,4 +1,4 @@
-import type { Program, Rank, StakeholderId, Term } from "./types";
+import type { Policies, Program, Rank, StakeholderId, Term } from "./types";
 import { RANK_LABELS } from "./types";
 import { STAFFING_ORDER, STAKEHOLDER_IDS, TERMS } from "./types";
 
@@ -22,15 +22,44 @@ export type ProgramChange =
   | { kind: "adjustMorale"; rank: Rank; delta: number }
   | { kind: "adjustTrust"; stakeholder: StakeholderId; delta: number }
   | { kind: "adjustPoliticalCapital"; delta: number }
-  | { kind: "setPolicy"; policy: BooleanPolicy; value: boolean };
+  | PolicyChange;
+
+/** Sets one program policy (every policy except caps, which have their own changes). */
+export type PolicyChange =
+  | { kind: "setPolicy"; policy: BooleanPolicy; value: boolean }
+  | { kind: "setPolicy"; policy: "placement"; value: Policies["placement"] }
+  | { kind: "setPolicy"; policy: "aiPolicy"; value: Policies["aiPolicy"] };
 
 /** Program policies that are simply on or off. */
 export type BooleanPolicy = "commonSyllabus" | "portfolioAssessment";
 export const BOOLEAN_POLICIES: readonly BooleanPolicy[] = ["commonSyllabus", "portfolioAssessment"];
-const POLICY_LABELS: Record<BooleanPolicy, string> = {
+
+/** Allowed values for the policies that choose among options. */
+export const POLICY_VALUES = {
+  placement: ["test_scores", "directed_self_placement", "multiple_measures"],
+  aiPolicy: ["none", "instructor_choice", "program_guidance", "detector"],
+} as const satisfies { [K in "placement" | "aiPolicy"]: readonly Policies[K][] };
+
+const POLICY_LABELS: Record<PolicyChange["policy"], string> = {
   commonSyllabus: "Common syllabus",
   portfolioAssessment: "Program-wide portfolio assessment",
+  placement: "Placement",
+  aiPolicy: "AI policy",
 };
+
+const VALUE_LABELS: Record<string, string> = {
+  test_scores: "test scores",
+  directed_self_placement: "directed self-placement",
+  multiple_measures: "multiple measures",
+  none: "none",
+  instructor_choice: "each instructor's choice",
+  program_guidance: "program guidance",
+  detector: "AI detection software",
+};
+
+function policyValueLabel(v: boolean | string): string {
+  return typeof v === "boolean" ? (v ? "yes" : "no") : (VALUE_LABELS[v] ?? v);
+}
 
 /** Returns a new program with the changes applied in order. The input is never mutated. */
 export function applyChanges(program: Program, changes: ProgramChange[]): Program {
@@ -116,7 +145,7 @@ function applyOne(p: Program, change: ProgramChange): void {
       return;
     }
     case "setPolicy": {
-      p.policies[change.policy] = change.value;
+      (p.policies as unknown as Record<string, unknown>)[change.policy] = change.value;
       return;
     }
   }
@@ -195,11 +224,18 @@ export function parseChange(raw: unknown, where = "change"): ProgramChange {
       return { kind: "adjustPoliticalCapital", delta: num("delta") };
     case "setPolicy": {
       const policy = str("policy");
-      if (!(BOOLEAN_POLICIES as readonly string[]).includes(policy)) {
-        throw new Error(`${where}: "policy" must be one of ${BOOLEAN_POLICIES.join(", ")}`);
+      if ((BOOLEAN_POLICIES as readonly string[]).includes(policy)) {
+        if (typeof r.value !== "boolean") throw new Error(`${where}: "value" must be true or false`);
+        return { kind: "setPolicy", policy: policy as BooleanPolicy, value: r.value };
       }
-      if (typeof r.value !== "boolean") throw new Error(`${where}: "value" must be true or false`);
-      return { kind: "setPolicy", policy: policy as BooleanPolicy, value: r.value };
+      if (policy === "placement" || policy === "aiPolicy") {
+        const allowed: readonly string[] = POLICY_VALUES[policy];
+        if (typeof r.value !== "string" || !allowed.includes(r.value)) {
+          throw new Error(`${where}: "value" for ${policy} must be one of ${allowed.join(", ")}`);
+        }
+        return { kind: "setPolicy", policy, value: r.value } as PolicyChange;
+      }
+      throw new Error(`${where}: "policy" must be one of ${[...BOOLEAN_POLICIES, "placement", "aiPolicy"].join(", ")}`);
     }
     default:
       throw new Error(`${where}: unknown change kind "${String(r.kind)}"`);
@@ -263,6 +299,6 @@ export function describeChange(program: Program, change: ProgramChange): string 
     case "adjustPoliticalCapital":
       return `Political capital ${change.delta >= 0 ? "+" : "−"}${Math.abs(change.delta)}`;
     case "setPolicy":
-      return `${POLICY_LABELS[change.policy]}: ${program.policies[change.policy] ? "yes" : "no"} → ${change.value ? "yes" : "no"}`;
+      return `${POLICY_LABELS[change.policy]}: ${policyValueLabel(program.policies[change.policy])} → ${policyValueLabel(change.value)}`;
   }
 }

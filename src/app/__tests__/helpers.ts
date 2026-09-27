@@ -17,6 +17,7 @@ const URGENT: [subject: RegExp, option: RegExp][] = [
   [/Grade complaint: I'm at CCCC/, /Route it through the appeal process/],
   [/Spring sections without instructors/, /Cancel the uncovered sections/],
   [/Accreditation visit, evidence for first-year writing/, /Report grades and D\/F\/W rates/],
+  [/The Cap Review/, /Settle at 25/],
 ];
 
 /** Resolves any urgent scenario waiting in the inbox (without a memo), returning to the desk each time. */

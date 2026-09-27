@@ -56,8 +56,9 @@ export interface TriggerAfter {
  * A threshold on the program's current state. `dfw` is a fraction (0.22 =
  * 22%), the projected midpoint for one course or, without `courseId`, the
  * whole program. `budgetBalance` is dollars per term (negative = deficit).
+ * `cap` is a course's current enrollment cap (needs `courseId`).
  */
-export type TriggerMeasure = "trust" | "morale" | "dfw" | "politicalCapital" | "budgetBalance";
+export type TriggerMeasure = "trust" | "morale" | "dfw" | "politicalCapital" | "budgetBalance" | "cap";
 
 export interface TriggerCondition {
   measure: TriggerMeasure;

@@ -61,11 +61,14 @@ npm run build
   session without an arc is free play: triggers only, no calendar. New
   scenarios must be added to the arc's calendar or they never arrive.
 - The player's supervisor, Dr. Nora Cherry, is stakeholder `fyw_director`.
+- Character pronouns: Dean Alvarez he/him; Dr. Cherry she/her. Don't
+  guess others; write around pronouns until they're confirmed.
 - In the standard arc a year-end report is due every spring and blocks the
   term. Engine tests use `submitDueReport` (`src/test-fixtures/reports.ts`);
   UI tests use `submitYearEndReport` (`src/app/__tests__/helpers.ts`).
 - Urgent scenarios block the term: The Grade Appeal Escalation and The Late
-  Hire (if triggered) in Spring Y1, The Accreditation Ask in Fall Y2.
+  Hire (if triggered) in Spring Y1, The Accreditation Ask in Fall Y2, The
+  Cap Review in Spring Y2 (only after a Cap Memo compromise or reprieve).
   Engine tests pass only the scenarios they cover; UI playthroughs call
   `resolveUrgent` from the helpers (add new urgent scenarios to its list)
   and advance with `getByRole("button", { name: /advance/i })`, since

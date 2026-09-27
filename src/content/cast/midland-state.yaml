@@ -6,6 +6,8 @@
 # Groups (adjuncts, GTAs, students, senate, accreditor) have no single
 # character and use the default profile (25 / 80).
 
+# Pronouns: Dean Alvarez he/him; Dr. Cherry she/her.
+
 - stakeholder: dean
   name: Elena Alvarez
   shortName: Dean Alvarez

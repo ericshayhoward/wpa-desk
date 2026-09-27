@@ -30,7 +30,7 @@ import { termOf } from "./terms";
 const TOOLS: readonly ToolId[] = ["cap_calculator", "staffing_planner"];
 const EVIDENCE_KINDS: readonly EvidenceKind[] = ["cap_analysis", "staffing_plan"];
 const GENRES: readonly ScenarioDocument["genre"][] = ["memo", "email", "report", "note"];
-const MEASURES: readonly TriggerMeasure[] = ["trust", "morale", "dfw", "politicalCapital", "budgetBalance"];
+const MEASURES: readonly TriggerMeasure[] = ["trust", "morale", "dfw", "politicalCapital", "budgetBalance", "cap"];
 
 /**
  * Validates an untyped scenario (usually parsed YAML) and returns a typed
@@ -196,6 +196,7 @@ function parseCondition(raw: unknown, at: string): TriggerCondition {
   if (measure === "trust") c.stakeholder = stakeholder(r.stakeholder, at);
   if (measure === "morale") c.rank = oneOf(r.rank, STAFFING_ORDER, `${at} rank`);
   if (measure === "dfw" && r.courseId !== undefined) c.courseId = str(r, "courseId", at);
+  if (measure === "cap") c.courseId = str(r, "courseId", at);
   if (measure === "dfw" && ((c.below ?? 0) > 1 || (c.atLeast ?? 0) > 1)) {
     throw new Error(`${at}: D/F/W thresholds are fractions (0.22 means 22%)`);
   }
@@ -280,6 +281,11 @@ function measure(c: TriggerCondition, session: TrainingSession, analyze: () => T
       return p.politicalCapital;
     case "budgetBalance":
       return analyze().budgetBalance;
+    case "cap": {
+      const cap = p.policies.caps[c.courseId!];
+      if (cap === undefined) throw new Error(`Trigger condition names an unknown course: ${c.courseId}`);
+      return cap;
+    }
     case "dfw": {
       if (!c.courseId) return analyze().dfw.mid;
       const course = analyze().courses.find((x) => x.courseId === c.courseId);

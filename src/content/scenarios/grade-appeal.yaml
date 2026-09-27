@@ -21,7 +21,7 @@ documents:
     subject: "Grade complaint: I'm at CCCC, can you handle it?"
     body: |
       I'm at CCCC all week and mostly unreachable, so you'll need to handle
-      this one with Grace Okafor. Her email is below.
+      this one with Grace Okafor. Grace's email is below.
 
       Our appeal policy is on the program website: the student talks to the
       instructor first, then to the director (you, this week), then the
@@ -70,9 +70,9 @@ options:
       required: false
       audience: provost_office
       prompt: |
-        Tell Associate Provost Okafor what the program will do and why. She
-        needs something she can say to the president's office by Friday,
-        and she needs to know why you won't simply change the grade.
+        Tell Associate Provost Okafor what the program will do and why.
+        Okafor needs something to tell the president's office by Friday,
+        and needs to know why you won't simply change the grade.
     consequence:
       narrative: |
         You write to Dylan, not his father, and explain how to appeal. He

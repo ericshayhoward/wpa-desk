@@ -1,0 +1,197 @@
+# The Detector — the provost's office wants first-year writing to pilot
+# AI-detection software.
+#
+# Midland's AI policy starts as each instructor's choice. The issues are
+# detector reliability (and bias against multilingual writers), shared
+# governance, instructor workload and guidance, and academic integrity,
+# which the provost's office has real reasons to care about.
+
+id: detector
+title: The Detector
+stages: [assistant_director, wpa]
+trigger:
+  minTerm: 4
+  term: spring
+
+documents:
+  - from: provost_office
+    genre: memo
+    subject: AI detection pilot in first-year writing
+    body: |
+      Academic integrity cases involving generative AI tripled this year,
+      and faculty are asking the provost's office for help. We're ready to
+      license an AI-detection service campus-wide next fall. It would give
+      instructors a likelihood score for every paper submitted through the
+      course site.
+
+      First-year writing sees more student writing than any other program,
+      so I'd like it to lead the pilot. I need to know by the end of the
+      term whether the program is in.
+
+      — Grace Okafor
+      To: Dr. Nora Cherry, Director of First-Year Writing
+
+  - from: fyw_director
+    genre: note
+    subject: "Re: AI detection pilot"
+    body: |
+      I have opinions about this, and I'd like to hear yours first. Our
+      instructors are all over the place on AI right now: some ban it, some
+      require it, and the GTAs keep asking me what the program's policy is.
+      Whatever we tell Grace, we should also tell them.
+
+      — Nora
+
+options:
+  - id: pilot-detector
+    label: Lead the detection pilot
+    description: Integrity cases are real, and instructors want help. Join the pilot and give instructors detector scores in the fall.
+    cost: { adminHours: 3 }
+    memo:
+      required: false
+      audience: provost_office
+      prompt: Tell Associate Provost Okafor the program is in, and what instructors will be told about using the scores.
+    consequence:
+      narrative: |
+        First-year writing joins the pilot. Instructors get a likelihood
+        score on every submission starting in the fall. Some are relieved.
+        Others ask what a score of 70% is supposed to mean, and nobody has a
+        good answer.
+      changes:
+        - { kind: setPolicy, policy: aiPolicy, value: detector }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 6 }
+        - { kind: adjustTrust, stakeholder: students, delta: -5 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -2 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -2 }
+      response:
+        from: provost_office
+        body: Thank you. Faculty have been asking for this, and it helps to have writing leading it.
+      delayed:
+        - inTerms: 1
+          note: |
+            A multilingual student in ENGL 102 is reported for academic
+            dishonesty on the strength of a 92% detector score. The
+            integrity board dismisses the case after reviewing the student's
+            drafts, and the student's advisor asks the program why it
+            happened.
+          changes:
+            - { kind: adjustTrust, stakeholder: students, delta: -4 }
+            - { kind: adjustTrust, stakeholder: provost_office, delta: -3 }
+            - { kind: adjustTrust, stakeholder: faculty_senate, delta: -2 }
+
+  - id: program-guidance
+    label: Decline the pilot and write program guidance instead
+    description: Detectors are unreliable, and they flag multilingual writers more often. Offer the provost's office a program AI policy and teaching guidance instead.
+    cost: { adminHours: 8, politicalCapital: 2 }
+    memo:
+      required: true
+      audience: provost_office
+      prompt: |
+        Decline the pilot and offer an alternative. Associate Provost Okafor
+        has a real integrity problem and faculty asking for help, so say
+        what the program will do about it, not only what it won't.
+    consequence:
+      narrative: |
+        You draft program guidance with Dr. Cherry: when AI use is and isn't
+        allowed in first-year writing, how to design assignments with drafts
+        and reflection that make misuse harder and learning visible, and how
+        to talk with a student when you suspect misuse. The GTAs finally
+        have an answer to their question.
+
+        Okafor accepts the decision, not happily, and will run the pilot
+        elsewhere.
+      changes:
+        - { kind: setPolicy, policy: aiPolicy, value: program_guidance }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: -2 }
+        - { kind: adjustTrust, stakeholder: students, delta: 3 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: 5 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 3 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 4 }
+      response:
+        from: provost_office
+        body: I'd hoped for writing's help with the pilot. Send me the guidance; if it works, other programs will want it.
+        warm: I'm disappointed, but I trust your reasons. Send me the guidance; if it works, I'll share it with other programs.
+      delayed:
+        - inTerms: 2
+          note: |
+            Two other departments ask to adapt the first-year writing AI
+            guidance for their own courses. Okafor mentions it at the deans'
+            council.
+          changes:
+            - { kind: adjustTrust, stakeholder: provost_office, delta: 3 }
+
+  - id: senate-review
+    label: Ask for faculty senate review first
+    description: A campus-wide surveillance tool is a shared-governance question. Ask the senate to review it before any program pilots it.
+    cost: { adminHours: 3, politicalCapital: 2 }
+    memo:
+      required: false
+      audience: provost_office
+      prompt: Explain why the program wants senate review before piloting, without sounding like it's stalling.
+    consequence:
+      narrative: |
+        You ask Okafor to take the license to the faculty senate before any
+        pilot. The senate's academic affairs committee takes it up, and the
+        provost's office has to wait a semester. In the meantime, your
+        instructors still have no program guidance.
+      changes:
+        - { kind: adjustTrust, stakeholder: faculty_senate, delta: 5 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: -3 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -1 }
+      response:
+        from: provost_office
+        body: That's fair, and it will cost us a semester. I'll take it to the senate.
+      delayed:
+        - inTerms: 1
+          note: |
+            The senate recommends against mandatory detector use and asks
+            programs to write their own AI guidance. The provost's office
+            drops the campus license.
+          changes:
+            - { kind: adjustTrust, stakeholder: faculty_senate, delta: 2 }
+            - { kind: adjustTrust, stakeholder: provost_office, delta: 1 }
+
+  - id: instructor-choice
+    label: Leave it to each instructor
+    description: Instructors have different views and the evidence is unsettled. Let each decide whether to use the detector in their own sections.
+    cost: { adminHours: 1 }
+    consequence:
+      narrative: |
+        The program tells Okafor that instructors may use the detector if
+        they choose. About a third do. Students in different sections of the
+        same course face different rules, and some of them compare notes.
+      changes:
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 2 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -2 }
+      response:
+        from: provost_office
+        body: I'll take partial participation. Let me know how it goes.
+      delayed:
+        - inTerms: 1
+          note: |
+            Students ask the program why the same draft counts as misconduct
+            in one ENGL 101 section and not in another. So far there's no
+            answer.
+          changes:
+            - { kind: adjustTrust, stakeholder: students, delta: -3 }
+            - { kind: adjustTrust, stakeholder: gta_cohort, delta: -2 }
+
+debrief:
+  weighs:
+    - Reliability and bias. Detector scores are probabilities, not findings, and research has found detectors flag writing by non-native English writers as AI-generated more often. A score can start a case it can't prove.
+    - The problem behind the request. Integrity cases and faculty frustration are real. Declining a tool is stronger when it comes with something that helps.
+    - Teaching and policing. Assignments with drafts, reflection, and conferences make learning visible in ways a detector can't, and they're the program's own expertise.
+    - Shared governance. Campus-wide tools that affect every student's work are faculty governance questions, and process takes time.
+    - Consistency. Leaving policy to each instructor protects academic freedom, and gives students in the same course different rules.
+  perspectives:
+    - stakeholder: provost_office
+      view: Faculty are asking me for help with AI every week. I need either a tool or a better answer.
+    - stakeholder: students
+      view: We don't want to be accused by software. We'd like to know what the rules are, and have them be the same in every section.
+    - stakeholder: gta_cohort
+      view: We're new teachers, and we need to know what the program expects. Right now we're each making it up.
+    - stakeholder: faculty_senate
+      view: A tool that scores every student's writing is a governance question, not a procurement decision.
+  readings:
+    - MLA-CCCC Joint Task Force on Writing and AI, Working Paper 1 - Overview of the Issues, Statement of Principles, and Recommendations (2023)
+    - Weixin Liang et al., "GPT Detectors Are Biased Against Non-Native English Writers," Patterns 4.7 (2023)

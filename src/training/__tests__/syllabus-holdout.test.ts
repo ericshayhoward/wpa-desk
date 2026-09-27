@@ -90,7 +90,13 @@ describe("setPolicy", () => {
       policy: "commonSyllabus",
       value: false,
     });
-    expect(() => parseChange({ kind: "setPolicy", policy: "placement", value: true })).toThrow(/"policy" must be one of/);
+    expect(() => parseChange({ kind: "setPolicy", policy: "caps", value: true })).toThrow(/"policy" must be one of/);
+    expect(() => parseChange({ kind: "setPolicy", policy: "placement", value: true })).toThrow(
+      /"value" for placement must be one of test_scores, directed_self_placement, multiple_measures/,
+    );
+    expect(describeChange(MIDLAND_STATE, { kind: "setPolicy", policy: "aiPolicy", value: "detector" })).toBe(
+      "AI policy: each instructor's choice → AI detection software",
+    );
     expect(() => parseChange({ kind: "setPolicy", policy: "commonSyllabus", value: "no" })).toThrow(/"value" must be true or false/);
     expect(describeChange(MIDLAND_STATE, { kind: "setPolicy", policy: "portfolioAssessment", value: true })).toBe(
       "Program-wide portfolio assessment: no → yes",
