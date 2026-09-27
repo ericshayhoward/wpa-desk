@@ -5,18 +5,21 @@ import {
   TERMS,
   analyzeTerm,
   parseChange,
+  type ProgramChange,
   type StakeholderId,
   type Term,
   type TermAnalysis,
 } from "../model";
 import { CAREER_STAGES } from "./types";
 import type {
+  AmountRef,
+  ComputedChange,
   Consequence,
-  DelayedEffect,
   EvidenceKind,
   Persuasion,
   Scenario,
   ScenarioChange,
+  ScenarioDelayed,
   ScenarioDocument,
   ScenarioOption,
   ToolId,
@@ -158,7 +161,35 @@ function parseConsequence(raw: unknown, at: string): Consequence {
 function parseScenarioChange(raw: unknown, at: string): ScenarioChange {
   const r = obj(raw, at);
   if (r.kind === "cancelUnstaffed") return { kind: "cancelUnstaffed", courseId: str(r, "courseId", at) };
-  return parseChange(raw, at);
+  return parseMaybeComputed(r, at);
+}
+
+/**
+ * A ProgramChange whose numeric fields may name a program value instead of a
+ * number (`delta: { of: deficit }`). The rest of the change is validated as
+ * usual, with a stand-in number where each value will go.
+ */
+function parseMaybeComputed(r: Record<string, unknown>, at: string): ProgramChange | ComputedChange {
+  const amounts: Record<string, AmountRef> = {};
+  const standIn: Record<string, unknown> = { ...r };
+  for (const [k, v] of Object.entries(r)) {
+    if (typeof v !== "object" || v === null || Array.isArray(v)) continue;
+    amounts[k] = parseAmountRef(v, `${at} ${k}`);
+    standIn[k] = 1;
+  }
+  const change = parseChange(standIn, at);
+  return Object.keys(amounts).length ? { kind: "computed", change, amounts } : change;
+}
+
+function parseAmountRef(raw: unknown, at: string): AmountRef {
+  const r = obj(raw, at);
+  const times = r.times === undefined ? undefined : num(r, "times", at);
+  const of = oneOf(r.of, ["deficit", "pay"] as const, `${at} of`);
+  if (of === "deficit") {
+    const term = r.term === undefined ? undefined : oneOf(r.term, TERMS as readonly Term[], `${at} term`);
+    return { of, ...(term && { term }), ...(times !== undefined && { times }) };
+  }
+  return { of, rank: oneOf(r.rank, STAFFING_ORDER, `${at} rank`), ...(times !== undefined && { times }) };
 }
 
 function parsePersuasion(raw: unknown, at: string): Persuasion {
@@ -226,14 +257,14 @@ export function validateScenarioLinks(scenarios: Scenario[]): void {
   }
 }
 
-function parseDelayed(raw: unknown, at: string): DelayedEffect {
+function parseDelayed(raw: unknown, at: string): ScenarioDelayed {
   const r = obj(raw, at);
   const inTerms = num(r, "inTerms", at);
   if (!Number.isInteger(inTerms) || inTerms < 1) throw new Error(`${at}: "inTerms" must be a whole number ≥ 1`);
   return {
     inTerms,
     note: str(r, "note", at).trim(),
-    changes: arr(r, "changes", at).map((c, i) => parseChange(c, `${at} change ${i + 1}`)),
+    changes: arr(r, "changes", at).map((c, i) => parseMaybeComputed(obj(c, `${at} change ${i + 1}`), `${at} change ${i + 1}`)),
   };
 }
 

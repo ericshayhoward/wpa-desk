@@ -6,6 +6,7 @@ import {
   describeChange,
   type Program,
   type ProgramChange,
+  type Term,
 } from "../model";
 import { arcAllows, checkArc, isFinalTerm, stageChangeAt, timeCostAt } from "./arc";
 import { recordTerm } from "./history";
@@ -22,6 +23,7 @@ import type {
   Arc,
   Character,
   Commitment,
+  ComputedChange,
   Consequence,
   DecisionOutcome,
   Memo,
@@ -194,8 +196,11 @@ export function resolveScenario(
   const costChanges: ProgramChange[] = capital !== 0 ? [{ kind: "adjustPoliticalCapital", delta: capital }] : [];
   const after = applyChanges(before, [...resolved, ...costChanges]);
 
+  // Delayed changes are worked out now, against the program as the player
+  // found it, so a later revert undoes exactly what was given.
   const queued: PendingEffect[] = consequence.delayed.map((d) => ({
     ...d,
+    changes: d.changes.map((c) => (c.kind === "computed" ? resolveAmounts(before, term, c) : c)).filter((c) => !isNoop(c)),
     dueTerm: session.termIndex + d.inTerms,
     scenarioId: scenario.id,
   }));
@@ -352,13 +357,42 @@ function chooseReply(r: Reply, trust: number): { from: Reply["from"]; body: stri
   return { from: r.from, body };
 }
 
+/**
+ * Fills a computed change's named amounts from the program as it stands.
+ * Amounts are whole dollars; `times` scales them (e.g., -1 to take one back).
+ */
+export function resolveAmounts(program: Program, term: Term, c: ComputedChange): ProgramChange {
+  const values: Record<string, number> = {};
+  for (const [field, ref] of Object.entries(c.amounts)) {
+    let v: number;
+    if (ref.of === "deficit") {
+      v = Math.max(0, -analyzeTerm(program, ref.term ?? term, DEFAULT_ASSUMPTIONS).budgetBalance);
+    } else {
+      const pool = program.instructors.find((p) => p.rank === ref.rank);
+      if (!pool) throw new Error(`No ${ref.rank} pool to take pay from`);
+      v = pool.costPerSection;
+    }
+    values[field] = Math.round(v * (ref.times ?? 1));
+  }
+  return { ...c.change, ...values } as ProgramChange;
+}
+
+/** A computed change that came out to nothing (e.g., covering a deficit of $0). */
+function isNoop(c: ProgramChange): boolean {
+  return c.kind === "adjustBudget" && c.delta === 0;
+}
+
 /** Turns scenario changes into concrete ProgramChanges against the current program. */
 function resolveChanges(program: Program, term: ReturnType<typeof termOf>, changes: ScenarioChange[]): ProgramChange[] {
   let working = program;
   const out: ProgramChange[] = [];
   for (const c of changes) {
     let concrete: ProgramChange;
-    if (c.kind === "cancelUnstaffed") {
+    if (c.kind === "computed") {
+      // Named amounts refer to the program as the player found it, before this decision.
+      concrete = resolveAmounts(program, term, c);
+      if (isNoop(concrete)) continue;
+    } else if (c.kind === "cancelUnstaffed") {
       const a = analyzeTerm(working, term, DEFAULT_ASSUMPTIONS);
       const course = a.courses.find((x) => x.courseId === c.courseId);
       if (!course) throw new Error(`Unknown course: ${c.courseId}`);

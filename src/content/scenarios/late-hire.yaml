@@ -129,7 +129,7 @@ options:
         overload section at the adjunct rate. Any section still uncovered is
         cancelled, and those students scramble for a seat.
       changes:
-        - { kind: setOverload, rank: ntt, maxPerPerson: 1, costPerSection: 3600 }
+        - { kind: setOverload, rank: ntt, maxPerPerson: 1, costPerSection: { of: pay, rank: adjunct } }
         - { kind: cancelUnstaffed, courseId: ENGL102 }
         - { kind: adjustMorale, rank: ntt, delta: -8 }
         - { kind: adjustTrust, stakeholder: students, delta: -2 }

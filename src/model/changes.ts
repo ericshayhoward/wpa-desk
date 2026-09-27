@@ -18,7 +18,8 @@ export type ProgramChange =
   /** Sets how many sections of a course are cancelled in a term (0 restores them). */
   | { kind: "cancelSections"; courseId: string; term: Term; sections: number }
   | { kind: "setBudget"; budgetPerTerm: number }
-  | { kind: "adjustBudget"; delta: number }
+  /** With `term`, the change applies in that term only; otherwise every term. */
+  | { kind: "adjustBudget"; delta: number; term?: Term }
   | { kind: "adjustMorale"; rank: Rank; delta: number }
   | { kind: "adjustTrust"; stakeholder: StakeholderId; delta: number }
   | { kind: "adjustPoliticalCapital"; delta: number }
@@ -126,7 +127,14 @@ function applyOne(p: Program, change: ProgramChange): void {
       return;
     }
     case "adjustBudget": {
-      p.budgetPerTerm = Math.max(0, p.budgetPerTerm + change.delta);
+      if (change.term) {
+        const next = (p.budgetByTerm?.[change.term] ?? 0) + change.delta;
+        const { [change.term]: _old, ...others } = p.budgetByTerm ?? {};
+        p.budgetByTerm = next === 0 ? others : { ...others, [change.term]: next };
+        if (Object.keys(p.budgetByTerm).length === 0) delete p.budgetByTerm;
+      } else {
+        p.budgetPerTerm = Math.max(0, p.budgetPerTerm + change.delta);
+      }
       return;
     }
     case "adjustMorale": {
@@ -214,8 +222,12 @@ export function parseChange(raw: unknown, where = "change"): ProgramChange {
     }
     case "setBudget":
       return { kind: "setBudget", budgetPerTerm: num("budgetPerTerm") };
-    case "adjustBudget":
-      return { kind: "adjustBudget", delta: num("delta") };
+    case "adjustBudget": {
+      if (r.term === undefined) return { kind: "adjustBudget", delta: num("delta") };
+      const term = str("term");
+      if (!(TERMS as readonly string[]).includes(term)) throw new Error(`${where}: "term" must be fall or spring`);
+      return { kind: "adjustBudget", delta: num("delta"), term: term as Term };
+    }
     case "adjustMorale":
       return { kind: "adjustMorale", rank: rank(), delta: num("delta") };
     case "adjustTrust": {
@@ -292,7 +304,7 @@ export function describeChange(program: Program, change: ProgramChange): string 
     case "setBudget":
       return `Instruction budget → ${money(change.budgetPerTerm)} per term`;
     case "adjustBudget":
-      return `Instruction budget ${change.delta >= 0 ? "+" : "−"}${money(Math.abs(change.delta))} per term`;
+      return `Instruction budget ${change.delta >= 0 ? "+" : "−"}${money(Math.abs(change.delta))} ${change.term ? `(${change.term} only)` : "per term"}`;
     case "adjustMorale":
       return `${RANK_LABELS[change.rank]} morale ${change.delta >= 0 ? "+" : "−"}${Math.abs(change.delta)}`;
     case "adjustTrust":

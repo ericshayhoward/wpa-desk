@@ -112,6 +112,8 @@ export interface Program {
   policies: Policies;
   /** Instruction budget the writing program controls, per term, in dollars. */
   budgetPerTerm: number;
+  /** Additions to budgetPerTerm in one term only (e.g., a dean covering a fall gap). */
+  budgetByTerm?: Partial<Record<Term, number>>;
   cancellations: Cancellation[];
   stakeholders: Stakeholder[];
   /** WPA's discretionary influence. Spent to win fights, earned by delivering. */

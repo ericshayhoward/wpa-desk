@@ -92,6 +92,26 @@ options:
     s.options[0].delayed = [];
     expect(() => parseScenario(s)).toThrow(/inside the consequence/);
   });
+  it("names the problem in an amount a change refers to", () => {
+    const bad = parse(`
+id: x
+title: X
+stages: [assistant_director]
+documents: [{ from: dean, genre: memo, subject: s, body: b }]
+options:
+  - id: a
+    label: A
+    description: d
+    cost: { adminHours: 0, politicalCapital: 0 }
+    consequence:
+      narrative: n
+      changes: [{ kind: adjustBudget, delta: { of: salary } }]
+  - { id: b, label: B, description: d, cost: { adminHours: 0, politicalCapital: 0 }, consequence: { narrative: n } }
+debrief: { weighs: [w] }
+`);
+    expect(() => parseScenario(bad)).toThrow(/change 1 delta of: "salary" is not one of deficit, pay/);
+  });
+
   it("rejects an unknown stakeholder", () => {
     const s = base();
     s.documents[0].from = "president";
@@ -159,6 +179,9 @@ describe("The Cap Memo", () => {
     expect(outcome.persuaded).toBe(true);
     expect(cap(session, "ENGL101")).toBe(24);
     expect(analyzeTerm(session.program, "fall", DEFAULT_ASSUMPTIONS).budgetBalance).toBe(0);
+    // The dean covers each term's gap as it stands, so no term gets a windfall.
+    expect(analyzeTerm(session.program, "spring", DEFAULT_ASSUMPTIONS).budgetBalance).toBe(0);
+    expect(outcome.changeDescriptions).toContain("Instruction budget +$8,600 (fall only)");
 
     // The memo and its commitment are filed.
     expect(session.dossier).toHaveLength(1);
@@ -171,6 +194,25 @@ describe("The Cap Memo", () => {
     const handled = resolveScenario(t2, scenarioById("late-hire")!, "add-seats", null).session;
     const t3 = advanceTerm(handled, SCENARIOS).session;
     expect(t3.program.budgetPerTerm).toBe(MIDLAND_STATE.budgetPerTerm);
+    expect(t3.program.budgetByTerm).toBeUndefined();
+  });
+
+  it("covers the gap the program actually has, not Midland's default", () => {
+    // A leaner budget: each term's gap is $20,000 larger than Midland's default.
+    const lean = { ...MIDLAND_STATE, budgetPerTerm: MIDLAND_STATE.budgetPerTerm - 20000 };
+    const start = withCapEvidence(startSession(lean, SCENARIOS));
+    const gap = (t: "fall" | "spring", s: TrainingSession) => analyzeTerm(s.program, t, DEFAULT_ASSUMPTIONS).budgetBalance;
+    expect(gap("fall", start)).toBe(-28600);
+    expect(gap("spring", start)).toBe(-28600);
+    const { session } = resolveScenario(start, capMemo, "counter-with-data", memo({ evidenceIds: [start.evidence[0]!.id] }));
+    expect(gap("fall", session)).toBe(0);
+    expect(gap("spring", session)).toBe(0);
+    // The revert is frozen at the amount given, whatever happens in between.
+    const pending = session.pending.find((p) => p.scenarioId === "cap-memo")!;
+    expect(pending.changes).toEqual([
+      { kind: "adjustBudget", term: "fall", delta: -28600 },
+      { kind: "adjustBudget", term: "spring", delta: -28600 },
+    ]);
   });
 
   it("blocks options the player can't afford", () => {

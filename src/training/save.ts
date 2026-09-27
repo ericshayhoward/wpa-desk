@@ -5,7 +5,7 @@ import { CAREER_STAGES, DEFAULT_SETTINGS, type Arc, type Scenario, type Training
 
 export const SAVE_FORMAT = "wpa-desk-save";
 /** Bump when the saved shape changes, and add a migration in parseSave. */
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 export interface SaveSummary {
   institution: string;
@@ -65,6 +65,7 @@ export function parseSave(raw: unknown, scenarios: Scenario[], arcs: Arc[] = [])
   // v6 added routine staffing decisions.
   if (f.version < 6) rawSession = { staffingLog: [], ...obj(rawSession, "The saved session") };
   // v7 added feedback to endings; it's optional, so earlier endings load as they were.
+  // v8 added one-term budget changes (program.budgetByTerm); also optional.
 
   const session = parseSession(rawSession, scenarios, arcs);
   return {
@@ -286,6 +287,13 @@ function parseProgram(raw: unknown): Program {
     if (!Array.isArray(p[k]) || (p[k] as unknown[]).length === 0) throw new Error(`The saved program is missing its ${k}.`);
   }
   if (typeof p.policies !== "object" || p.policies === null) throw new Error("The saved program is missing its policies.");
+  if (p.budgetByTerm !== undefined) {
+    const b = p.budgetByTerm as Record<string, unknown> | null;
+    const ok =
+      typeof b === "object" && b !== null && !Array.isArray(b) &&
+      Object.entries(b).every(([t, v]) => (TERMS as readonly string[]).includes(t) && typeof v === "number" && Number.isFinite(v));
+    if (!ok) throw new Error("The saved program's budget is damaged.");
+  }
   const program = { ...p, cancellations: Array.isArray(p.cancellations) ? p.cancellations : [] } as unknown as Program;
   // The real test: can the model analyze it?
   try {

@@ -151,3 +151,15 @@ describe("rangeLabel", () => {
     expect(rangeLabel({ low: 0.1830001, high: 0.1830004 }, pct)).toBe("18.3%");
   });
 });
+
+describe("one-term budget changes", () => {
+  it("move only that term's budget, and undo cleanly", () => {
+    const covered = applyChanges(MIDLAND_STATE, [{ kind: "adjustBudget", term: "fall", delta: 5000 }]);
+    const fall = (p: typeof MIDLAND_STATE) => analyzeTerm(p, "fall", DEFAULT_ASSUMPTIONS).budgetBalance;
+    const spring = (p: typeof MIDLAND_STATE) => analyzeTerm(p, "spring", DEFAULT_ASSUMPTIONS).budgetBalance;
+    expect(fall(covered)).toBe(fall(MIDLAND_STATE) + 5000);
+    expect(spring(covered)).toBe(spring(MIDLAND_STATE));
+    const undone = applyChanges(covered, [{ kind: "adjustBudget", term: "fall", delta: -5000 }]);
+    expect(undone.budgetByTerm).toBeUndefined();
+  });
+});

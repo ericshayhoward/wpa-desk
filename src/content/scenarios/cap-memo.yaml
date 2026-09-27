@@ -110,7 +110,9 @@ options:
           agrees to hold caps where they are for one year and covers the gap from a
           vacant staff line.
         changes:
-          - { kind: adjustBudget, delta: 8600 }
+          # "The gap" is whatever each term's deficit is when the dean decides.
+          - { kind: adjustBudget, term: fall, delta: { of: deficit, term: fall } }
+          - { kind: adjustBudget, term: spring, delta: { of: deficit, term: spring } }
           - { kind: adjustTrust, stakeholder: dean, delta: 3 }
           - { kind: adjustTrust, stakeholder: chair, delta: 2 }
           - { kind: adjustTrust, stakeholder: fyw_director, delta: 5 }
@@ -130,7 +132,8 @@ options:
               been filled, and without new savings the instruction budget
               returns to its old level.
             changes:
-              - { kind: adjustBudget, delta: -8600 }
+              - { kind: adjustBudget, term: fall, delta: { of: deficit, term: fall, times: -1 } }
+              - { kind: adjustBudget, term: spring, delta: { of: deficit, term: spring, times: -1 } }
       unpersuaded:
         narrative: |
           The memo argues from principle and professional standards but offers

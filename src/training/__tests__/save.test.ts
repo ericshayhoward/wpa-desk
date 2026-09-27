@@ -55,6 +55,20 @@ describe("save files", () => {
     expect(() => parseSave(f, SCENARIOS)).toThrow(/damaged: No valid cap for course ENGL101/);
   });
 
+  it("keep one-term budget changes, and reject damaged ones", () => {
+    const f = valid();
+    f.session.program.budgetByTerm = { fall: 8600 };
+    expect(parseSave(roundTrip(f), SCENARIOS).session.program.budgetByTerm).toEqual({ fall: 8600 });
+    f.session.program.budgetByTerm = { summer: 100 };
+    expect(() => parseSave(f, SCENARIOS)).toThrow("The saved program's budget is damaged.");
+  });
+
+  it("load version 7 saves, which had no one-term budget changes", () => {
+    const f = valid();
+    f.version = 7;
+    expect(parseSave(f, SCENARIOS).session.program.budgetByTerm).toBeUndefined();
+  });
+
   it("reject damaged session fields", () => {
     const f = valid();
     f.session.termIndex = "two";

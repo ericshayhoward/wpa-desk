@@ -76,7 +76,32 @@ export interface TriggerCondition {
 export type ScenarioChange =
   | ProgramChange
   /** Cancels exactly as many sections of a course as are currently unstaffed this term. */
-  | { kind: "cancelUnstaffed"; courseId: string };
+  | { kind: "cancelUnstaffed"; courseId: string }
+  | ComputedChange;
+
+/**
+ * A program value a change can refer to instead of a fixed number, so an
+ * effect stays true when starting conditions vary. Worked out once, from the
+ * program as it stands when the player decides, then frozen (a later revert
+ * undoes exactly what was given). `times` scales it, e.g. -1 to take it back.
+ *
+ *   { of: deficit }               this term's instruction deficit (0 if none)
+ *   { of: deficit, term: fall }   that term's deficit
+ *   { of: pay, rank: adjunct }    pay per section for an instructor rank
+ */
+export type AmountRef = ({ of: "deficit"; term?: Term } | { of: "pay"; rank: Rank }) & { times?: number };
+
+/** A ProgramChange with some numeric fields given as AmountRefs; see resolveAmounts. */
+export interface ComputedChange {
+  kind: "computed";
+  change: ProgramChange;
+  amounts: Record<string, AmountRef>;
+}
+
+/** A delayed effect as authored: its changes may still refer to program values. */
+export interface ScenarioDelayed extends Omit<DelayedEffect, "changes"> {
+  changes: (ProgramChange | ComputedChange)[];
+}
 
 /**
  * An in-character reply. `warm` and `cool` variants, if given, replace the
@@ -96,7 +121,7 @@ export interface Consequence {
   /** Optional in-character reply from a stakeholder. */
   response?: Reply;
   /** Effects that land in later terms; they belong to this outcome only. */
-  delayed: DelayedEffect[];
+  delayed: ScenarioDelayed[];
 }
 
 export interface DelayedEffect {

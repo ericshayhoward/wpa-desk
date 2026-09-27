@@ -18,6 +18,11 @@ export function rangeLabel(r: { low: number; high: number }, fmt: (n: number) =>
   return low === high ? low : `${low}–${high}`;
 }
 
+/** The instruction budget in a term: the per-term budget plus any one-term additions. */
+export function termBudget(program: Program, term: Term): number {
+  return Math.max(0, program.budgetPerTerm + (program.budgetByTerm?.[term] ?? 0));
+}
+
 export interface CourseLine {
   courseId: string;
   title: string;
@@ -209,9 +214,10 @@ export function analyzeTerm(program: Program, term: Term, assumptions: Assumptio
   // ---- Cost and budget ----
   const programCost = sum(staffing.filter((s) => s.paidBy === "program").map((s) => s.cost));
   const departmentCost = sum(staffing.filter((s) => s.paidBy === "department").map((s) => s.cost));
-  const budgetBalance = program.budgetPerTerm - programCost;
+  const budget = termBudget(program, term);
+  const budgetBalance = budget - programCost;
   trace.push(
-    `Program-paid instruction costs ${usd(programCost)} against a ${usd(program.budgetPerTerm)} budget ` +
+    `Program-paid instruction costs ${usd(programCost)} against a ${usd(budget)} budget ` +
       `(${budgetBalance >= 0 ? "surplus" : "deficit"} of ${usd(Math.abs(budgetBalance))}).`,
   );
 

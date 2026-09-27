@@ -44,6 +44,12 @@ npm run build
   under varied starting conditions (planned class settings; see "Class
   settings and variation" in DESIGN.md). Fixed numbers are fine only for a
   scenario's own parameters that match its changes.
+- Changes follow the same rule: when an effect depends on the program (cover
+  "the gap", pay "the adjunct rate"), name the value instead of a number:
+  `delta: { of: deficit, term: fall }`, `costPerSection: { of: pay, rank: adjunct }`
+  (`AmountRef` in `src/training/types.ts`). Amounts are worked out when the
+  player decides and frozen, so a delayed revert (`times: -1`) undoes exactly
+  what was given.
 - A YAML error makes every test file that imports content fail to load, so
   check the "Test Files" line, not just "Tests". Quote YAML strings that
   contain ": ".

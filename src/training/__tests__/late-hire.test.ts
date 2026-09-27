@@ -103,6 +103,12 @@ describe("options", () => {
     expect(fall2.program.instructors.find((p) => p.rank === "ntt")!.overload).toBeUndefined();
   });
 
+  it("overloads pay the program's adjunct rate, whatever it is", () => {
+    const raised = applyChanges(springAfter().program, [{ kind: "setCostPerSection", rank: "adjunct", cost: 4200 }]);
+    const { session } = resolveScenario({ ...springAfter(), program: raised }, lateHire, "overloads", null);
+    expect(session.program.instructors.find((p) => p.rank === "ntt")!.overload?.costPerSection).toBe(4200);
+  });
+
   it("overloads after a compromise at 25: the gap is only 2, so nothing is cancelled", () => {
     const { session } = resolveScenario(springAfter("compromise-25"), lateHire, "overloads", null);
     expect(spring(session).totalSectionsCancelled).toBe(0);
