@@ -37,7 +37,11 @@ describe("playing The Cap Memo through the UI", () => {
     render(<App />);
     expect(screen.getByText("$8,600 deficit")).toBeTruthy();
     expect(screen.getByText("Fall, Year 1")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Dean of Arts & Sciences/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Dean Alvarez/ })).toBeTruthy();
+    // The People card names the characters and shows what moves them.
+    expect(screen.getByText("Elena Alvarez")).toBeTruthy();
+    expect(screen.getByText("Chair, Department of English")).toBeTruthy();
+    expect(screen.getByLabelText("Adjunct faculty morale")).toBeTruthy();
   });
 
   it("accept: decide without a memo, see the outcome and debrief", async () => {
@@ -80,6 +84,8 @@ describe("playing The Cap Memo through the UI", () => {
     // Choosing a memo-required option opens the composer directly.
     await user.click(screen.getByRole("button", { name: /Counter with a cost-and-impact memo/ }));
     const send = screen.getByRole("button", { name: "Send memo and decide" });
+    expect(screen.getByText(/Dean Alvarez responds to:/)).toBeTruthy();
+    expect(screen.getByText(/Trust now: 55\. With the evidence Dean Alvarez needs, 30 is enough ✓\. Without it, you'd need 90\./)).toBeTruthy();
     expect((send as HTMLButtonElement).disabled).toBe(true);
 
     await user.type(screen.getByLabelText("The ask, in one sentence"), "Hold caps at 24 for one year.");
@@ -91,20 +97,47 @@ describe("playing The Cap Memo through the UI", () => {
     await user.click(screen.getByRole("checkbox", { name: /Claims are backed by data/ }));
     await user.click(send);
 
-    expect(screen.getByText("Your memo carried the evidence this reader needed.")).toBeTruthy();
+    expect(
+      screen.getByText("Your memo carried the evidence Dean Alvarez needed, and the relationship could bear it (trust 55; 30 needed)."),
+    ).toBeTruthy();
     expect(screen.getByText(/Your numbers make a stronger case than I expected/)).toBeTruthy();
 
-    // The memo is filed in the dossier with its evidence and commitment.
-    await user.click(screen.getByRole("button", { name: "See your memo in the dossier" }));
-    const filed = screen.getByRole("article");
+    // Reflect right after the debrief; it goes into the case file.
+    await user.type(screen.getByRole("textbox", { name: "Reflection on The Cap Memo" }), "Numbers mattered more than I expected.");
+    await user.click(screen.getByRole("button", { name: "Save reflection" }));
+    expect(screen.getByText("Saved to your case file.")).toBeTruthy();
+
+    // The case file has the whole story: what arrived, the decision, the memo, what happened, the reflection.
+    await user.click(screen.getByRole("button", { name: "See the case file" }));
+    const filed = screen.getByRole("article", { name: "1. The Cap Memo" });
+    // The dean appears twice: sender of the memo you received, recipient of yours.
+    expect(within(filed).getAllByText(/Elena Alvarez, Dean of Arts & Sciences/)).toHaveLength(2);
+    expect(within(filed).getByText(/I'd like to raise caps in ENGL 101 and ENGL 102/)).toBeTruthy();
+    expect(within(filed).getByText("Counter with a cost-and-impact memo.")).toBeTruthy();
     expect(within(filed).getByText(/Hold caps at 24 for one year/)).toBeTruthy();
-    expect(within(filed).getByText(/Evidence attached:/)).toBeTruthy();
-    expect(within(filed).getByText(/Share D\/F\/W data by next fall \(due Fall, Year 2, open\)/)).toBeTruthy();
+    expect(within(filed).getByText("Evidence attached")).toBeTruthy();
+    expect(within(filed).getByText(/Share D\/F\/W data by next fall — open, due Fall, Year 2/)).toBeTruthy();
+    expect(within(filed).getByText(/Your numbers make a stronger case than I expected/)).toBeTruthy();
+    expect(
+      (within(filed).getByRole("textbox", { name: "Reflection on The Cap Memo" }) as HTMLTextAreaElement).value,
+    ).toBe("Numbers mattered more than I expected.");
+
+    // Cover details persist.
+    await user.type(screen.getByRole("textbox", { name: "Your name" }), "Jordan Lee");
+    await user.click(screen.getByRole("button", { name: "Save cover details" }));
+    expect(screen.getByText("Jordan Lee", { selector: ".cover p" })).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: "Desk" }));
-    await user.click(screen.getByRole("button", { name: "Back to desk" }));
     expect(screen.getByText("Balanced")).toBeTruthy();
-    expect(screen.getByText(/You committed: Share D\/F\/W data by next fall/)).toBeTruthy();
+
+    // The commitment waits on the desk, and can be delivered early for its effort.
+    expect(screen.getByRole("heading", { name: "Commitments" })).toBeTruthy();
+    expect(screen.getByText("Share D/F/W data by next fall")).toBeTruthy();
+    expect(screen.getByText("To Dean Alvarez · 4 admin hours")).toBeTruthy();
+    expect(screen.getByText("54 / 60")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Deliver early" }));
+    expect(screen.getByText("50 / 60")).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Commitments" })).toBeNull();
   });
 
   it("counter-with-data without evidence: the dean isn't persuaded", async () => {
@@ -114,7 +147,7 @@ describe("playing The Cap Memo through the UI", () => {
     await user.type(screen.getByRole("textbox", { name: /Body/ }), "CCCC recommends no more than 20 students.");
     await user.click(screen.getByRole("button", { name: "Send memo and decide" }));
 
-    expect(screen.getByText(/didn't include the kind of evidence this reader needed/)).toBeTruthy();
+    expect(screen.getByText(/Dean Alvarez doesn't know you well enough to take your word for it \(trust 55; 90 needed without evidence\)/)).toBeTruthy();
     expect(screen.getByText(/I need numbers I can take to the provost/)).toBeTruthy();
   });
 });

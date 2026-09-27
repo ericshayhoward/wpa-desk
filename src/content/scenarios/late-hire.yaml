@@ -67,6 +67,9 @@ options:
             Your plan made this easy to approve. Let's talk this summer about
             keeping a vetted pool of instructors so we aren't doing this two
             weeks before a term again.
+          warm: |
+            Approved. You've earned the benefit of the doubt with me. Let's
+            talk this summer about a standing pool so this doesn't happen again.
       unpersuaded:
         narrative: |
           Without a clear picture of the gap and the plan, the dean sends the
@@ -82,6 +85,35 @@ options:
         response:
           from: dean
           body: I can't justify bypassing HR without a clearer case. Please follow the standard posting process.
+
+  - id: borrow-colleagues
+    label: Ask the chair to lend tenure-line colleagues
+    description: Ask Dr. Hale to have tenure-line faculty each pick up one extra writing section this term.
+    cost: { adminHours: 3, politicalCapital: 3 }
+    requires: { stakeholder: chair, minTrust: 62 }
+    memo:
+      required: false
+      audience: chair
+      prompt: Ask for the favor, and say what the department gets for it.
+    consequence:
+      narrative: |
+        Dr. Hale makes the calls personally. Tenure-line colleagues each take
+        one writing section this term in place of an elective, paid by the
+        department. Every student keeps a seat and nobody's load goes over
+        its limit. It's a favor, and everyone involved knows it.
+      changes:
+        - { kind: setSectionsPerTerm, rank: tt, sections: 2 }
+        - { kind: adjustTrust, stakeholder: chair, delta: -3 }
+        - { kind: adjustTrust, stakeholder: students, delta: 1 }
+      response:
+        from: chair
+        body: Done, this once. They'll be fine for a term, but I can't do this every time someone leaves.
+        warm: Done. You've always kept me in the loop, so I'm glad to help. Just not every term.
+      delayed:
+        - inTerms: 1
+          note: Tenure-line colleagues return to their usual loads. One of them says the writing section was the best class they taught all year.
+          changes:
+            - { kind: setSectionsPerTerm, rank: tt, sections: 1 }
 
   - id: overloads
     label: Ask the lecturers to take overloads

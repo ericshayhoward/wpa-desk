@@ -1,30 +1,55 @@
 import { SCENARIOS } from "../content";
-import { blockingScenarios, fillTemplate, termLabel, type PendingEffect, type TrainingSession } from "../training";
+import {
+  COMMITMENT_EFFECTS,
+  blockingScenarios,
+  fillTemplate,
+  termLabel,
+  type Commitment,
+  type PendingEffect,
+  type TrainingSession,
+} from "../training";
+import { CommitmentsCard } from "./CommitmentsCard";
+import { PeopleCard } from "./PeopleCard";
 import { stakeholderName } from "./format";
 
 interface Props {
   session: TrainingSession;
-  /** Delayed effects that landed when the term advanced. */
-  landed: PendingEffect[];
+  /** What happened when the term advanced: delayed effects and missed commitments. */
+  landed: { effects: PendingEffect[]; missed: Commitment[]; drift: string[] };
   onOpen: (scenarioId: string) => void;
   onNextTerm: () => void;
+  onDeliver: (id: string) => void;
+  onExtend: (id: string) => void;
+  onAbandon: (id: string) => void;
 }
 
-export function Desk({ session, landed, onOpen, onNextTerm }: Props) {
+export function Desk({ session, landed, onOpen, onNextTerm, onDeliver, onExtend, onAbandon }: Props) {
   const program = session.program;
   const inbox = session.inbox.map((id) => SCENARIOS.find((s) => s.id === id)!).filter(Boolean);
-  const openCommitments = session.commitments.filter((c) => c.status === "open");
   const titleOf = (id: string) => SCENARIOS.find((s) => s.id === id)?.title ?? id;
   const blocking = blockingScenarios(session, SCENARIOS);
 
   return (
     <div className="desk">
-      {landed.length > 0 && (
+      {(landed.effects.length > 0 || landed.missed.length > 0 || landed.drift.length > 0) && (
         <section className="notice" aria-live="polite">
           <h2>Since last term</h2>
-          {landed.map((p, i) => (
+          {landed.effects.map((p, i) => (
             <p key={i}>
               <span className="muted small">{titleOf(p.scenarioId)}:</span> {p.note}
+            </p>
+          ))}
+          {landed.drift.map((d, i) => (
+            <p key={`d${i}`}>
+              <span className="muted small">Turnover:</span> {d}
+            </p>
+          ))}
+          {landed.missed.map((c) => (
+            <p key={c.id}>
+              <span className="muted small">Missed commitment:</span> {c.text}{" "}
+              <span className="down small">
+                ({stakeholderName(program, c.audience)} trust {COMMITMENT_EFFECTS.missedTrust})
+              </span>
             </p>
           ))}
         </section>
@@ -70,35 +95,21 @@ export function Desk({ session, landed, onOpen, onNextTerm }: Props) {
         )}
       </section>
 
+      <CommitmentsCard session={session} onDeliver={onDeliver} onExtend={onExtend} onAbandon={onAbandon} />
+
       <div className="grid-2">
-        <section className="card">
-          <h2>Stakeholders</h2>
-          <ul className="trust-list">
-            {program.stakeholders.map((s) => (
-              <li key={s.id}>
-                <span>{s.name}</span>
-                <meter min={0} max={100} low={35} high={65} optimum={80} value={s.trust} aria-label={`${s.name} trust`} />
-                <span className="num">{s.trust}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <PeopleCard session={session} />
 
         <section className="card">
           <h2>On the horizon</h2>
-          {session.pending.length === 0 && openCommitments.length === 0 ? (
-            <p className="muted">No pending consequences or commitments.</p>
+          {session.pending.length === 0 ? (
+            <p className="muted">Nothing from past decisions is still unfolding.</p>
           ) : (
             <ul className="horizon">
               {session.pending.map((p, i) => (
                 <li key={`p${i}`}>
                   <span className="badge illustrative">{termLabel(p.dueTerm)}</span> A consequence of{" "}
                   <em>{titleOf(p.scenarioId)}</em> is still unfolding.
-                </li>
-              ))}
-              {openCommitments.map((c) => (
-                <li key={c.id}>
-                  <span className="badge literature-informed">due {termLabel(c.dueTerm)}</span> You committed: {c.text}
                 </li>
               ))}
             </ul>

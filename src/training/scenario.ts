@@ -88,6 +88,11 @@ function parseOption(raw: unknown, at: string): ScenarioOption {
     audience: stakeholder(memoRaw.audience, `${w} memo`),
     prompt: str(memoRaw, "prompt", `${w} memo`).trim(),
   };
+  const requiresRaw = r.requires === undefined ? null : obj(r.requires, `${w} requires`);
+  const requires = requiresRaw && {
+    stakeholder: stakeholder(requiresRaw.stakeholder, `${w} requires`),
+    minTrust: num(requiresRaw, "minTrust", `${w} requires`),
+  };
   const consequence = r.consequence === undefined ? null : parseConsequence(r.consequence, `${w} consequence`);
   const persuasion = r.persuasion === undefined ? null : parsePersuasion(r.persuasion, `${w} persuasion`);
 
@@ -110,6 +115,7 @@ function parseOption(raw: unknown, at: string): ScenarioOption {
       politicalCapital: cost.politicalCapital === undefined ? 0 : num(cost, "politicalCapital", `${w} cost`),
     },
     memo,
+    requires,
     consequence,
     persuasion,
   };
@@ -124,6 +130,8 @@ function parseConsequence(raw: unknown, at: string): Consequence {
     response: response && {
       from: stakeholder(response.from, `${at} response`),
       body: str(response, "body", `${at} response`).trim(),
+      warm: response.warm === undefined ? undefined : str(response, "warm", `${at} response`).trim(),
+      cool: response.cool === undefined ? undefined : str(response, "cool", `${at} response`).trim(),
     },
     delayed: (r.delayed === undefined ? [] : arr(r, "delayed", at)).map((d, i) => parseDelayed(d, `${at} delayed ${i + 1}`)),
   };

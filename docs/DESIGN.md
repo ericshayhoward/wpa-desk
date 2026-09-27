@@ -134,11 +134,32 @@ simulation. The design keeps them meaningful without anything grading prose.
   (e.g., "counter with data") work better with relevant evidence attached;
   this is checked mechanically.
 - **Commitments** — promises made in a memo ("assessment data by March")
-  become tracked obligations. Kept → trust gain; missed → trust loss.
-- **Dossier** — every memo is filed in a persistent archive. Later scenarios
-  can quote it back, the annual report draws from it, and it exports as a
-  portfolio of administrative writing (for seminars, or for the player's own
-  job materials).
+  carry an effort estimate in admin hours. Delivering spends those hours in
+  the term you do it (early is allowed) and earns trust with the memo's
+  reader (+3). One extension is allowed (−1). Anything still open when its
+  term ends is missed (−6), so over-promising in memos taxes future terms.
+- **Dossier (case files)** — one self-contained case file per decision:
+  what arrived (documents as they read at the time), the decision, the memo
+  with evidence and commitment status, what happened (narrative, reply,
+  persuasion explanation, trust and program changes), the debrief, and a
+  reflection. Snapshots are stored at decision time because documents,
+  replies, and numbers depend on state that later changes. Exports as a
+  printable page (browser print → PDF) or Markdown, with a cover page
+  (author, course) and a notice that the institution and scenarios are
+  fictional while the writing is the author's own.
+- **Drafting and revision history** — kept for instructors and for teaching
+  recursive process. Recorded as snapshots, not keystrokes: saved drafts
+  (with optional revision notes), a snapshot after a 20-second pause, large
+  insertions (≥25 words at once, labeled neutrally), quoted evidence, and
+  the sent version, which is fixed. After sending, memos can be revised for
+  the portfolio; revisions are added after the sent version. Reflections
+  keep their versions too. Case files show a timeline (with time from
+  opening the memo to sending it) and word-level changes between versions,
+  punctuation compared separately. Writers are told in the composer that
+  history is kept and exported. Unsent drafts are saved with the session.
+- **Reflection** — after each debrief, a prompt ("What would you do
+  differently, and what did you learn about the people involved?"). Saved
+  to the case file; editable later; never affects outcomes.
 - **Self-assessment** — a short checklist after writing (audience, ask,
   evidence, tone). Reflective only; it does not affect scores.
 - **Pacing** — memos are required on only one or two major decisions per
@@ -146,6 +167,26 @@ simulation. The design keeps them meaningful without anything grading prose.
   busywork.
 - **Later, optional:** AI replies in the stakeholder's voice (the dean writes
   back and pushes back), never AI grading.
+
+### Characters and relationships
+
+Stakeholders with a single decision-maker have a named character, authored
+in `src/content/cast/*.yaml` (content, not program data, so the model can
+hold real programs). Midland's cast: Dean Elena Alvarez, Dr. Marcus Hale
+(chair), Associate Provost Grace Okafor, Dr. Priya Raman (writing center).
+Groups (adjuncts, GTAs, students, senate, accreditor) remain groups.
+
+Relationships have mechanical weight:
+
+- **Persuasion needs trust.** Each character has two thresholds: trust needed
+  when a memo carries the evidence they need, and a much higher bar to take
+  your word without it. The outcome screen says which rule decided it.
+- **Replies vary with trust** (`warm` / `cool` variants in scenario YAML).
+- **Options can require a relationship** (`requires: { stakeholder, minTrust }`),
+  shown disabled with the reason, so trust built in one scenario opens doors
+  in another.
+- **Morale drives turnover.** Adjunct or lecturer morale below 40 costs one
+  person per term, which can bring on staffing crises later.
 
 ### Starter program: "Midland State University" (fictional)
 
@@ -261,7 +302,8 @@ Out of scope for MVP: real-data import, multi-user, accounts, LLM features.
 
 1. ~~Memos in v1?~~ Decided: structured memos + dossier (see "Memos (v1)"); AI replies later and optional.
 2. How much should instructors (individual people with names) matter, versus
-   aggregate staffing numbers?
+   aggregate staffing numbers? (Decision-makers are now named characters;
+   instructors are still pools. A few named instructors is a possible next step.)
 3. Should seminar instructors be able to author scenarios in-app, or only via
    files?
 4. Is the adjunct-to-WPA path itself a playable arc (starting as a contingent

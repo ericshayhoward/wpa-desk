@@ -4,7 +4,7 @@ import type { Scenario, TrainingSession } from "./types";
 
 export const SAVE_FORMAT = "wpa-desk-save";
 /** Bump when the saved shape changes, and add a migration in parseSave. */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface SaveSummary {
   institution: string;
@@ -55,9 +55,10 @@ export function parseSave(raw: unknown, scenarios: Scenario[]): SaveFile {
   if (f.version > SAVE_VERSION) {
     throw new Error("This save was made by a newer version of WPA Desk. Update the app to open it.");
   }
-  // Future: migrate older versions here, e.g. `if (f.version === 1) f = migrate1to2(f)`.
+  let rawSession = f.session;
+  if (f.version < 2) rawSession = migrate1to2(rawSession);
 
-  const session = parseSession(f.session, scenarios);
+  const session = parseSession(rawSession, scenarios);
   return {
     format: SAVE_FORMAT,
     version: SAVE_VERSION,
@@ -65,6 +66,26 @@ export function parseSave(raw: unknown, scenarios: Scenario[]): SaveFile {
     label: typeof f.label === "string" ? f.label : "Untitled save",
     summary: summarize(session),
     session,
+  };
+}
+
+/**
+ * v2 added effort, audience, and extension tracking to commitments. Old
+ * commitments get a moderate effort and the audience of the memo they came from.
+ */
+function migrate1to2(raw: unknown): unknown {
+  const s = obj(raw, "The saved session");
+  const memos = Array.isArray(s.dossier) ? (s.dossier as Record<string, unknown>[]) : [];
+  const commitments = Array.isArray(s.commitments) ? (s.commitments as Record<string, unknown>[]) : [];
+  return {
+    ...s,
+    commitments: commitments.map((c) => ({
+      audience: memos.find((m) => m.id === c.memoId)?.audience ?? "dean",
+      effortHours: 4,
+      extended: false,
+      resolvedTerm: null,
+      ...c,
+    })),
   };
 }
 
@@ -99,13 +120,40 @@ function parseSession(raw: unknown, scenarios: Scenario[]): TrainingSession {
     }),
     evidence: list(s, "evidence") as TrainingSession["evidence"],
     dossier: list(s, "dossier") as TrainingSession["dossier"],
-    commitments: list(s, "commitments") as TrainingSession["commitments"],
+    commitments: list(s, "commitments").map((c) => {
+      const r = obj(c, "A saved commitment");
+      if (typeof r.effortHours !== "number" || typeof r.dueTerm !== "number" || typeof r.audience !== "string") {
+        throw new Error("A saved commitment is damaged.");
+      }
+      return r as unknown as TrainingSession["commitments"][number];
+    }),
     nextId: int(s, "nextId", 1),
+    portfolio: parsePortfolio(s.portfolio),
+    drafts: parseDrafts(s.drafts),
   };
   if (session.adminHoursRemaining > session.adminHoursPerTerm) {
     throw new Error("The save's admin hours don't add up.");
   }
   return session;
+}
+
+function parseDrafts(raw: unknown): TrainingSession["drafts"] {
+  if (raw === undefined) return undefined;
+  const d = obj(raw, "The saved drafts");
+  for (const [id, v] of Object.entries(d)) {
+    const r = obj(v, `The saved draft for ${id}`);
+    if (typeof r.optionId !== "string" || !Array.isArray(r.history) || typeof r.draft !== "object") {
+      throw new Error(`The saved draft for ${id} is damaged.`);
+    }
+  }
+  return d as TrainingSession["drafts"];
+}
+
+function parsePortfolio(raw: unknown): TrainingSession["portfolio"] {
+  if (raw === undefined) return undefined;
+  const p = obj(raw, "The saved portfolio details");
+  if (typeof p.author !== "string" || typeof p.course !== "string") throw new Error("The saved portfolio details are damaged.");
+  return { author: p.author, course: p.course };
 }
 
 function parseProgram(raw: unknown): Program {

@@ -286,3 +286,95 @@ button.primary:disabled, button.secondary:disabled { opacity: 0.45; cursor: defa
 }
 .file-button input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .file-button:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---- Commitments ---- */
+.commitment-list { list-style: none; padding: 0; margin: 0 0 8px; display: grid; gap: 8px; }
+.commitment-list li {
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg);
+}
+.commitment-list li.due { border-left: 4px solid var(--accent); }
+.commitments h3 { margin: 14px 0 8px; font-size: 0.95rem; }
+.commitment { grid-template-columns: 1fr 120px 140px auto; }
+
+/* ---- People ---- */
+.people-list { list-style: none; padding: 0; margin: 0 0 8px; }
+.people-list li { border-bottom: 1px solid var(--border); }
+.people-list summary {
+  display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+  padding: 8px 0; cursor: pointer; list-style: none;
+}
+.people-list summary::-webkit-details-marker { display: none; }
+.person { display: grid; }
+.person-detail { padding: 0 0 10px; }
+.person-detail p { margin: 4px 0; }
+.trust { display: inline-flex; gap: 8px; align-items: center; }
+.trust meter { width: 90px; }
+.people h3 { margin: 16px 0 6px; font-size: 0.95rem; }
+.reader-note { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; }
+.reader-note p { margin: 3px 0; }
+
+/* ---- Case files ---- */
+.portfolio-form .grid-2 { margin-bottom: 8px; }
+.cover { margin: 8px 0 20px; }
+.cover h2 { margin: 0 0 4px; }
+.cover p { margin: 2px 0; }
+.cover .notice { margin-top: 10px; }
+.case-file {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 18px 22px; margin-bottom: 18px;
+}
+.case-file > h2 { margin: 0; font-size: 1.15rem; }
+.case-file h3 { margin: 18px 0 8px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.case-file .document { box-shadow: none; }
+.print-only { display: none; }
+
+@media print {
+  :root { --bg: #fff; --surface: #fff; --text: #000; --muted: #444; --border: #bbb; color-scheme: light; }
+  body { background: #fff; font-size: 11pt; }
+  .page { max-width: none; padding: 0; }
+  .masthead, .no-print, button, .tool-drawer { display: none !important; }
+  .print-only { display: block; }
+  .case-file { border: 0; padding: 0; break-before: page; }
+  .case-file .document { break-inside: avoid; }
+  details.print-open > summary { list-style: none; font-weight: 600; }
+  details.print-open:not([open]) > *:not(summary) { display: block; }
+  a { color: inherit; }
+}
+
+/* ---- Drafting history ---- */
+.draft-bar { display: flex; gap: 8px; margin: -6px 0 6px; flex-wrap: wrap; }
+.draft-note {
+  flex: 1; min-width: 220px; font: inherit; padding: 6px 10px; color: var(--text);
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+}
+.history-status { margin: 0 0 16px; }
+.case-file h4 { margin: 14px 0 6px; font-size: 0.9rem; }
+.history-table { font-size: 0.85rem; }
+.diff-step { border-top: 1px solid var(--border); padding: 8px 0; }
+.diff-body { white-space: pre-wrap; font-family: Georgia, "Times New Roman", serif; line-height: 1.6; }
+ins { background: var(--badge-local); text-decoration: none; }
+del { background: var(--badge-illustrative); color: var(--muted); }
+.revision-editor { margin-top: 10px; }
+@media print {
+  ins { background: none; text-decoration: underline; }
+  del { background: none; }
+}
+
+/* ---- Instructor review ---- */
+.tabs .review-link { margin-left: 12px; border-left: 1px solid var(--border); border-radius: 0 8px 8px 0; }
+.dropzone {
+  display: grid; gap: 4px; place-items: center; text-align: center; cursor: pointer;
+  padding: 28px 16px; margin: 16px 0; border: 2px dashed var(--border); border-radius: 10px; background: var(--surface);
+}
+.dropzone.dragging, .dropzone:focus-within { border-color: var(--accent); }
+.dropzone input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.review-bar { align-items: center; margin: 8px 0 16px; }
+.review-table { font-size: 0.85rem; }
+.review-table th[scope="row"] { min-width: 150px; }
+.review-table td .link { display: block; }
+.choice-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.choice-head { display: flex; justify-content: space-between; gap: 12px; }
+.choice-bar { height: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; overflow: hidden; margin: 4px 0; }
+.choice-bar > div { height: 100%; background: var(--accent); }
+.choice-list p { margin: 2px 0 0; }

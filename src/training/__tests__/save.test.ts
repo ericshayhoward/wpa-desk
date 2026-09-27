@@ -7,7 +7,7 @@ function midGame() {
   let s = startSession(MIDLAND_STATE, SCENARIOS);
   s = resolveScenario(s, scenarioById("cap-memo")!, "compromise-25", {
     audience: "dean", subject: "S", ask: "A", body: "B", evidenceIds: [],
-    commitments: [{ text: "Report back", dueInTerms: 2 }], selfAssessment: { ask: true },
+    commitments: [{ text: "Report back", dueInTerms: 2, effortHours: 4 }], selfAssessment: { ask: true },
   }).session;
   return advanceTerm(s, SCENARIOS).session;
 }

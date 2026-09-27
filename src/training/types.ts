@@ -5,6 +5,7 @@
  * it. The model never imports from here.
  */
 import type { Program, ProgramChange, StakeholderId, Term, TermComparison } from "../model";
+import type { DraftInProgress, DraftVersion, ReflectionVersion } from "./drafts";
 
 export type CareerStage = "assistant_director" | "wpa" | "program_builder";
 export type ToolId = "cap_calculator" | "staffing_planner";
@@ -40,12 +41,23 @@ export type ScenarioChange =
   /** Cancels exactly as many sections of a course as are currently unstaffed this term. */
   | { kind: "cancelUnstaffed"; courseId: string };
 
+/**
+ * An in-character reply. `warm` and `cool` variants, if given, replace the
+ * default body when the writer's trust in you is high or low.
+ */
+export interface Reply {
+  from: StakeholderId;
+  body: string;
+  warm?: string;
+  cool?: string;
+}
+
 /** What happens after an option is chosen: the model changes plus how it reads. */
 export interface Consequence {
   narrative: string;
   changes: ScenarioChange[];
   /** Optional in-character reply from a stakeholder. */
-  response?: { from: StakeholderId; body: string };
+  response?: Reply;
   /** Effects that land in later terms; they belong to this outcome only. */
   delayed: DelayedEffect[];
 }
@@ -73,6 +85,8 @@ export interface ScenarioOption {
   description: string;
   cost: { adminHours: number; politicalCapital: number };
   memo: { required: boolean; audience: StakeholderId; prompt: string } | null;
+  /** A relationship this option depends on (e.g., the chair lending a colleague). */
+  requires: { stakeholder: StakeholderId; minTrust: number } | null;
   /** Used when the option has no persuasion step. */
   consequence: Consequence | null;
   persuasion: Persuasion | null;
@@ -96,6 +110,39 @@ export interface Scenario {
     readings: string[];
   };
 }
+
+// ---------------------------------------------------------------------------
+// Cast (authored as YAML in src/content/cast)
+// ---------------------------------------------------------------------------
+
+/**
+ * A named person behind a stakeholder role. Their persuasion profile sets the
+ * trust you need for a memo to land: with the evidence they want, or without it.
+ */
+export interface Character {
+  stakeholder: StakeholderId;
+  name: string;
+  /** How they're addressed in the game, e.g. "Dean Alvarez". */
+  shortName: string;
+  title: string;
+  bio: string;
+  /** What moves them, shown when you write to them. */
+  responds: string;
+  persuasion: PersuasionProfile;
+}
+
+export interface PersuasionProfile {
+  /** Trust needed to be persuaded when the memo carries the evidence they need. */
+  withEvidence: number;
+  /** Trust needed to take your word without it. */
+  withoutEvidence: number;
+}
+
+/** For stakeholders with no named character (groups, or a program without a cast). */
+export const DEFAULT_PERSUASION: PersuasionProfile = { withEvidence: 25, withoutEvidence: 80 };
+
+/** Trust levels at which replies turn warm or cool. */
+export const REPLY_TONE = { warmAt: 70, coolBelow: 40 } as const;
 
 // ---------------------------------------------------------------------------
 // Evidence and memos
@@ -124,9 +171,15 @@ export interface Commitment {
   text: string;
   /** Term index the commitment is due. */
   dueTerm: number;
-  /** Set when resolved; resolution mechanics come in a later milestone. */
   status: "open" | "kept" | "missed";
   memoId: string;
+  /** Whose trust rides on it: the memo's reader. */
+  audience: StakeholderId;
+  /** Admin hours it takes to deliver, spent in the term you deliver. */
+  effortHours: number;
+  /** One extension is allowed. */
+  extended: boolean;
+  resolvedTerm: number | null;
 }
 
 export const SELF_ASSESSMENT = [
@@ -144,8 +197,12 @@ export interface MemoDraft {
   ask: string;
   body: string;
   evidenceIds: string[];
-  commitments: { text: string; dueInTerms: number }[];
+  commitments: { text: string; dueInTerms: number; effortHours: number }[];
   selfAssessment: Partial<Record<SelfAssessmentId, boolean>>;
+  /** Drafting history up to and including the sent version. */
+  history?: DraftVersion[];
+  /** When the writer opened the composer. */
+  startedAt?: string;
 }
 
 export interface Memo extends Omit<MemoDraft, "commitments"> {
@@ -171,6 +228,33 @@ export interface DecisionRecord {
   termIndex: number;
   memoId: string | null;
   persuaded: boolean | null;
+  /** What the situation looked like and what happened, as it was at the time. */
+  snapshot?: CaseSnapshot;
+  /** The player's reflection after the debrief. */
+  reflection?: string;
+  /** Every saved version of the reflection, oldest first. */
+  reflectionHistory?: ReflectionVersion[];
+}
+
+/**
+ * A record of one decision as it happened. Documents are stored with their
+ * placeholders already filled, and replies with the tone chosen at the time,
+ * because both depend on state that later decisions change.
+ */
+export interface CaseSnapshot {
+  documents: ScenarioDocument[];
+  narrative: string;
+  reply: { from: StakeholderId; body: string } | null;
+  persuasion: DecisionOutcome["persuasion"];
+  missingEvidence: EvidenceKind[];
+  trustChanges: DecisionOutcome["trustChanges"];
+  changeDescriptions: string[];
+}
+
+/** Cover-page details for exported case files. */
+export interface PortfolioInfo {
+  author: string;
+  course: string;
 }
 
 export interface TrainingSession {
@@ -188,6 +272,9 @@ export interface TrainingSession {
   commitments: Commitment[];
   /** Monotonic counter for ids, so sessions stay deterministic and serializable. */
   nextId: number;
+  portfolio?: PortfolioInfo;
+  /** Unsent memos, by scenario id, so drafts survive reloads. */
+  drafts?: Record<string, DraftInProgress>;
 }
 
 /** Everything the outcome screen needs to explain a decision. */
@@ -198,6 +285,10 @@ export interface DecisionOutcome {
   persuaded: boolean | null;
   /** Evidence kinds the option wanted but the memo did not attach. */
   missingEvidence: EvidenceKind[];
+  /** How persuasion was decided: the reader's trust and what was needed. */
+  persuasion: { reader: StakeholderId; trust: number; needed: number; hadEvidence: boolean } | null;
+  /** The reply as it reads given the relationship (warm/cool variant already chosen). */
+  reply: { from: StakeholderId; body: string } | null;
   trustChanges: { stakeholder: StakeholderId; before: number; after: number }[];
   politicalCapital: { before: number; after: number };
   /** Projected impact of this decision's program changes on the current term. */

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   fillTemplate,
+  type DraftInProgress,
   termOf,
   unavailableReason,
   type EvidenceDraft,
@@ -12,20 +13,25 @@ import {
 import { CapCalculator } from "./CapCalculator";
 import { MemoComposer } from "./MemoComposer";
 import { StaffingPlanner } from "./StaffingPlanner";
-import { stakeholderName } from "./format";
+import { stakeholderByline } from "./format";
 
 interface Props {
   scenario: Scenario;
   session: TrainingSession;
   onSaveEvidence: (draft: EvidenceDraft) => void;
   onDecide: (optionId: string, memo: MemoDraft | null) => void;
+  onDraft: (draft: DraftInProgress) => void;
   onBack: () => void;
 }
 
-export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onBack }: Props) {
+export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onDraft, onBack }: Props) {
   const program = session.program;
-  const [chosen, setChosen] = useState<ScenarioOption | null>(null);
-  const [writing, setWriting] = useState(false);
+  // Resume an unsent memo where the writer left off.
+  const resume = session.drafts?.[scenario.id];
+  const [chosen, setChosen] = useState<ScenarioOption | null>(
+    () => scenario.options.find((o) => o.id === resume?.optionId) ?? null,
+  );
+  const [writing, setWriting] = useState(Boolean(resume && chosen?.memo));
 
   const choose = (option: ScenarioOption) => {
     setChosen(option);
@@ -43,7 +49,7 @@ export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onBa
         <article key={i} className={`document ${d.genre}`}>
           <header>
             <div>
-              <span className="muted small">From</span> {stakeholderName(program, d.from)}
+              <span className="muted small">From</span> {stakeholderByline(program, d.from)}
             </div>
             <div>
               <span className="muted small">Re</span> {fillTemplate(d.subject, session)}
@@ -124,7 +130,9 @@ export function ScenarioView({ scenario, session, onSaveEvidence, onDecide, onBa
           option={chosen}
           audience={chosen.memo.audience}
           prompt={chosen.memo.prompt}
-          defaultSubject={`Re: ${scenario.documents[0]?.subject ?? scenario.title}`}
+          defaultSubject={`Re: ${fillTemplate(scenario.documents[0]?.subject ?? scenario.title, session)}`}
+          resume={resume}
+          onDraft={onDraft}
           onCancel={() => setWriting(false)}
           onSend={(memo) => onDecide(chosen.id, memo)}
         />

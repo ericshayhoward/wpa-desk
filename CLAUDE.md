@@ -32,8 +32,10 @@ npm run build
 - Scenarios are YAML in `src/content/scenarios/`, validated by
   `parseScenario()` on load (errors name the exact field). Delayed effects
   belong to a specific consequence, not to the option.
-- Persuasion is decided mechanically by attached evidence kinds, never by
-  grading memo prose.
+- Persuasion is decided mechanically by attached evidence kinds plus the
+  reader's trust against their persuasion profile (`src/content/cast/`),
+  never by grading memo prose. Pass `CAST` to `resolveScenario`; without it
+  the default profile applies.
 - `src/app/__tests__/` has jsdom playthrough tests; add one per scenario.
 - A YAML error makes every test file that imports content fail to load, so
   check the "Test Files" line, not just "Tests". Quote YAML strings that
@@ -46,6 +48,13 @@ npm run build
 - UI tests must `localStorage.clear()` in `beforeEach` (autosave persists
   across renders). `src/test-setup.ts` restores jsdom's localStorage, which
   Node 25's built-in stub otherwise shadows.
+- Instructor review (`src/app/ReviewMode.tsx`, summaries in
+  `src/training/review.ts`) opens student saves read-only and in memory; it
+  must never call the game's session setters or write storage. `Dossier`
+  is read-only when given no edit handlers.
+- `src/test-fixtures/` holds reusable student sessions for tests.
+- Long-term goal: a hosted multi-user version; see `docs/ROADMAP.md` before
+  making choices that would only work local-only.
 - Scenarios interact (e.g., holding caps at 24 makes The Late Hire arrive in
   spring). Multi-term tests must resolve urgent scenarios before advancing.
 

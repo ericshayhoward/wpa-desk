@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { DEFAULT_ASSUMPTIONS, MIDLAND_STATE, analyzeTerm } from "../model";
-import { SCENARIOS } from "../content";
+import { CAST, SCENARIOS } from "../content";
 import {
+  abandonCommitment,
   addEvidence,
+  addReflection,
+  reviseMemo,
+  setDraftInProgress,
+  setPortfolio,
   advanceTerm,
+  deliverCommitment,
+  extendCommitment,
   resolveScenario,
   startSession,
   termLabel,
@@ -11,6 +18,7 @@ import {
   type DecisionOutcome,
   type EvidenceDraft,
   type MemoDraft,
+  type Commitment,
   type PendingEffect,
   type TrainingSession,
 } from "../training";
@@ -19,6 +27,7 @@ import { Desk } from "./Desk";
 import { Dossier } from "./Dossier";
 import { OutcomeView } from "./OutcomeView";
 import { ScenarioView } from "./ScenarioView";
+import { ReviewMode } from "./ReviewMode";
 import { SavesPanel } from "./SavesPanel";
 import { StaffingPlanner } from "./StaffingPlanner";
 import { usd } from "./format";
@@ -44,10 +53,13 @@ export function App() {
   const [note, setNote] = useState<string | null>(initial.note);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("desk");
+  // Instructor review is a separate mode; the game session is left untouched.
+  const [reviewing, setReviewing] = useState(false);
   const [tool, setTool] = useState<Tool>("caps");
   const [openScenario, setOpenScenario] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<DecisionOutcome | null>(null);
-  const [landed, setLanded] = useState<PendingEffect[]>([]);
+  const NOTHING_LANDED = { effects: [] as PendingEffect[], missed: [] as Commitment[], drift: [] as string[] };
+  const [landed, setLanded] = useState(NOTHING_LANDED);
 
   const program = session.program;
   const analysis = useMemo(
@@ -65,7 +77,7 @@ export function App() {
     setSession(next);
     setOutcome(null);
     setOpenScenario(null);
-    setLanded([]);
+    setLanded(NOTHING_LANDED);
     setTab("desk");
     setNote(message);
   };
@@ -74,7 +86,7 @@ export function App() {
 
   const decide = (optionId: string, memo: MemoDraft | null) => {
     if (!scenario) return;
-    const result = resolveScenario(session, scenario, optionId, memo);
+    const result = resolveScenario(session, scenario, optionId, memo, CAST);
     setSession(result.session);
     setOutcome(result.outcome);
     setOpenScenario(null);
@@ -83,9 +95,23 @@ export function App() {
   const nextTerm = () => {
     const result = advanceTerm(session, SCENARIOS);
     setSession(result.session);
-    setLanded(result.applied);
+    setLanded({ effects: result.applied, missed: result.missed, drift: result.drift });
     setOutcome(null);
   };
+
+  if (reviewing) {
+    return (
+      <div className="page">
+        <header className="masthead no-print">
+          <h1>WPA Desk</h1>
+          <p className="muted">Instructor review</p>
+        </header>
+        <main>
+          <ReviewMode onExit={() => setReviewing(false)} />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="page">
@@ -101,9 +127,12 @@ export function App() {
           <nav className="tabs" aria-label="Sections">
             {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
               <button key={t} aria-current={tab === t ? "page" : undefined} onClick={() => setTab(t)}>
-                {t === "dossier" ? `Dossier (${session.dossier.length})` : TAB_LABELS[t]}
+                {t === "dossier" ? `Dossier (${session.decisions.length})` : TAB_LABELS[t]}
               </button>
             ))}
+            <button className="review-link" onClick={() => setReviewing(true)}>
+              Instructor review
+            </button>
           </nav>
         </div>
 
@@ -159,13 +188,24 @@ export function App() {
       <main>
         {tab === "desk" &&
           (outcome ? (
-            <OutcomeView outcome={outcome} program={program} onDone={() => setOutcome(null)} onDossier={() => setTab("dossier")} />
+            <OutcomeView
+              outcome={outcome}
+              program={program}
+              reflection={session.decisions.find((d) => d.scenarioId === outcome.scenario.id)?.reflection}
+              onReflect={(text) => setSession((s) => addReflection(s, outcome.scenario.id, text, new Date()))}
+              onDone={() => setOutcome(null)}
+              onDossier={() => {
+                setOutcome(null);
+                setTab("dossier");
+              }}
+            />
           ) : scenario ? (
             <ScenarioView
               scenario={scenario}
               session={session}
               onSaveEvidence={saveEvidence}
               onDecide={decide}
+              onDraft={(d) => setSession((s) => setDraftInProgress(s, scenario.id, d))}
               onBack={() => setOpenScenario(null)}
             />
           ) : (
@@ -174,12 +214,23 @@ export function App() {
               landed={landed}
               onOpen={(id) => {
                 setOpenScenario(id);
-                setLanded([]);
+                setLanded(NOTHING_LANDED);
               }}
               onNextTerm={nextTerm}
+              onDeliver={(id) => setSession((s) => deliverCommitment(s, id))}
+              onExtend={(id) => setSession((s) => extendCommitment(s, id))}
+              onAbandon={(id) => setSession((s) => abandonCommitment(s, id))}
             />
           ))}
-        {tab === "dossier" && <Dossier session={session} scenarios={SCENARIOS} />}
+        {tab === "dossier" && (
+          <Dossier
+            session={session}
+            scenarios={SCENARIOS}
+            onReflect={(id, text) => setSession((s) => addReflection(s, id, text, new Date()))}
+            onRevise={(memoId, content, note) => setSession((s) => reviseMemo(s, memoId, content, note, new Date()))}
+            onPortfolio={(info) => setSession((s) => setPortfolio(s, info))}
+          />
+        )}
         {tab === "saves" && (
           <SavesPanel
             session={session}

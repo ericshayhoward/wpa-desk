@@ -1,0 +1,49 @@
+# The people behind Midland State's stakeholder roles.
+#
+# persuasion.withEvidence: trust needed for a memo to land when it carries
+#   the evidence this person needs.
+# persuasion.withoutEvidence: trust needed to take your word without it.
+# Groups (adjuncts, GTAs, students, senate, accreditor) have no single
+# character and use the default profile (25 / 80).
+
+- stakeholder: dean
+  name: Elena Alvarez
+  shortName: Dean Alvarez
+  title: Dean of Arts & Sciences
+  bio: >
+    Came to the deanship through economics and a decade on budget
+    committees. Fair, overbooked, and unmoved by arguments that arrive
+    without numbers.
+  responds: Local numbers that speak to budget, enrollment, and retention. Principle alone won't carry a request.
+  persuasion: { withEvidence: 30, withoutEvidence: 90 }
+
+- stakeholder: chair
+  name: Marcus Hale
+  shortName: Dr. Hale
+  title: Chair, Department of English
+  bio: >
+    A medievalist in the sixth year of chairing. Protective of the
+    department's reputation and of tenure-line research time, and loyal to
+    colleagues who keep problems off the chair's desk.
+  responds: Plans that protect the department's name, and being consulted before decisions rather than after.
+  persuasion: { withEvidence: 20, withoutEvidence: 65 }
+
+- stakeholder: provost_office
+  name: Grace Okafor
+  shortName: Associate Provost Okafor
+  title: Associate Provost for Student Success
+  bio: >
+    Runs the university's first-year retention initiatives, reads the
+    early-alert reports every week, and remembers which units helped.
+  responds: Retention and completion data, and anything that changes the experience of first-year students.
+  persuasion: { withEvidence: 35, withoutEvidence: 85 }
+
+- stakeholder: writing_center
+  name: Priya Raman
+  shortName: Dr. Raman
+  title: Director, University Writing Center
+  bio: >
+    Your most natural ally on campus, and also competing with you for the
+    same small budget lines. Values partnership over turf.
+  responds: Collaboration, and being told early about anything that will send more students through the center's door.
+  persuasion: { withEvidence: 15, withoutEvidence: 60 }

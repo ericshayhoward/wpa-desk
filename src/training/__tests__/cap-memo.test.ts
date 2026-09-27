@@ -6,7 +6,7 @@ import {
   addEvidence,
   advanceTerm,
   capAnalysisEvidence,
-  dossierToMarkdown,
+  caseFilesToMarkdown,
   parseScenario,
   resolveScenario,
   startSession,
@@ -117,6 +117,15 @@ describe("The Cap Memo", () => {
     expect(adjuncts.headcount).toBe(12);
     expect(adjuncts.morale).toBe(35);
     expect(t3.session.inbox).not.toContain("cap-memo");
+
+    // Morale below 40 means turnover: one more adjunct leaves after the next term.
+    // That erodes the slack that kept The Late Hire away, so it arrives in
+    // spring of year 2 and three more adjuncts withdraw (12 → 11 → 8).
+    expect(t3.drift).toEqual([]);
+    const t4 = advanceTerm(t3.session, SCENARIOS);
+    expect(t4.drift[0]).toMatch(/Morale among adjunct faculty is low \(35\)/);
+    expect(t4.session.inbox).toContain("late-hire");
+    expect(t4.session.program.instructors.find((p) => p.rank === "adjunct")!.headcount).toBe(8);
   });
 
   it("counter-with-data requires a memo", () => {
@@ -142,7 +151,7 @@ describe("The Cap Memo", () => {
       start,
       capMemo,
       "counter-with-data",
-      memo({ evidenceIds: [evidenceId], commitments: [{ text: "Share D/F/W data by next fall", dueInTerms: 2 }] }),
+      memo({ evidenceIds: [evidenceId], commitments: [{ text: "Share D/F/W data by next fall", dueInTerms: 2, effortHours: 4 }] }),
     );
     expect(outcome.persuaded).toBe(true);
     expect(cap(session, "ENGL101")).toBe(24);
@@ -169,19 +178,20 @@ describe("The Cap Memo", () => {
   });
 });
 
-describe("dossier export", () => {
+describe("case file export", () => {
   it("includes the memo, attached evidence, and commitments", () => {
     const start = withCapEvidence(startSession(MIDLAND_STATE, SCENARIOS));
     const { session } = resolveScenario(
       start,
       capMemo,
       "counter-with-data",
-      memo({ evidenceIds: [start.evidence[0]!.id], commitments: [{ text: "Report D/F/W", dueInTerms: 2 }] }),
+      memo({ evidenceIds: [start.evidence[0]!.id], commitments: [{ text: "Report D/F/W", dueInTerms: 2, effortHours: 4 }] }),
     );
-    const md = dossierToMarkdown(session, SCENARIOS);
-    expect(md).toContain("## Holding FYC caps at 24");
-    expect(md).toContain("**To:** Dean of Arts & Sciences");
-    expect(md).toContain("Adjunct sections: 36 → 31 (−5).");
-    expect(md).toContain("- Report D/F/W (due Fall, Year 2; open)");
+    const names = { short: (id: string) => id, byline: (id: string) => `byline:${id}` };
+    const md = caseFilesToMarkdown(session, SCENARIOS, names, new Date("2026-09-27T00:00:00Z"));
+    expect(md).toContain("**Subject:** Holding FYC caps at 24");
+    expect(md).toContain("**To:** byline:dean");
+    expect(md).toContain("  - Adjunct sections: 36 → 31 (−5).");
+    expect(md).toContain("- Report D/F/W — open, due Fall, Year 2");
   });
 });

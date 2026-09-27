@@ -1,27 +1,32 @@
 import { RANK_LABELS, type Program } from "../model";
-import { EVIDENCE_LABELS, type DecisionOutcome } from "../training";
-import { signed, stakeholderName, usd } from "./format";
+import { persuasionSummary, type DecisionOutcome } from "../training";
+import { ReflectionEditor } from "./ReflectionEditor";
+import { namesFor, signed, stakeholderName, usd } from "./format";
 
 interface Props {
   outcome: DecisionOutcome;
   program: Program;
+  /** The reflection already saved for this scenario, if any. */
+  reflection: string | undefined;
+  onReflect: (text: string) => void;
   onDone: () => void;
   onDossier: () => void;
 }
 
-export function OutcomeView({ outcome, program, onDone, onDossier }: Props) {
+export function OutcomeView({ outcome, program, reflection, onReflect, onDone, onDossier }: Props) {
   const {
     scenario,
     option,
     consequence,
     persuaded,
     missingEvidence,
+    persuasion,
+    reply,
     trustChanges,
     politicalCapital,
     impact,
     changeDescriptions,
     queued,
-    memo,
   } = outcome;
   const c = impact.comparison;
   const staffingChanges = Object.entries(c.sectionsByRank).filter(([, d]) => d !== 0);
@@ -33,13 +38,9 @@ export function OutcomeView({ outcome, program, onDone, onDossier }: Props) {
       <p className="muted small">{scenario.title}</p>
       <h2>You chose: {option.label}</h2>
 
-      {persuaded !== null && (
+      {persuasion && (
         <p className={`banner ${persuaded ? "good" : "bad"}`}>
-          {persuaded
-            ? "Your memo carried the evidence this reader needed."
-            : `Your memo didn't include the kind of evidence this reader needed: ${missingEvidence
-                .map((k) => EVIDENCE_LABELS[k])
-                .join(", ")}.`}
+          {persuasionSummary(persuasion, persuaded!, missingEvidence, namesFor(program))}
         </p>
       )}
 
@@ -47,10 +48,10 @@ export function OutcomeView({ outcome, program, onDone, onDossier }: Props) {
         {consequence.narrative.split(/\n\s*\n/).map((p, i) => (
           <p key={i}>{p}</p>
         ))}
-        {consequence.response && (
+        {reply && (
           <blockquote className="reply">
-            <p>{consequence.response.body}</p>
-            <footer>— {stakeholderName(program, consequence.response.from)}</footer>
+            <p>{reply.body}</p>
+            <footer>— {stakeholderName(program, reply.from)}</footer>
           </blockquote>
         )}
       </section>
@@ -169,12 +170,15 @@ export function OutcomeView({ outcome, program, onDone, onDossier }: Props) {
         )}
       </section>
 
+      <section className="card">
+        <h3>Reflect</h3>
+        <ReflectionEditor key={reflection ?? ""} scenarioTitle={scenario.title} saved={reflection} onSave={onReflect} />
+      </section>
+
       <div className="row-end">
-        {memo && (
-          <button className="secondary" onClick={onDossier}>
-            See your memo in the dossier
-          </button>
-        )}
+        <button className="secondary" onClick={onDossier}>
+          See the case file
+        </button>
         <button className="primary" onClick={onDone}>
           Back to desk
         </button>
@@ -182,3 +186,4 @@ export function OutcomeView({ outcome, program, onDone, onDossier }: Props) {
     </div>
   );
 }
+

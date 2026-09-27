@@ -55,6 +55,7 @@ options:
       response:
         from: dean
         body: Thank you for being a team player on this. It makes my conversation with the provost much easier.
+        warm: Thank you. I knew I could count on you, and I'll remember it when the next budget round comes.
       delayed:
         - inTerms: 2
           note: |
@@ -89,6 +90,7 @@ options:
         changes:
           - { kind: adjustBudget, delta: 8600 }
           - { kind: adjustTrust, stakeholder: dean, delta: 3 }
+          - { kind: adjustTrust, stakeholder: chair, delta: 2 }
           - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 6 }
           - { kind: adjustTrust, stakeholder: students, delta: 2 }
         response:
@@ -116,9 +118,11 @@ options:
           - { kind: setCap, courseId: ENGL102, cap: 27 }
           - { kind: adjustTrust, stakeholder: dean, delta: -4 }
           - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 3 }
+          - { kind: adjustTrust, stakeholder: chair, delta: 2 }
         response:
           from: dean
           body: I share your values here, but I need numbers I can take to the provost. The change will go ahead.
+          cool: I've asked before for data rather than arguments. The change will go ahead.
 
   - id: compromise-25
     label: Propose a compromise at 25
@@ -160,13 +164,14 @@ options:
         You ask for two weeks. The dean grants one, then raises caps to 27
         anyway because the registrar's deadline won't move. But instructors
         heard about the change from you first, and some of them noticed that
-        you asked.
+        you asked. So did the chair, who appreciates being brought in early.
       changes:
         - { kind: setCap, courseId: ENGL101, cap: 27 }
         - { kind: setCap, courseId: ENGL102, cap: 27 }
         - { kind: adjustTrust, stakeholder: dean, delta: -3 }
         - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 4 }
         - { kind: adjustTrust, stakeholder: gta_cohort, delta: 2 }
+        - { kind: adjustTrust, stakeholder: chair, delta: 4 }
       response:
         from: dean
         body: I understand wanting to consult, but the registrar's deadline is real. We're going ahead at 27.

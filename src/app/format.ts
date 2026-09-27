@@ -1,4 +1,6 @@
 import type { Program, StakeholderId } from "../model";
+import { CAST } from "../content";
+import { characterFor, type Names } from "../training";
 
 export function usd(n: number): string {
   const s = `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
@@ -14,6 +16,18 @@ export function pct(x: number, digits = 1): string {
   return `${(x * 100).toFixed(digits)}%`;
 }
 
+/** How a stakeholder is named in the UI: the character's name if there is one, else the role. */
 export function stakeholderName(program: Program, id: StakeholderId): string {
-  return program.stakeholders.find((s) => s.id === id)?.name ?? id;
+  return characterFor(CAST, id)?.shortName ?? program.stakeholders.find((s) => s.id === id)?.name ?? id;
+}
+
+/** Full name and role, for letterheads: "Elena Alvarez, Dean of Arts & Sciences". */
+export function stakeholderByline(program: Program, id: StakeholderId): string {
+  const c = characterFor(CAST, id);
+  return c ? `${c.name}, ${c.title}` : stakeholderName(program, id);
+}
+
+/** Name lookups for training-layer text (case files, persuasion summaries). */
+export function namesFor(program: Program): Names {
+  return { short: (id) => stakeholderName(program, id), byline: (id) => stakeholderByline(program, id) };
 }

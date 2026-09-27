@@ -27,6 +27,12 @@ it("The Late Hire: urgent, blocks the term, resolved by adding seats", async () 
   await user.click(screen.getByText("Open the staffing planner"));
   expect(screen.getByText("3 of 60 sections have no instructor.")).toBeTruthy();
 
+  // Borrowing colleagues depends on the chair's trust, which hasn't been built yet.
+  const borrow = screen.getByRole("button", { name: /Ask the chair to lend tenure-line colleagues/ }) as HTMLButtonElement;
+  expect(borrow.disabled).toBe(true);
+  expect(screen.getByText("Needs trust of 62 with the English Department Chair (now 60).")).toBeTruthy();
+  expect(screen.getByText(/From/).parentElement!.textContent).toContain("Marcus Hale, Chair, Department of English");
+
   await user.click(screen.getByRole("button", { name: /Add seats to the remaining sections/ }));
   await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
   expect(screen.getByRole("heading", { name: "Projected effect this spring" })).toBeTruthy();
