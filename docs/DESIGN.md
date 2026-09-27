@@ -113,12 +113,97 @@ pass/DFW ranges, stakeholder reactions, and a human-readable "why" trace.
 - **Political capital & stakeholder trust** — the real currency of WPA work.
 - **Delayed consequences** — a decision in fall shows up in spring's numbers
   or next year's program review.
-- **Career arc** — Assistant Director → WPA → program builder, each stage
-  giving more authority and harder problems (reuses the "eras" idea from
-  Retention.edu).
+- **Career arc** — Assistant Director → interim WPA, each stage giving more
+  authority and harder problems (reuses the "eras" idea from
+  Retention.edu). See "Arcs" for the standard arc.
 - **Annual report** — at year end the player assembles a report from their
   own data; this doubles as practice for a real WPA genre.
 - **Decision log export** — CSV/PDF for instructors running a seminar.
+
+### Arcs
+
+A playthrough follows an **arc**: a fixed length, a calendar of which
+scenarios can arrive when, recurring events, and an ending. Arcs are content
+(YAML in `src/content/arcs/`), so other arcs (a one-semester seminar unit,
+an assistant-director arc, an open-ended sandbox) can be added later without
+code changes.
+
+**The standard arc** (decided): 3 years, 6 terms, Fall Y1 through Spring Y3.
+The capstone is the **Year 3 annual report**, followed by an end-of-arc
+debrief.
+
+**Player role** (decided): the player is a rhetoric and composition PhD
+student serving as Assistant Director, starting in their second year of the
+PhD (a common pattern: first year in the writing center or another
+assignment, then an administrative role). Year 3 of the arc is their fourth
+PhD year, when they go on the job market.
+
+- Years 1–2: Assistant Director under the WPA (a new cast member, the
+  player's supervisor). Scenarios reach the player the way they would reach
+  an AD; e.g., the WPA forwards the dean's cap request and asks the player to
+  run the numbers and draft the response.
+- Year 3 (proposed): the WPA goes on sabbatical and the player serves as
+  **interim director** (career stage `wpa`), with more authority and harder
+  problems. Fall Y3 also brings the job market, which competes for admin
+  hours. Optional: a dissertation-progress meter so admin work has a
+  personal cost.
+
+**Annual reports** (decided): the report goes to the chair, Dr. Hale, who
+forwards it to the dean. Reports are reflective only: they are saved to the
+case files and exported, for instructors to evaluate, and never scored.
+
+- Years 1–2: the supervisor writes the report and the player writes one
+  section. Proposed: Y1 program data (enrollment, sections, staffing, D/F/W,
+  and what they mean); Y2 assessment and outcomes (the accreditation year).
+  The supervisor's sections are generated from the player's program data,
+  and the player sees the assembled report with their section in place.
+- Year 3: the player writes the entire report with the memo composer: data,
+  outcomes, initiatives, next year's requests, and a three-year look back,
+  with evidence attached from their own data and a recap of commitments.
+
+**Endings** (decided in principle: scored from three years of results, shown
+alongside the Year 3 report; presentation to be designed later). Proposed
+job-market outcomes:
+
+1. Tenure-track assistant professor at a university, with a WPA role.
+2. Full-time faculty position at a two-year college (written as a real,
+   good outcome, not a consolation prize).
+3. Rotated out: the AD appointment goes to another graduate student and the
+   player goes on the market without a strong administrative record.
+
+Proposed score inputs: program outcomes against Midland's baseline (D/F/W,
+staffing stability, budget), trust with characters, commitments kept versus
+missed, and instructor morale. The ending screen explains why, like a
+debrief, rather than showing a bare grade.
+
+Design direction (proposed, not yet built):
+
+- **Placement lives in the arc; conditions live in the scenario.** A
+  scenario's `trigger` says what must be true for it to make sense
+  (`requiresDeficit`, `requiresUnstaffed`, earlier choices, thresholds). The
+  arc says *when* it's eligible (a term window). The same scenario can then
+  sit at different points in different arcs.
+- **Richer triggers** — an earlier choice (`after: { scenario, option }`),
+  state thresholds (D/F/W, morale, trust with a character), and a latest
+  term, so follow-ups like the Cap Memo reprieve review become scenarios
+  rather than notes.
+- **Recurring events** — each year has a rhythm even between scripted
+  scenarios: budget in fall, staffing and hiring in spring, annual report at
+  year end.
+- **Inbox density** — about 2 major scenarios per term, plus short minor
+  items (one email, a choice, no memo) to reach the 3–5 in the core loop.
+
+Draft standard-arc calendar (the accreditation visit is in year 2 at
+Midland):
+
+| Term | Scenarios |
+|---|---|
+| Fall Y1 | The Cap Memo · The Syllabus Holdout |
+| Spring Y1 | The Late Hire (if triggered) · The Grade Appeal Escalation |
+| Fall Y2 | The Accreditation Ask · The Dual-Enrollment Drop |
+| Spring Y2 | The DSP Pilot · The Detector · Cap Memo follow-up |
+| Fall Y3 | The GTA Stipend Campaign · The Writing Center Budget Swap |
+| Spring Y3 | Year 3 annual report (capstone) |
 
 ### Memos (v1)
 
