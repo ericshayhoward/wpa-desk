@@ -13,6 +13,10 @@ Living list of what's next and what's further out. Design details live in
   year, year-end reports, the dissertation meter, and three endings (see
   "Arcs" in `DESIGN.md`). Follow-ups: a more beautiful ending screen;
   recurring events; recalibrating hours and scoring as scenarios are added.
+- **Class settings and variation** — instructor-made settings files
+  (scenario selection, difficulty, starting-condition presets, seeded
+  variation, scenario variants) so a class can't share a walkthrough; see
+  `DESIGN.md`. Groundwork (placeholders, `session.settings`) is in place.
 - **Instructor feedback round-trip** — comments on memos and reflections,
   saved as a feedback file the student imports and sees in their case files.
 - **Memory** — characters quote the player's past memos and commitments back

@@ -5,8 +5,8 @@
 # names. The memo's reader is still the dean, so persuasion uses the dean's
 # profile.
 #
-# Numbers referenced in the prose come from the Midland State model:
-# a $8,600-per-term deficit; caps of 27 cut 5 fall sections, all adjunct.
+# From Midland's baseline: a $8,600-per-term deficit ({{deficit}} in the
+# memo); caps of 27 cut 5 fall sections, all adjunct.
 
 id: cap-memo
 title: The Cap Memo
@@ -37,9 +37,9 @@ documents:
       As you know, the college closed last year with a shortfall, and the
       provost has asked every unit to find savings. First-year writing is one
       of our largest instructional budgets, and your program is running about
-      $8,600 over its instruction line each term.
+      {{deficit}} over its instruction line each term.
 
-      I'd like to raise caps in ENGL 101 and ENGL 102 from 24 to 27 beginning
+      I'd like to raise caps in ENGL 101 and ENGL 102 from {{cap_ENGL101}} to 27 beginning
       next fall. Several of our peer institutions run these courses at 25 or
       higher, and I don't see another lever of this size.
 
@@ -63,7 +63,7 @@ options:
     consequence:
       narrative: |
         Dr. Cherry sends your reply with one line added. The registrar
-        rebuilds the schedule. Five fall sections disappear, all of them
+        rebuilds the schedule. Fall sections disappear, all of them
         taught by adjuncts. The deficit closes on paper, and the dean thanks
         the program at the next chairs' meeting.
       changes:
@@ -107,7 +107,7 @@ options:
           The dean reads your analysis closely. Nearly all of the savings come
           out of adjunct sections, while projected D/F/W in gateway courses
           rises, and D/F/W is a retention number the provost watches. The dean
-          agrees to hold caps at 24 for one year and covers the gap from a
+          agrees to hold caps where they are for one year and covers the gap from a
           vacant staff line.
         changes:
           - { kind: adjustBudget, delta: 8600 }
@@ -157,8 +157,8 @@ options:
       prompt: Propose the compromise and say what you'll measure during the year.
     consequence:
       narrative: |
-        The dean accepts the middle ground. Caps of 25 trim about one section
-        per term and less than half the deficit; the rest is still the
+        The dean accepts the middle ground. Caps of 25 trim a few sections
+        and close only part of the deficit; the rest is still the
         program's to solve. Adjuncts lose a little work, and you've
         implicitly promised to study what happens, which Dr. Cherry makes
         clear is your project.

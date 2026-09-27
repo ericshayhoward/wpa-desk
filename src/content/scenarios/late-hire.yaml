@@ -125,8 +125,8 @@ options:
       prompt: Explain the plan, and what you're asking of the lecturers.
     consequence:
       narrative: |
-        Both lecturers agree, one of them reluctantly. Their overloads cover
-        two sections at the adjunct rate. Any section still uncovered is
+        Both lecturers agree, one of them reluctantly. Each takes one
+        overload section at the adjunct rate. Any section still uncovered is
         cancelled, and those students scramble for a seat.
       changes:
         - { kind: setOverload, rank: ntt, maxPerPerson: 1, costPerSection: 3600 }

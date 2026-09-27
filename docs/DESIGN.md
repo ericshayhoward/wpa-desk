@@ -413,6 +413,55 @@ Other scenario features (see `late-hire.yaml`):
 9. The GTA Stipend Campaign — graduate instructors are organizing.
 10. The Writing Center Budget Swap — funding one means cutting the other.
 
+### Class settings and variation (designed, not yet built)
+
+A fixed, deterministic game can be passed down as a walkthrough ("attach a
+cap analysis on The Cap Memo…"). How much that matters depends on what's
+evaluated:
+
+- **The writing is the student's own.** Memos, annual reports, and
+  reflections can't be copied from a walkthrough, and drafting history makes
+  pasted text visible in instructor review.
+- **Outcomes are exposed.** Choices and the ending score can be copied. So
+  **the ending is never meant to be a grade**; instructors evaluate the
+  writing, the reasoning, and the process. The instructor guide and review
+  mode should say so.
+- **Some sharing is the lesson.** "Bring the numbers the dean cares about"
+  is what the game teaches.
+
+Planned instructor settings, cheapest first:
+
+1. **Scenario selection** — which scenarios are included, and which require
+   a memo.
+2. **Difficulty** — hide persuasion thresholds and exact trust numbers; hide
+   or skip the ending; admin hours per term.
+3. **Starting-condition presets** — Midland variants (a bigger deficit, a new
+   dean with a different persuasion profile, a GTA-heavy staff, a union
+   contract).
+4. **Seeded variation** — per-student numbers within plausible ranges
+   (deficit, headcounts, starting trust, enrollment drop) and scenario timing
+   within calendar windows, reproducible from a seed.
+5. **Scenario variants** — the same scenario with different facts (e.g., in
+   one grade appeal the GTA contradicted the syllabus; in another the GTA was
+   right), so a walkthrough can't say which one a student got.
+
+Settings travel as a **class settings file** that an instructor creates in
+instructor mode and students load when starting a session (a class code in
+the hosted version). Each session stores its settings (`session.settings`,
+defaults for now), so review mode can flag saves made with other settings.
+
+Groundwork already in place:
+
+- **Placeholders, not fixed numbers.** Scenario prose states the program's
+  numbers through `{{placeholders}}` (documents, consequence narratives,
+  replies, and delayed notes), so text stays true when starting conditions
+  vary. Fixed numbers are fine for a scenario's own parameters when they
+  match its changes ("caps of 27", "$20,000 a term").
+- **Relative scoring.** The ending compares against the session's own
+  baseline, so varied starting points don't need separate calibration.
+- **Everything is data.** Program, cast, arcs, and scenarios are content, so
+  presets and variants are content too.
+
 ## 5. Working mode (future, not v1)
 
 Same tools with real data: import a section schedule (CSV), set local

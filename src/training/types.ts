@@ -465,8 +465,23 @@ export interface DissertationStatus {
   status: "finished" | "on_track" | "behind";
 }
 
+/**
+ * The settings a session was started with. Instructors will be able to
+ * share class settings (which scenarios, difficulty, starting conditions,
+ * a seed for variation); for now only the defaults exist. Kept in saves so
+ * instructor review can tell which settings a student played under.
+ */
+export interface SessionSettings {
+  /** "default", or the id of a class settings file. */
+  id: string;
+  label: string;
+}
+
+export const DEFAULT_SETTINGS: SessionSettings = { id: "default", label: "Default settings" };
+
 export interface TrainingSession {
   program: Program;
+  settings: SessionSettings;
   /** 1 = fall of year 1, 2 = spring of year 1, … */
   termIndex: number;
   stage: CareerStage;

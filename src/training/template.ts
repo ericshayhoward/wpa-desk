@@ -11,6 +11,12 @@ import type { TrainingSession } from "./types";
  *   {{term}}                → "fall" / "spring"
  *   {{deficit}}             → "$8,600" (0 if balanced)
  *   {{surplus}}             → "$41,800" (0 if in deficit)
+ *   {{cap_ENGL101}}         → 24 (any course id)
+ *
+ * Scenario prose should state the program's numbers through placeholders,
+ * never as fixed values, so it stays true when starting conditions vary.
+ * Fixed numbers are fine for a scenario's own parameters (e.g., "caps of
+ * 27", "$20,000 a term") when they match its changes.
  *
  * Unknown placeholders are left as-is so authoring mistakes stay visible.
  */
@@ -24,5 +30,6 @@ export function fillTemplate(text: string, session: TrainingSession): string {
     deficit: `$${Math.max(0, -a.budgetBalance).toLocaleString("en-US")}`,
     surplus: `$${Math.max(0, a.budgetBalance).toLocaleString("en-US")}`,
   };
+  for (const [id, cap] of Object.entries(session.program.policies.caps)) vars[`cap_${id}`] = String(cap);
   return text.replace(/\{\{\s*(\w+)\s*\}\}/g, (whole, key: string) => vars[key] ?? whole);
 }

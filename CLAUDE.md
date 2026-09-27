@@ -37,6 +37,11 @@ npm run build
   never by grading memo prose. Pass `CAST` to `resolveScenario`; without it
   the default profile applies.
 - `src/app/__tests__/` has jsdom playthrough tests; add one per scenario.
+- Scenario prose states the program's numbers through `{{placeholders}}`
+  (see `src/training/template.ts`), never as fixed values, so text stays true
+  under varied starting conditions (planned class settings; see "Class
+  settings and variation" in DESIGN.md). Fixed numbers are fine only for a
+  scenario's own parameters that match its changes.
 - A YAML error makes every test file that imports content fail to load, so
   check the "Test Files" line, not just "Tests". Quote YAML strings that
   contain ": ".

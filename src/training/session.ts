@@ -32,7 +32,7 @@ import type {
   ScenarioOption,
   TrainingSession,
 } from "./types";
-import { REPLY_TONE } from "./types";
+import { DEFAULT_SETTINGS, REPLY_TONE, type SessionSettings } from "./types";
 
 export const DEFAULT_ADMIN_HOURS_PER_TERM = 60;
 
@@ -41,9 +41,15 @@ export const DEFAULT_ADMIN_HOURS_PER_TERM = 60;
  * player's role follows it; without one (free play), any scenario whose
  * trigger holds can arrive.
  */
-export function startSession(program: Program, scenarios: Scenario[], arc?: Arc): TrainingSession {
+export function startSession(
+  program: Program,
+  scenarios: Scenario[],
+  arc?: Arc,
+  settings: SessionSettings = DEFAULT_SETTINGS,
+): TrainingSession {
   const session: TrainingSession = {
     program,
+    settings,
     termIndex: 1,
     stage: arc?.startStage ?? "wpa",
     ...(arc && { arcId: arc.id }),
@@ -162,9 +168,18 @@ export function resolveScenario(
   } else {
     consequence = option.consequence!;
   }
+  // Prose can state the program's numbers through placeholders, filled as
+  // things stand at the moment of decision.
+  const fill = (text: string) => fillTemplate(text, session);
+  consequence = {
+    ...consequence,
+    narrative: fill(consequence.narrative),
+    delayed: consequence.delayed.map((d) => ({ ...d, note: fill(d.note) })),
+  };
 
   // The reply's tone reflects the relationship going in.
-  const reply = consequence.response ? chooseReply(consequence.response, trustOf(session, consequence.response.from)) : null;
+  const chosen = consequence.response ? chooseReply(consequence.response, trustOf(session, consequence.response.from)) : null;
+  const reply = chosen && { ...chosen, body: fill(chosen.body) };
 
   // ---- Apply ----
   const before = session.program;

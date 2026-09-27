@@ -1,11 +1,11 @@
 import { DEFAULT_ASSUMPTIONS, TERMS, analyzeTerm, type Program } from "../model";
 import { termLabel } from "./terms";
 import { recordTerm } from "./history";
-import { CAREER_STAGES, type Arc, type Scenario, type TrainingSession } from "./types";
+import { CAREER_STAGES, DEFAULT_SETTINGS, type Arc, type Scenario, type TrainingSession } from "./types";
 
 export const SAVE_FORMAT = "wpa-desk-save";
 /** Bump when the saved shape changes, and add a migration in parseSave. */
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 export interface SaveSummary {
   institution: string;
@@ -60,6 +60,8 @@ export function parseSave(raw: unknown, scenarios: Scenario[], arcs: Arc[] = [])
   if (f.version < 2) rawSession = migrate1to2(rawSession);
   if (f.version < 3) rawSession = migrate2to3(rawSession);
   if (f.version < 4) rawSession = migrate3to4(rawSession);
+  // v5 added session settings; earlier saves were played with the defaults.
+  if (f.version < 5) rawSession = { settings: DEFAULT_SETTINGS, ...obj(rawSession, "The saved session") };
 
   const session = parseSession(rawSession, scenarios, arcs);
   return {
@@ -148,6 +150,7 @@ function parseSession(raw: unknown, scenarios: Scenario[], arcs: Arc[]): Trainin
   const termIndex = int(s, "termIndex", 1);
   const session: TrainingSession = {
     program,
+    settings: settings(s.settings),
     termIndex,
     stage: oneOf(s.stage, CAREER_STAGES, "career stage"),
     ...(s.arcId !== undefined && { arcId: arcId(s.arcId, arcs) }),
@@ -195,6 +198,12 @@ function parseSession(raw: unknown, scenarios: Scenario[], arcs: Arc[]): Trainin
     throw new Error("The save's admin hours don't add up.");
   }
   return session;
+}
+
+function settings(raw: unknown): TrainingSession["settings"] {
+  const r = obj(raw, "The saved settings");
+  if (typeof r.id !== "string" || typeof r.label !== "string") throw new Error("The saved settings are damaged.");
+  return { id: r.id, label: r.label };
 }
 
 function termRecord(raw: unknown, what: string): TrainingSession["history"][number] {
