@@ -44,6 +44,7 @@ describe("playing the standard arc through the UI", () => {
     expect(screen.getByText("Interim Director")).toBeTruthy();
     expect(screen.getByText(/Dr. Cherry begins her sabbatical/)).toBeTruthy();
 
+    await resolveUrgent(user);
     await user.click(screen.getByRole("button", { name: /advance/i }));
     expect(screen.getByText(/Spring, Year 3 is the final term of The Standard Arc/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Advance to/ })).toBeNull();

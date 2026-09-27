@@ -35,6 +35,9 @@ calendar:
   - { scenario: cap-review, from: 4, until: 5 }
   - { scenario: dsp-pilot, from: 4, until: 4 }
   - { scenario: detector, from: 4, until: 4 }
+  - { scenario: gta-stipend, from: 5, until: 5 }
+  - { scenario: wc-budget-swap, from: 5, until: 5 }
+  - { scenario: handoff, from: 6, until: 6 }
 
 # Hours taken from a term before the player can spend them.
 timeCosts:

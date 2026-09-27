@@ -12,6 +12,8 @@ import type { TrainingSession } from "./types";
  *   {{deficit}}             → "$8,600" (0 if balanced)
  *   {{surplus}}             → "$41,800" (0 if in deficit)
  *   {{cap_ENGL101}}         → 24 (any course id)
+ *   {{headcount_gta}}       → 15 (any instructor rank)
+ *   {{pay_gta}}             → "$9,000" per section (any instructor rank)
  *
  * Scenario prose should state the program's numbers through placeholders,
  * never as fixed values, so it stays true when starting conditions vary.
@@ -31,5 +33,9 @@ export function fillTemplate(text: string, session: TrainingSession): string {
     surplus: `$${Math.max(0, a.budgetBalance).toLocaleString("en-US")}`,
   };
   for (const [id, cap] of Object.entries(session.program.policies.caps)) vars[`cap_${id}`] = String(cap);
+  for (const p of session.program.instructors) {
+    vars[`headcount_${p.rank}`] = String(p.headcount);
+    vars[`pay_${p.rank}`] = `$${p.costPerSection.toLocaleString("en-US")}`;
+  }
   return text.replace(/\{\{\s*(\w+)\s*\}\}/g, (whole, key: string) => vars[key] ?? whole);
 }

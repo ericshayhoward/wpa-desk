@@ -1,0 +1,148 @@
+# The Writing Center Budget Swap — funding one means cutting the other.
+#
+# The college has to cut writing support, and the dean asks the interim
+# director and Dr. Raman to agree on where. The writing center's budget
+# isn't in the program model, so its side shows in trust; the program's
+# side is the instruction line.
+
+id: wc-budget-swap
+title: The Writing Center Budget Swap
+stages: [wpa]
+trigger:
+  minTerm: 5
+  term: fall
+urgent: true
+
+documents:
+  - from: dean
+    genre: memo
+    subject: Writing support budget for next year
+    body: |
+      The college has to reduce spending on writing support by $15,000 per
+      term next year. That can come from the first-year writing instruction
+      line, from the writing center's tutor budget, or from some of each.
+
+      I'd rather the two of you decide together than have me decide for
+      you. Please send me an answer you've both agreed to before the end of
+      the term. If I don't have one, I'll split the cut evenly.
+
+      — Dean Alvarez
+      To: Interim Director of First-Year Writing; Dr. Priya Raman, Director, University Writing Center
+
+  - from: writing_center
+    genre: email
+    subject: "Re: Writing support budget"
+    body: |
+      I'd like to find a way through this together, but I'll be honest:
+      tutor hours are already stretched, and most of the students we see
+      come from first-year writing. If the cut comes from us, your students
+      will feel it too, just in a different building.
+
+      Can we meet this week?
+
+      — Priya
+
+suggestedTools: [staffing_planner]
+
+options:
+  - id: cut-writing-center
+    label: Protect the instruction line; let the cut fall on the writing center
+    description: Sections are the program's core responsibility. Recommend that the writing center absorb the cut.
+    cost: { adminHours: 2 }
+    consequence:
+      narrative: |
+        The program's instruction line is untouched. The writing center cuts
+        evening hours and a third of its tutors. By midterm, first-year
+        students are waiting a week for appointments, and Dr. Raman stops
+        copying you on the writing center's planning emails.
+      changes:
+        - { kind: adjustTrust, stakeholder: writing_center, delta: -12 }
+        - { kind: adjustTrust, stakeholder: students, delta: -3 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 2 }
+      response:
+        from: writing_center
+        body: I understand why you did it. I'd hoped we would decide it together, as the dean asked.
+
+  - id: cut-program
+    label: Take the cut from the instruction line
+    description: The writing center serves every student on campus. Protect it, and absorb the cut in first-year writing.
+    cost: { adminHours: 3, politicalCapital: 1 }
+    consequence:
+      narrative: |
+        The writing center keeps its hours, and Dr. Raman says the writing
+        center won't forget it. The instruction line drops by $15,000 a term, which the
+        next director will have to cover with fewer sections or bigger ones.
+      changes:
+        - { kind: adjustBudget, delta: -15000 }
+        - { kind: adjustTrust, stakeholder: writing_center, delta: 8 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -4 }
+        - { kind: adjustTrust, stakeholder: students, delta: 1 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 1 }
+      response:
+        from: writing_center
+        body: Thank you. I know what this costs your program, and I won't forget it.
+
+  - id: split
+    label: Split it evenly
+    description: Each takes $7,500 a term. Fair, simple, and what the dean will do anyway.
+    cost: { adminHours: 2 }
+    consequence:
+      narrative: |
+        You and Dr. Raman agree to split the cut. Nobody is happy and nobody
+        feels betrayed. The instruction line drops by $7,500 a term, and the
+        writing center trims its evening hours.
+      changes:
+        - { kind: adjustBudget, delta: -7500 }
+        - { kind: adjustTrust, stakeholder: writing_center, delta: 1 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 1 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -2 }
+      response:
+        from: dean
+        body: Thank you both for settling it between you.
+
+  - id: joint-proposal
+    label: Propose a joint plan with Dr. Raman
+    description: Combine tutor training and instructor development, and move some tutoring into first-year writing classrooms, so the same money does more.
+    cost: { adminHours: 8, politicalCapital: 2 }
+    requires: { stakeholder: writing_center, minTrust: 65 }
+    memo:
+      required: true
+      audience: dean
+      prompt: |
+        Propose the joint plan with Dr. Raman. Say what the program and the
+        writing center will share, what that saves, and what students get
+        from it. The dean will want to know why a smaller cut is enough.
+    consequence:
+      narrative: |
+        You and Dr. Raman write the plan together: shared training for
+        tutors and new instructors, and tutors working in first-year writing
+        classrooms during drafting weeks. The dean accepts a smaller cut,
+        $8,000 a term from the instruction line, because the plan saves the
+        rest. The provost's office asks to feature it as a student-success
+        partnership.
+      changes:
+        - { kind: adjustBudget, delta: -8000 }
+        - { kind: adjustTrust, stakeholder: writing_center, delta: 6 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 3 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: 3 }
+        - { kind: adjustTrust, stakeholder: students, delta: 2 }
+      response:
+        from: dean
+        body: This is more than I asked for. A smaller cut, and something I can point to. Thank you both.
+
+debrief:
+  weighs:
+    - Allies and competitors. The writing center is first-year writing's most natural partner and its competitor for the same money. How a cut is decided shapes the partnership long after the money is gone.
+    - Where students feel a cut. Cuts to tutoring and cuts to sections both land on first-year students, in different places.
+    - Structure over split. An even split is fair and changes nothing. A joint plan asks more of both directors and can make the same money do more.
+    - Leaving it to the next director. An interim director's budget decisions become someone else's baseline.
+  perspectives:
+    - stakeholder: writing_center
+      view: Most of the students we see come from first-year writing. A cut to either of us is a cut to the same students.
+    - stakeholder: dean
+      view: I have to cut something. I'd much rather the people who know the work decide where.
+    - stakeholder: students
+      view: We notice when the writing center has a week-long wait, and we notice when our classes get bigger.
+  readings:
+    - International Writing Centers Association, Position Statement on Writing Center Administration
+    - Neal Lerner, The Idea of a Writing Laboratory (Southern Illinois University Press, 2009)

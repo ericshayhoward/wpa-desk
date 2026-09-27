@@ -1,0 +1,103 @@
+# The Handoff — what the interim director leaves for the next one.
+#
+# The last term. The department is naming next year's assistant director,
+# and Dr. Cherry, still on sabbatical, asks what the player will leave them.
+# Every option spends final-term hours that would otherwise go to the
+# dissertation, which is the point: stewardship has a personal cost.
+
+id: handoff
+title: The Handoff
+stages: [wpa]
+trigger:
+  minTerm: 6
+  term: spring
+
+documents:
+  - from: fyw_director
+    genre: email
+    subject: Next year's assistant director
+    body: |
+      I'll be back in the fall, and the department is naming next year's
+      assistant director this spring. The committee would like your
+      recommendation. I'd also like to know what you'll leave them.
+
+      When I started, my predecessor left me a filing cabinet and a phone
+      number. I'd like us to do better than that, but I also know what this
+      term looks like for you, with the job market and the dissertation.
+      Tell me what's realistic.
+
+      — Nora
+
+options:
+  - id: write-handbook
+    label: Write a handbook for the job
+    description: Document what the assistant director actually does, term by term, with the templates, contacts, and lessons you had to learn the hard way.
+    cost: { adminHours: 10 }
+    consequence:
+      narrative: |
+        You write it in the evenings: the calendar of the job, the reports
+        and who reads them, the people and what moves them, and the mistakes
+        you'd warn yourself about. Dr. Cherry says she'll give it to every
+        assistant director from now on.
+      changes:
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 5 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: 3 }
+        - { kind: adjustTrust, stakeholder: chair, delta: 1 }
+      response:
+        from: fyw_director
+        body: This is the handbook I wish I'd had. Thank you, and go finish your dissertation.
+
+  - id: mentor-successor
+    label: Recommend a successor and bring them along this term
+    description: Recommend a second-year graduate instructor, and have them shadow you through the end of the term.
+    cost: { adminHours: 6 }
+    consequence:
+      narrative: |
+        You recommend a second-year graduate instructor who asked good
+        questions all year, and the committee agrees. They sit in on your
+        meetings for the rest of the term, and by May they're drafting
+        emails you only have to read.
+      changes:
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: 4 }
+      response:
+        from: fyw_director
+        body: Good choice, and a generous one with your time. I'll pick up where you leave off.
+
+  - id: recommend-only
+    label: Send a recommendation and a short memo
+    description: Recommend a successor and write a page of notes. It's the last term, and your time is spoken for.
+    cost: { adminHours: 2 }
+    consequence:
+      narrative: |
+        You send a recommendation and a page of notes. It's more than a
+        filing cabinet and a phone number, and it's what the term allowed.
+      changes:
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 1 }
+      response:
+        from: fyw_director
+        body: Thank you. That's realistic, and I'd rather you finish the dissertation.
+
+  - id: leave-it
+    label: Leave it for Dr. Cherry's return
+    description: The committee can choose without you, and Dr. Cherry will be back to train whoever it is.
+    consequence:
+      narrative: |
+        The committee chooses without your recommendation, and next year's
+        assistant director starts in August with the filing cabinet.
+      changes:
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -3 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -2 }
+
+debrief:
+  weighs:
+    - Institutional memory. Administrative knowledge that lives in one person leaves with them. Documenting the job is a gift to the program and to the next person.
+    - Stewardship and self-care. Handing off well takes time a graduate student on the market may not have. Knowing what's realistic, and saying so, is part of the job too.
+    - Mentoring the next administrator. Bringing someone along is how programs grow their own WPAs, as Dr. Cherry did with you.
+  perspectives:
+    - stakeholder: fyw_director
+      view: I asked you to do this job partly to train you for it. The handoff is where I see whether you'd train someone else.
+    - stakeholder: gta_cohort
+      view: Whoever gets the job next is one of us. We'd like them to start with more than we did.
+  readings:
+    - 'Susan H. McLeod, Writing Program Administration (Parlor Press and WAC Clearinghouse, 2007)'

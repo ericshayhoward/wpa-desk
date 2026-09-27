@@ -91,14 +91,17 @@ function programFactor(base: TermRecord, final: TermRecord, history: TermRecord[
   const dfwPoints = clamp(-dfwChange * r.perDfwPoint, -r.dfwCap, r.dfwCap);
   const shortTerms = history.filter((h) => h.unstaffedSections > 0).length;
   const coverage = shortTerms === 0 ? r.coveredBonus : -Math.min(r.unstaffedCap, shortTerms * r.perUnstaffedTerm);
-  const budget = final.budgetBalance >= 0 ? r.budget : -r.budget;
+  // Fall and spring budgets differ a lot, so judge the final year as a whole.
+  const finalYear = history.slice(-2).reduce((n, h) => n + h.budgetBalance, 0);
+  const budget = finalYear >= 0 ? r.budget : -r.budget;
   const points = round(clamp(r.start + dfwPoints + coverage + budget, 0, r.max));
   const dfwText =
     Math.abs(dfwChange) < 0.05
       ? `Projected ${base.term} D/F/W is where it was when you started`
       : `Projected ${base.term} D/F/W is ${Math.abs(dfwChange).toFixed(1)} points ${dfwChange > 0 ? "higher" : "lower"} than when you started`;
   const coverText = shortTerms === 0 ? "every section had an instructor" : `${shortTerms} term${shortTerms > 1 ? "s" : ""} ended with sections uncovered`;
-  const budgetText = final.budgetBalance >= 0 ? "the instruction budget is balanced" : "the instruction line is still in deficit";
+  const budgetText =
+    finalYear >= 0 ? "the instruction budget balanced over the final year" : "the instruction line ran a deficit over the final year";
   return {
     id: "program",
     label: "Program outcomes",

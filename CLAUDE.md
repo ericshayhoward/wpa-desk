@@ -73,7 +73,8 @@ npm run build
   UI tests use `submitYearEndReport` (`src/app/__tests__/helpers.ts`).
 - Urgent scenarios block the term: The Grade Appeal Escalation and The Late
   Hire (if triggered) in Spring Y1, The Accreditation Ask in Fall Y2, The
-  Cap Review in Spring Y2 (only after a Cap Memo compromise or reprieve).
+  Cap Review in Spring Y2 (only after a Cap Memo compromise or reprieve),
+  The Writing Center Budget Swap in Fall Y3.
   Engine tests pass only the scenarios they cover; UI playthroughs call
   `resolveUrgent` from the helpers (add new urgent scenarios to its list)
   and advance with `getByRole("button", { name: /advance/i })`, since

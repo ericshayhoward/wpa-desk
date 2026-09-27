@@ -1,0 +1,181 @@
+# The GTA Stipend Campaign — graduate instructors organize, and the interim
+# director is one of them.
+#
+# The player is a graduate student and, this year, the interim director who
+# supervises the GTAs. The dean asks them not to take a public position.
+# The conflict of interest is the scenario: solidarity with peers, the
+# program's interest in its instructors, and the authority of an office the
+# player holds for one year.
+
+id: gta-stipend
+title: The GTA Stipend Campaign
+stages: [wpa]
+trigger:
+  minTerm: 5
+  term: fall
+
+documents:
+  - from: gta_cohort
+    genre: memo
+    subject: An open letter from Midland's graduate instructors
+    body: |
+      We are the {{headcount_gta}} graduate teaching assistants who teach
+      first-year writing at Midland State. We are paid {{pay_gta}} for each
+      section we teach, and our contracts allow one section a term. After
+      fees, many of us take second jobs to pay rent.
+
+      We teach a quarter of the program's sections. We ask the university to
+      raise graduate stipends to a living wage, to waive the fees it charges
+      us, and to guarantee funding for the full length of our degrees.
+
+      We're asking the program's leadership to support this letter publicly.
+      Many of us are signing it. We hope you will too.
+
+      — The Graduate Instructors of First-Year Writing
+
+  - from: dean
+    genre: email
+    subject: The graduate instructors' letter
+    body: |
+      I understand the graduate instructors have sent you their letter.
+      Graduate stipends are set by the graduate school, not by me, and not
+      by the writing program.
+
+      I'd advise you not to take a public position while you're serving as
+      interim director. You supervise these instructors this year. If you
+      have concerns about graduate funding, bring them to me, and I'll make
+      sure they reach the right people.
+
+      — Dean Alvarez
+
+suggestedTools: [staffing_planner]
+
+options:
+  - id: sign-letter
+    label: Sign the letter
+    description: You're a graduate student too, and you think they're right. Sign it with everyone else.
+    cost: { adminHours: 1, politicalCapital: 3 }
+    consequence:
+      narrative: |
+        Your name is on the letter, and the graduate instructors notice who
+        signed. So does the dean. When the letter reaches the graduate
+        school, the first question is whether the interim director of first-
+        year writing endorsed it.
+
+        Dr. Cherry emails from her sabbatical: she understands, and she
+        wishes you had called her first.
+      changes:
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: 8 }
+        - { kind: adjustMorale, rank: gta, delta: 3 }
+        - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 2 }
+        - { kind: adjustTrust, stakeholder: dean, delta: -6 }
+        - { kind: adjustTrust, stakeholder: provost_office, delta: -2 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: -2 }
+      response:
+        from: dean
+        body: I saw your name on the letter. I'd hoped you would come to me instead.
+        cool: I asked you not to do this while you're serving as interim director. I'll remember that you did.
+      delayed:
+        - inTerms: 1
+          note: |
+            The graduate school agrees to review stipends next year. The
+            graduate instructors credit the letter. The dean hasn't mentioned
+            it since, which is its own kind of message.
+          changes:
+            - { kind: adjustTrust, stakeholder: gta_cohort, delta: 2 }
+
+  - id: advocate-to-dean
+    label: Make the case to the dean, as director
+    description: Take the dean up on the offer. Show what the program depends on its graduate instructors for, and ask the college to carry the case to the graduate school.
+    cost: { adminHours: 6, politicalCapital: 2 }
+    memo:
+      required: true
+      audience: dean
+      prompt: |
+        Make the program's case for graduate funding to the dean. A staffing
+        plan that shows how many sections graduate instructors teach, and
+        what replacing them would cost, will carry more weight than
+        fairness alone.
+    persuasion:
+      evidenceKinds: [staffing_plan]
+      persuaded:
+        narrative: |
+          The dean reads the staffing numbers and takes them to the graduate
+          school himself. The graduate school agrees to waive graduate
+          instructors' fees next year and to review stipends. You tell the
+          graduate instructors what you did and why you didn't sign. Most of
+          them understand.
+        changes:
+          - { kind: adjustTrust, stakeholder: gta_cohort, delta: 5 }
+          - { kind: adjustMorale, rank: gta, delta: 5 }
+          - { kind: adjustTrust, stakeholder: dean, delta: 3 }
+          - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
+        response:
+          from: dean
+          body: This is the case the graduate school needed to hear, from the program that depends on them. I'll carry it.
+      unpersuaded:
+        narrative: |
+          The memo argues that graduate instructors deserve better, which the
+          dean doesn't dispute, but it doesn't show him anything to take to
+          the graduate school. He thanks you and forwards it. Nothing
+          changes, and the graduate instructors notice that you didn't sign.
+        changes:
+          - { kind: adjustTrust, stakeholder: gta_cohort, delta: -3 }
+          - { kind: adjustTrust, stakeholder: dean, delta: 1 }
+        response:
+          from: dean
+          body: Thank you. I'll pass it along, but I don't have much to take to them.
+
+  - id: stay-neutral
+    label: Stay neutral as interim director
+    description: You supervise these instructors this year. Don't sign, and don't advocate; keep the office out of it.
+    cost: { adminHours: 1 }
+    consequence:
+      narrative: |
+        You tell the graduate instructors that you can't take a position
+        while you're interim director. Some of them understand. Others say,
+        not quietly, that you became an administrator the moment it counted.
+      changes:
+        - { kind: adjustTrust, stakeholder: dean, delta: 3 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -6 }
+        - { kind: adjustMorale, rank: gta, delta: -3 }
+      response:
+        from: dean
+        body: Thank you. I know that wasn't easy with people you work beside.
+
+  - id: recuse
+    label: Recuse yourself and ask Dr. Hale to respond
+    description: Name the conflict of interest, and ask the chair to respond for the department.
+    cost: { adminHours: 2, politicalCapital: 1 }
+    consequence:
+      narrative: |
+        You tell the graduate instructors and the dean the same thing: you
+        have a conflict, as a graduate student supervising graduate
+        instructors, and the chair will respond for the department. Dr.
+        Hale does, cautiously. Nobody is thrilled, and nobody feels
+        misled.
+      changes:
+        - { kind: adjustTrust, stakeholder: chair, delta: 2 }
+        - { kind: adjustTrust, stakeholder: dean, delta: 1 }
+        - { kind: adjustTrust, stakeholder: gta_cohort, delta: -1 }
+        - { kind: adjustTrust, stakeholder: fyw_director, delta: 2 }
+
+debrief:
+  weighs:
+    - Roles and conflicts. An interim director who is also a graduate student holds two roles with different obligations. Naming the conflict is sometimes the most honest move available.
+    - Solidarity and office. Signing as a peer uses the authority of the office whether you intend it or not.
+    - Advocacy that travels. A case the dean can carry, with the program's own staffing numbers, can do more than a signature, and it asks more of you.
+    - Who the program depends on. Graduate instructors teach a large share of first-year writing; their funding is a program question even when someone else sets it.
+    - What your peers will remember. Every option costs something with the people you work beside, and you'll be one of them again next year.
+  perspectives:
+    - stakeholder: gta_cohort
+      view: We're asking for enough to live on while we teach a quarter of the program. We hoped the person in that office, who is one of us, would stand with us.
+    - stakeholder: dean
+      view: I don't set stipends, and I can't have the program office taking public sides on a campaign aimed at the university. Bring me the case and I'll carry it.
+    - stakeholder: chair
+      view: Graduate funding is a department question as much as a program one, and a hard one in a budget year.
+    - stakeholder: fyw_director
+      view: I would have wanted a call. Not to tell you what to do, but because this is exactly the kind of decision I'd have wanted to think through with someone.
+  readings:
+    - CCCC, Statement on Preparing Teachers of College Writing (2015)
+    - Marc Bousquet, How the University Works - Higher Education and the Low-Wage Nation (New York University Press, 2008)

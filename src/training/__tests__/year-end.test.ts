@@ -150,6 +150,15 @@ describe("the ending", () => {
     expect(e.gateNote).toMatch(/dissertation finished or on track/);
   });
 
+  it("judges the budget over the final year, not the final term", () => {
+    const s = finish(start());
+    const program = (fall: number, spring: number) =>
+      computeEnding({ ...s, history: [...s.history.slice(0, -2), { ...s.history.at(-2)!, budgetBalance: fall }, { ...s.history.at(-1)!, budgetBalance: spring }] }, STANDARD_ARC).factors[0]!;
+    expect(program(36000, -6800).explanation).toMatch(/balanced over the final year/);
+    expect(program(2000, -6800).explanation).toMatch(/ran a deficit over the final year/);
+    expect(program(36000, -6800).points - program(2000, -6800).points).toBe(4);
+  });
+
   it("rotates out a record with broken relationships", () => {
     const s = finish(
       start([
