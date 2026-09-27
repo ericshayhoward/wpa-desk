@@ -263,6 +263,7 @@ function parseDelayed(raw: unknown, at: string): ScenarioDelayed {
   if (!Number.isInteger(inTerms) || inTerms < 1) throw new Error(`${at}: "inTerms" must be a whole number ≥ 1`);
   return {
     inTerms,
+    ...(r.announced !== undefined && { announced: bool(r, "announced", at) }),
     note: str(r, "note", at).trim(),
     changes: arr(r, "changes", at).map((c, i) => parseMaybeComputed(obj(c, `${at} change ${i + 1}`), `${at} change ${i + 1}`)),
   };

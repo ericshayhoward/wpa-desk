@@ -66,12 +66,16 @@ describe("The Cap Review", () => {
     let s = advance(after("compromise-25"), list, 4);
     const without = resolveScenario(s, review, "make-the-case", memo("dean"), CAST);
     expect(without.outcome.persuaded).toBe(false);
-    expect(without.session.program.policies.caps.ENGL101).toBe(27);
+    // Caps are set for next term: announced now, in effect when fall begins.
+    expect(without.session.program.policies.caps.ENGL101).toBe(25);
+    expect(without.outcome.scheduled).toMatchObject([{ dueTerm: 5, term: "fall", descriptions: ["ENGL101 cap 25 → 27", "ENGL102 cap 25 → 27"] }]);
+    expect(without.session.pending.find((p) => p.scenarioId === "cap-review")).toMatchObject({ dueTerm: 5, announced: true });
 
     s = withCapEvidence(s);
     const withNumbers = resolveScenario(s, review, "make-the-case", memo("dean", [s.evidence.at(-1)!.id]), CAST);
     expect(withNumbers.outcome.persuaded).toBe(true);
     expect(withNumbers.session.program.policies.caps.ENGL101).toBe(25);
+    expect(withNumbers.outcome.scheduled).toEqual([]);
     expect(withNumbers.outcome.reply!.body).toMatch(/standard now, not an exception/);
   });
 });

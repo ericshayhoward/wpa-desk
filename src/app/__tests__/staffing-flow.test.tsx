@@ -12,7 +12,7 @@ it("routine staffing: when adjuncts leave, the director decides how to cover the
   const user = userEvent.setup();
   render(<App />);
   // Raising caps drives adjuncts away; play until the program comes up short.
-  await user.click(screen.getByRole("button", { name: /FYC section caps for next fall/ }));
+  await user.click(screen.getByRole("button", { name: /FYC section caps for spring/ }));
   await user.click(screen.getByRole("button", { name: /Accept the increase/ }));
   await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
   await user.click(screen.getByRole("button", { name: "Back to desk" }));

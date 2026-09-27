@@ -6,7 +6,10 @@
 # profile.
 #
 # From Midland's baseline: a $8,600-per-term deficit ({{deficit}} in the
-# memo); caps of 27 cut 5 fall sections, all adjunct.
+# memo); caps of 27 cut adjunct sections.
+#
+# Timing: the dean is setting next term's schedule, so cap changes are
+# announced now and take effect next term (delayed, announced: true).
 
 id: cap-memo
 title: The Cap Memo
@@ -18,7 +21,7 @@ trigger:
 documents:
   - from: fyw_director
     genre: email
-    subject: "Fwd: FYC section caps for next fall"
+    subject: "Fwd: FYC section caps for {{next_term}}"
     body: |
       The dean's memo is below. I'm in accreditation planning all week, so
       I'd like you to take the lead on this one: run the numbers, decide what
@@ -32,7 +35,7 @@ documents:
 
   - from: dean
     genre: memo
-    subject: FYC section caps for next fall
+    subject: FYC section caps for {{next_term}}
     body: |
       As you know, the college closed last year with a shortfall, and the
       provost has asked every unit to find savings. First-year writing is one
@@ -40,10 +43,10 @@ documents:
       {{deficit}} over its instruction line each term.
 
       I'd like to raise caps in ENGL 101 and ENGL 102 from {{cap_ENGL101}} to 27 beginning
-      next fall. Several of our peer institutions run these courses at 25 or
-      higher, and I don't see another lever of this size.
+      in the {{next_term}}. Several of our peer institutions run these courses at 25
+      or higher, and I don't see another lever of this size.
 
-      I need to confirm the schedule with the registrar by Friday. Let me know
+      I need to confirm the {{next_term}} schedule with the registrar by Friday. Let me know
       if you see any problems.
 
       — Dean Alvarez, College of Arts & Sciences
@@ -63,12 +66,10 @@ options:
     consequence:
       narrative: |
         Dr. Cherry sends your reply with one line added. The registrar
-        rebuilds the schedule. Fall sections disappear, all of them
-        taught by adjuncts. The deficit closes on paper, and the dean thanks
-        the program at the next chairs' meeting.
+        rebuilds the {{next_term}} schedule around caps of 27, and the sections that
+        disappear are adjunct sections. The deficit will close on paper, and
+        the dean thanks the program at the next chairs' meeting.
       changes:
-        - { kind: setCap, courseId: ENGL101, cap: 27 }
-        - { kind: setCap, courseId: ENGL102, cap: 27 }
         - { kind: adjustTrust, stakeholder: dean, delta: 8 }
         - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -12 }
         - { kind: adjustTrust, stakeholder: students, delta: -3 }
@@ -79,6 +80,12 @@ options:
         body: Thank you for being a team player on this. It makes my conversation with the provost much easier.
         warm: Thank you. I knew I could count on you, and I'll remember it when the next budget round comes.
       delayed:
+        - inTerms: 1
+          announced: true
+          note: Caps of 27 take effect with the {{next_term}} schedule.
+          changes:
+            - { kind: setCap, courseId: ENGL101, cap: 27 }
+            - { kind: setCap, courseId: ENGL102, cap: 27 }
         - inTerms: 2
           note: |
             Adjuncts learned about the lost sections from the schedule, not from
@@ -124,7 +131,7 @@ options:
             Your numbers make a stronger case than I expected. I'll hold caps
             for one year and cover the gap from the vacant coordinator line.
             I'll want to see next year's D/F/W data, and I'd like you to find
-            at least part of this gap yourself by next fall.
+            at least part of this gap yourself by this time next year.
         delayed:
           - inTerms: 2
             note: |
@@ -138,13 +145,18 @@ options:
         narrative: |
           The memo argues from principle and professional standards but offers
           no local numbers. The dean appreciates the conviction, but nothing in
-          it changes the math. Caps go to 27.
+          it changes the math. Caps go to 27 in the {{next_term}}.
         changes:
-          - { kind: setCap, courseId: ENGL101, cap: 27 }
-          - { kind: setCap, courseId: ENGL102, cap: 27 }
           - { kind: adjustTrust, stakeholder: dean, delta: -4 }
           - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 3 }
           - { kind: adjustTrust, stakeholder: chair, delta: 2 }
+        delayed:
+          - inTerms: 1
+            announced: true
+            note: Caps of 27 take effect with the {{next_term}} schedule.
+            changes:
+              - { kind: setCap, courseId: ENGL101, cap: 27 }
+              - { kind: setCap, courseId: ENGL102, cap: 27 }
         response:
           from: dean
           body: I share your values here, but I need numbers I can take to the provost. The change will go ahead.
@@ -160,14 +172,12 @@ options:
       prompt: Propose the compromise and say what you'll measure during the year.
     consequence:
       narrative: |
-        The dean accepts the middle ground. Caps of 25 trim a few sections
-        and close only part of the deficit; the rest is still the
-        program's to solve. Adjuncts lose a little work, and you've
+        The dean accepts the middle ground. Caps of 25 in the {{next_term}} will trim
+        a few sections and close only part of the deficit; the rest is still
+        the program's to solve. Adjuncts lose a little work, and you've
         implicitly promised to study what happens, which Dr. Cherry makes
         clear is your project.
       changes:
-        - { kind: setCap, courseId: ENGL101, cap: 25 }
-        - { kind: setCap, courseId: ENGL102, cap: 25 }
         - { kind: adjustTrust, stakeholder: dean, delta: 3 }
         - { kind: adjustTrust, stakeholder: fyw_director, delta: 2 }
         - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -4 }
@@ -175,6 +185,12 @@ options:
         from: dean
         body: A reasonable middle ground. Let's revisit after a year of data.
       delayed:
+        - inTerms: 1
+          announced: true
+          note: Caps of 25 take effect with the {{next_term}} schedule.
+          changes:
+            - { kind: setCap, courseId: ENGL101, cap: 25 }
+            - { kind: setCap, courseId: ENGL102, cap: 25 }
         - inTerms: 2
           note: The one-year compromise is up for review, and the dean asks what the data showed.
           changes: []
@@ -189,15 +205,13 @@ options:
       prompt: Explain why you want to consult before the schedule is set.
     consequence:
       narrative: |
-        You ask for two weeks. The dean grants one, then raises caps to 27
-        anyway because the registrar's deadline won't move. But instructors
+        You ask for two weeks. The dean grants one, then sets {{next_term}} caps at
+        27 anyway because the registrar's deadline won't move. But instructors
         heard about the change from the program first, and some of them
         noticed that you asked. So did the chair, who appreciates being
         brought in early, and Dr. Cherry, who asks you to run the next
         instructor meeting.
       changes:
-        - { kind: setCap, courseId: ENGL101, cap: 27 }
-        - { kind: setCap, courseId: ENGL102, cap: 27 }
         - { kind: adjustTrust, stakeholder: dean, delta: -3 }
         - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: 4 }
         - { kind: adjustTrust, stakeholder: gta_cohort, delta: 2 }
@@ -205,7 +219,14 @@ options:
         - { kind: adjustTrust, stakeholder: fyw_director, delta: 3 }
       response:
         from: dean
-        body: I understand wanting to consult, but the registrar's deadline is real. We're going ahead at 27.
+        body: I understand wanting to consult, but the registrar's deadline is real. We're going ahead at 27 for {{next_term}}.
+      delayed:
+        - inTerms: 1
+          announced: true
+          note: Caps of 27 take effect with the {{next_term}} schedule.
+          changes:
+            - { kind: setCap, courseId: ENGL101, cap: 27 }
+            - { kind: setCap, courseId: ENGL102, cap: 27 }
 
 debrief:
   weighs:

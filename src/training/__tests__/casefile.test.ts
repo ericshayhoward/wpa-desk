@@ -80,7 +80,7 @@ describe("case files", () => {
       "- Report D/F/W after a year — open, due Fall, Year 2",
       "> — Dean Alvarez",
       "- Dean Alvarez: 55 → 58 (+3)",
-      "- ENGL101 cap 24 → 25",
+      "- ENGL101 cap 24 → 25 (starting Spring, Year 1)",
       "I'd bring data next time.",
       "_No reflection written._",
     ]) {

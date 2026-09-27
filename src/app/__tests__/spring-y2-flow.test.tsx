@@ -12,7 +12,7 @@ beforeEach(() => localStorage.clear());
 async function toSpringY2() {
   const user = userEvent.setup();
   render(<App />);
-  await user.click(screen.getByRole("button", { name: /FYC section caps for next fall/ }));
+  await user.click(screen.getByRole("button", { name: /FYC section caps for spring/ }));
   await user.click(screen.getByRole("button", { name: /Propose a compromise at 25/ }));
   await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
   await user.click(screen.getByRole("button", { name: "Back to desk" }));
@@ -32,8 +32,8 @@ it("Spring, Year 2: the Cap Review returns for a player who compromised, alongsi
   expect(screen.getByRole("button", { name: /AI detection pilot in first-year writing/ })).toBeTruthy();
 
   // The Cap Review: settle at 25.
-  await user.click(screen.getByRole("button", { name: /Section caps for next fall.*The Cap Review/ }));
-  expect(screen.getByText(/A year ago, I agreed to keep first-year writing caps below 27/)).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: /Section caps for fall.*The Cap Review/ }));
+  expect(screen.getByText(/Last year, I agreed to keep first-year writing caps below 27/)).toBeTruthy();
   await user.click(screen.getByRole("button", { name: /Settle at 25/ }));
   await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
   expect(screen.getByText(/Twenty-five it is/)).toBeTruthy();

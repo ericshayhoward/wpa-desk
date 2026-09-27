@@ -124,16 +124,21 @@ describe("The Cap Memo", () => {
     const start = startSession(MIDLAND_STATE, SCENARIOS);
     const { session, outcome } = resolveScenario(start, capMemo, "accept", null);
 
-    expect(cap(session, "ENGL101")).toBe(27);
+    // The dean is setting the spring schedule: people react now, caps change next term.
+    expect(cap(session, "ENGL101")).toBe(24);
     expect(trust(session, "dean")).toBe(63);
     expect(trust(session, "adjunct_faculty")).toBe(28);
     expect(session.program.politicalCapital).toBe(24);
-    expect(outcome.impact.comparison.sectionsByRank.adjunct).toBe(-5);
+    expect(outcome.impact.comparison.sections).toBe(0);
+    expect(outcome.scheduled).toHaveLength(1);
+    expect(outcome.scheduled[0]).toMatchObject({ dueTerm: 2, term: "spring", descriptions: ["ENGL101 cap 24 → 27", "ENGL102 cap 24 → 27"] });
+    expect(outcome.scheduled[0]!.comparison.sectionsByRank.adjunct).toBeLessThan(0);
     expect(session.inbox).not.toContain("cap-memo");
 
-    // Delayed effect lands two terms later.
+    // The caps land in spring; the adjuncts' reaction two terms later.
     const t2 = advanceTerm(session, SCENARIOS);
-    expect(t2.applied).toHaveLength(0);
+    expect(t2.applied).toHaveLength(1);
+    expect(cap(t2.session, "ENGL101")).toBe(27);
     const t3 = advanceTerm(t2.session, SCENARIOS);
     expect(t3.applied).toHaveLength(1);
     const adjuncts = t3.session.program.instructors.find((p) => p.rank === "adjunct")!;
@@ -161,10 +166,10 @@ describe("The Cap Memo", () => {
     const { session, outcome } = resolveScenario(start, capMemo, "counter-with-data", memo());
     expect(outcome.persuaded).toBe(false);
     expect(outcome.missingEvidence).toEqual(["cap_analysis"]);
-    expect(cap(session, "ENGL101")).toBe(27);
     expect(session.program.politicalCapital).toBe(15);
     expect(session.adminHoursRemaining).toBe(54);
-    expect(session.pending).toHaveLength(0);
+    expect(session.pending).toMatchObject([{ dueTerm: 2, announced: true }]);
+    expect(cap(advanceTerm(session, SCENARIOS).session, "ENGL101")).toBe(27);
   });
 
   it("counter-with-data with cap analysis attached: persuaded, one-year reprieve", () => {

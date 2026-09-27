@@ -128,6 +128,20 @@ export interface DelayedEffect {
   inTerms: number;
   note: string;
   changes: ProgramChange[];
+  /**
+   * A change everyone knows is coming, like caps that start next term. It's
+   * shown on the horizon with what it will do. Unannounced effects stay a
+   * surprise until they land.
+   */
+  announced?: boolean;
+}
+
+/** What an announced effect will do when it lands, projected for that term. */
+export interface ScheduledPreview {
+  dueTerm: number;
+  term: Term;
+  descriptions: string[];
+  comparison: TermComparison;
 }
 
 /**
@@ -576,5 +590,7 @@ export interface DecisionOutcome {
   /** The resolved program changes, described in plain language. */
   changeDescriptions: string[];
   queued: PendingEffect[];
+  /** Announced effects of this decision, projected for the term they land in. */
+  scheduled: ScheduledPreview[];
   memo: Memo | null;
 }

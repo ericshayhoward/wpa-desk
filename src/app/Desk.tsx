@@ -4,6 +4,7 @@ import {
   STAFFING_EFFECTS,
   STAFFING_LABELS,
   blockingScenarios,
+  describeProgramChanges,
   fillTemplate,
   isFinalTerm,
   termLabel,
@@ -244,14 +245,28 @@ export function Desk({ session, arc, reportDue, onOpenReport, staffingDue, onSta
             <p className="muted">Nothing from past decisions is still unfolding.</p>
           ) : (
             <ul className="horizon">
-              {session.pending.map((p, i) => (
-                <li key={`p${i}`}>
-                  <span className="badge illustrative">{termLabel(p.dueTerm)}</span>
-                  <span>
-                    A consequence of <em>{titleOf(p.scenarioId)}</em> is still unfolding.
-                  </span>
-                </li>
-              ))}
+              {[...session.pending]
+                .sort((a, b) => a.dueTerm - b.dueTerm)
+                .map((p, i) =>
+                  p.announced ? (
+                    <li key={`p${i}`} className="scheduled-item">
+                      <span className="badge literature-informed">{termLabel(p.dueTerm)}</span>
+                      <span>
+                        <strong>Scheduled</strong> from <em>{titleOf(p.scenarioId)}</em>
+                        <span className="small muted scheduled-changes">
+                          {describeProgramChanges(program, p.changes).join(" · ")}
+                        </span>
+                      </span>
+                    </li>
+                  ) : (
+                    <li key={`p${i}`}>
+                      <span className="badge illustrative">{termLabel(p.dueTerm)}</span>
+                      <span>
+                        A consequence of <em>{titleOf(p.scenarioId)}</em> is still unfolding.
+                      </span>
+                    </li>
+                  ),
+                )}
             </ul>
           )}
         </section>

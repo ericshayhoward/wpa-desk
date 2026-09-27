@@ -32,6 +32,7 @@ import type {
   Reply,
   Scenario,
   ScenarioChange,
+  ScheduledPreview,
   ScenarioOption,
   TrainingSession,
 } from "./types";
@@ -213,6 +214,21 @@ export function resolveScenario(
     term,
     comparison: compareTerms(analyzeTerm(before, term, DEFAULT_ASSUMPTIONS), analyzeTerm(after, term, DEFAULT_ASSUMPTIONS)),
   };
+  // Announced effects, projected for the term they land in, as things stand after this decision.
+  const scheduled: ScheduledPreview[] = queued
+    .filter((p) => p.announced)
+    .map((p) => {
+      const dueTerm = termOf(p.dueTerm);
+      return {
+        dueTerm: p.dueTerm,
+        term: dueTerm,
+        descriptions: describeProgramChanges(after, p.changes),
+        comparison: compareTerms(
+          analyzeTerm(after, dueTerm, DEFAULT_ASSUMPTIONS),
+          analyzeTerm(applyChanges(after, p.changes), dueTerm, DEFAULT_ASSUMPTIONS),
+        ),
+      };
+    });
   const changeDescriptions = resolved
     .filter((c) => c.kind !== "adjustTrust" && c.kind !== "adjustPoliticalCapital")
     .map((c) => describeChange(before, c));
@@ -243,7 +259,11 @@ export function resolveScenario(
           persuasion,
           missingEvidence,
           trustChanges,
-          changeDescriptions,
+          // Scheduled changes are part of the decision too; the case file says when they start.
+          changeDescriptions: [
+            ...changeDescriptions,
+            ...scheduled.flatMap((p) => p.descriptions.map((d) => `${d} (starting ${termLabel(p.dueTerm)})`)),
+          ],
         },
       },
     ],
@@ -268,6 +288,7 @@ export function resolveScenario(
       impact,
       changeDescriptions,
       queued,
+      scheduled,
       memo,
     },
   };
@@ -375,6 +396,15 @@ export function resolveAmounts(program: Program, term: Term, c: ComputedChange):
     values[field] = Math.round(v * (ref.times ?? 1));
   }
   return { ...c.change, ...values } as ProgramChange;
+}
+
+/** Program changes in plain language, leaving out trust and capital (reported on their own). */
+export function describeProgramChanges(program: Program, changes: ProgramChange[]): string[] {
+  return changes
+    .filter((c) => c.kind !== "adjustTrust" && c.kind !== "adjustPoliticalCapital")
+    // A cap set to what it already is (e.g., settling at 25 after a compromise at 25) isn't news.
+    .filter((c) => !(c.kind === "setCap" && c.courseId !== "all" && program.policies.caps[c.courseId] === c.cap))
+    .map((c) => describeChange(program, c));
 }
 
 /** A computed change that came out to nothing (e.g., covering a deficit of $0). */

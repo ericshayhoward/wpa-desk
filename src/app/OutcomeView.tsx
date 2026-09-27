@@ -1,5 +1,5 @@
-import { RANK_LABELS, type Program } from "../model";
-import { persuasionSummary, type DecisionOutcome } from "../training";
+import { RANK_LABELS, type Program, type TermComparison } from "../model";
+import { persuasionSummary, termLabel, type DecisionOutcome, type ScheduledPreview } from "../training";
 import { ReflectionEditor } from "./ReflectionEditor";
 import { namesFor, signed, stakeholderName, usd } from "./format";
 import { Avatar, CardTitle, Icon, Prose } from "./ui";
@@ -28,11 +28,12 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
     impact,
     changeDescriptions,
     queued,
+    scheduled,
   } = outcome;
-  const c = impact.comparison;
-  const staffingChanges = Object.entries(c.sectionsByRank).filter(([, d]) => d !== 0);
-  const programChanged =
-    c.sections !== 0 || c.programCost !== 0 || c.budgetBalance !== 0 || c.unstaffedSections !== 0 || c.seatsUnserved !== 0;
+  // Nothing changes this term: the decision's program effects are all scheduled for later.
+  const nowUnchanged = changeDescriptions.length === 0 && !changed(impact.comparison);
+  // Unannounced effects stay a surprise; only say when something will come back.
+  const surprises = queued.filter((p) => !p.announced).map((p) => p.inTerms).sort((a, b) => a - b)[0] ?? 0;
 
   return (
     <div className="outcome">
@@ -89,64 +90,33 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
           </p>
         </section>
 
-        <section className="card">
-          <CardTitle icon="sliders" level={3}>
-            Projected effect this {impact.term}
-          </CardTitle>
-          {changeDescriptions.length > 0 && (
-            <ul className="plan small">
-              {changeDescriptions.map((d, i) => (
-                <li key={i}>{d}</li>
-              ))}
-            </ul>
-          )}
-          {!programChanged ? (
-            <p className="muted">Sections, staffing, and budget are unchanged.</p>
-          ) : (
-            <ul className="changes">
-              {c.unstaffedSections !== 0 && (
-                <li>
-                  <span>Unstaffed sections</span>
-                  <span className={`num ${c.unstaffedSections < 0 ? "up" : "down"}`}>{signed(c.unstaffedSections)}</span>
-                </li>
-              )}
-              {c.seatsUnserved !== 0 && (
-                <li>
-                  <span>Students without a seat</span>
-                  <span className={`num ${c.seatsUnserved > 0 ? "down" : "up"}`}>{signed(c.seatsUnserved)}</span>
-                </li>
-              )}
-              <li>
-                <span>Sections offered</span>
-                <span className="num">{signed(c.sections)}</span>
-              </li>
-              <li>
-                <span>Budget balance</span>
-                <span className={`num ${c.budgetBalance > 0 ? "up" : c.budgetBalance < 0 ? "down" : ""}`}>
-                  {c.budgetBalance > 0 ? "+" : ""}
-                  {usd(c.budgetBalance)}
-                </span>
-              </li>
-              <li>
-                <span>Projected D/F/W</span>
-                <span className="num">{signed(c.dfwMid * 100, 1)} pts</span>
-              </li>
-              {staffingChanges.map(([rank, d]) => (
-                <li key={rank}>
-                  <span>{RANK_LABELS[rank as keyof typeof RANK_LABELS]} sections</span>
-                  <span className={`num ${d! < 0 ? "down" : "up"}`}>{signed(d!)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {queued.length > 0 && (
-            <p className="small muted">
-              This decision isn't finished with you. Something from it will come back in {queued[0]!.inTerms} term
-              {queued[0]!.inTerms > 1 ? "s" : ""}.
-            </p>
-          )}
-        </section>
+        {nowUnchanged && scheduled.length > 0 ? (
+          <ScheduledCard preview={scheduled[0]!} />
+        ) : (
+          <section className="card">
+            <CardTitle icon="sliders" level={3}>
+              Projected effect this {impact.term}
+            </CardTitle>
+            <Impact descriptions={changeDescriptions} c={impact.comparison} />
+            {surprises > 0 && (
+              <p className="small muted">
+                This decision isn't finished with you. Something from it will come back in {surprises} term
+                {surprises > 1 ? "s" : ""}.
+              </p>
+            )}
+          </section>
+        )}
       </div>
+
+      {scheduled.slice(nowUnchanged ? 1 : 0).map((p) => (
+        <ScheduledCard key={p.dueTerm} preview={p} />
+      ))}
+      {nowUnchanged && scheduled.length > 0 && surprises > 0 && (
+        <p className="small muted">
+          This decision isn't finished with you. Something else from it will come back in {surprises} term
+          {surprises > 1 ? "s" : ""}.
+        </p>
+      )}
 
       <section className="card debrief">
         <CardTitle icon="sparkle" level={3}>
@@ -207,3 +177,75 @@ export function OutcomeView({ outcome, program, reflection, onReflect, onDone, o
   );
 }
 
+
+function changed(c: TermComparison): boolean {
+  return c.sections !== 0 || c.programCost !== 0 || c.budgetBalance !== 0 || c.unstaffedSections !== 0 || c.seatsUnserved !== 0;
+}
+
+/** A decision's effect on one term: what changes, then what that does to the numbers. */
+function Impact({ descriptions, c }: { descriptions: string[]; c: TermComparison }) {
+  const staffingChanges = Object.entries(c.sectionsByRank).filter(([, d]) => d !== 0);
+  return (
+    <>
+      {descriptions.length > 0 && (
+        <ul className="plan small">
+          {descriptions.map((d, i) => (
+            <li key={i}>{d}</li>
+          ))}
+        </ul>
+      )}
+      {!changed(c) ? (
+        <p className="muted">Sections, staffing, and budget are unchanged.</p>
+      ) : (
+        <ul className="changes">
+          {c.unstaffedSections !== 0 && (
+            <li>
+              <span>Unstaffed sections</span>
+              <span className={`num ${c.unstaffedSections < 0 ? "up" : "down"}`}>{signed(c.unstaffedSections)}</span>
+            </li>
+          )}
+          {c.seatsUnserved !== 0 && (
+            <li>
+              <span>Students without a seat</span>
+              <span className={`num ${c.seatsUnserved > 0 ? "down" : "up"}`}>{signed(c.seatsUnserved)}</span>
+            </li>
+          )}
+          <li>
+            <span>Sections offered</span>
+            <span className="num">{signed(c.sections)}</span>
+          </li>
+          <li>
+            <span>Budget balance</span>
+            <span className={`num ${c.budgetBalance > 0 ? "up" : c.budgetBalance < 0 ? "down" : ""}`}>
+              {c.budgetBalance > 0 ? "+" : ""}
+              {usd(c.budgetBalance)}
+            </span>
+          </li>
+          <li>
+            <span>Projected D/F/W</span>
+            <span className="num">{signed(c.dfwMid * 100, 1)} pts</span>
+          </li>
+          {staffingChanges.map(([rank, d]) => (
+            <li key={rank}>
+              <span>{RANK_LABELS[rank as keyof typeof RANK_LABELS]} sections</span>
+              <span className={`num ${d! < 0 ? "down" : "up"}`}>{signed(d!)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
+/** An announced change: when it lands and what it's projected to do then. */
+function ScheduledCard({ preview }: { preview: ScheduledPreview }) {
+  return (
+    <section className="card scheduled">
+      <CardTitle icon="calendar" level={3}>
+        Scheduled for {termLabel(preview.dueTerm)}
+      </CardTitle>
+      <p className="muted small">Announced now. It takes effect when the term begins; projected against the program as it stands.</p>
+      <Impact descriptions={preview.descriptions} c={preview.comparison} />
+    </section>
+  );
+}

@@ -190,6 +190,9 @@ export function App() {
             ? `scenario-${scenario.id}`
             : "desk";
 
+  // Announced changes that just took effect, for the term-change card.
+  const landedScheduled = landed.effects.filter((p) => p.announced);
+
   // Each new view starts at the top, not wherever the last one was scrolled to.
   const viewKey = tab === "desk" ? view : tab;
   useEffect(() => {
@@ -323,6 +326,13 @@ export function App() {
             {/* Drawn from attributes so the labels aren't duplicated in the DOM's text. */}
             <strong data-text={termLabel(arrived)} />
             <em data-text={STAGE_LABELS[session.stage]} />
+            {landedScheduled.length > 0 && (
+              <small
+                data-text={
+                  landedScheduled.length === 1 ? landedScheduled[0]!.note : `${landedScheduled.length} scheduled changes take effect`
+                }
+              />
+            )}
           </div>
         </div>
       )}

@@ -11,7 +11,7 @@ beforeEach(() => localStorage.clear());
 async function openCapMemo() {
   const user = userEvent.setup();
   render(<App />);
-  await user.click(screen.getByRole("button", { name: /FYC section caps for next fall/ }));
+  await user.click(screen.getByRole("button", { name: /FYC section caps for spring/ }));
   return user;
 }
 
@@ -54,17 +54,23 @@ describe("playing The Cap Memo through the UI", () => {
 
     expect(screen.getByRole("heading", { name: "You chose: Accept the increase" })).toBeTruthy();
     expect(screen.getByText(/Thank you for being a team player/)).toBeTruthy();
-    expect(screen.getByText(/Something from it will come back in 2 terms/)).toBeTruthy();
+    // The caps are announced for spring: the outcome previews that term instead of this one.
+    expect(screen.getByRole("heading", { name: "Scheduled for Spring, Year 1" })).toBeTruthy();
+    expect(screen.getByText("ENGL101 cap 24 → 27")).toBeTruthy();
+    expect(screen.getByText(/Something else from it will come back in 2 terms/)).toBeTruthy();
     expect(screen.getByText(/Who actually bears the savings/)).toBeTruthy();
 
-    // Back at the desk, the budget is now in surplus; The Syllabus Holdout is still waiting.
+    // Back at the desk, fall is unchanged and the caps wait on the horizon; The Syllabus Holdout is still waiting.
     await user.click(screen.getByRole("button", { name: "Back to desk" }));
-    expect(screen.getByText("$9,400 surplus")).toBeTruthy();
+    expect(screen.getByText("$8,600 deficit")).toBeTruthy();
+    expect(screen.getByText(/ENGL101 cap 24 → 27 · ENGL102 cap 24 → 27/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: /FYC section caps/ })).toBeNull();
     expect(screen.getByRole("button", { name: /Alan Pruitt and the common syllabus/ })).toBeTruthy();
 
-    // Two terms later, the delayed consequence lands.
+    // In spring the caps land and the budget moves; two terms later, the delayed consequence.
     await user.click(screen.getByRole("button", { name: "Leave these for next term and advance" }));
+    expect(screen.getByText(/Caps of 27 take effect with the spring schedule/)).toBeTruthy();
+    expect(screen.queryByText("$8,600 deficit")).toBeNull();
     await resolveUrgent(user);
     await submitYearEndReport(user);
     await user.click(screen.getByRole("button", { name: "Leave these for next term and advance" }));

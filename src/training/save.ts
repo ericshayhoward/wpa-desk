@@ -65,7 +65,8 @@ export function parseSave(raw: unknown, scenarios: Scenario[], arcs: Arc[] = [])
   // v6 added routine staffing decisions.
   if (f.version < 6) rawSession = { staffingLog: [], ...obj(rawSession, "The saved session") };
   // v7 added feedback to endings; it's optional, so earlier endings load as they were.
-  // v8 added one-term budget changes (program.budgetByTerm); also optional.
+  // v8 added one-term budget changes (program.budgetByTerm) and announced
+  // pending effects (pending[].announced); both optional.
 
   const session = parseSession(rawSession, scenarios, arcs);
   return {
@@ -169,6 +170,7 @@ function parseSession(raw: unknown, scenarios: Scenario[], arcs: Arc[]): Trainin
     pending: list(s, "pending").map((p) => {
       const r = obj(p, "A pending consequence");
       if (!Array.isArray(r.changes) || typeof r.dueTerm !== "number") throw new Error("A pending consequence is damaged.");
+      if (r.announced !== undefined && typeof r.announced !== "boolean") throw new Error("A pending consequence is damaged.");
       // Checked now, so a damaged change can't crash the game later, when it comes due.
       try {
         r.changes.forEach((c) => parseChange(c));

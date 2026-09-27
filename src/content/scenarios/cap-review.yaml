@@ -2,8 +2,9 @@
 #
 # A follow-up that arrives only for players who kept caps below 27 in The
 # Cap Memo, through the dean's one-year reprieve or the compromise at 25.
-# A year and a half later, the dean has to set caps for next fall and wants
-# to know what the year showed.
+# In Spring, Year 2, a year after those caps took effect, the dean has to set
+# caps for next term and wants to know what the year showed. Cap changes are
+# announced now and take effect next term (delayed, announced: true).
 
 id: cap-review
 title: The Cap Review
@@ -20,12 +21,12 @@ urgent: true
 documents:
   - from: dean
     genre: memo
-    subject: Section caps for next fall
+    subject: Section caps for {{next_term}}
     body: |
-      A year ago, I agreed to keep first-year writing caps below 27 while
+      Last year, I agreed to keep first-year writing caps below 27 while
       your program looked at the effects, and I told the provost I'd
-      revisit the decision. That time has come. The registrar needs next
-      fall's caps before the schedule is built this month.
+      revisit the decision. That time has come. The registrar needs caps
+      for {{next_term}} before the schedule is built this month.
 
       What did the year show? If there's a case for keeping caps where they
       are, I need it in a form I can take to the provost. If there isn't,
@@ -36,7 +37,7 @@ documents:
 
   - from: fyw_director
     genre: note
-    subject: "Re: Section caps for next fall"
+    subject: "Re: Section caps for {{next_term}}"
     body: |
       You made the original argument, so you should make this one. I'll
       sign whatever we send. Remember that the dean asked for the numbers
@@ -79,12 +80,17 @@ options:
         narrative: |
           The memo makes the case from principle again. The dean was clear
           last year that he needed numbers, and he doesn't see new ones.
-          Caps go to 27 in the fall.
+          Caps go to 27 in the {{next_term}}.
         changes:
-          - { kind: setCap, courseId: ENGL101, cap: 27 }
-          - { kind: setCap, courseId: ENGL102, cap: 27 }
           - { kind: adjustTrust, stakeholder: dean, delta: -2 }
           - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -6 }
+        delayed:
+          - inTerms: 1
+            announced: true
+            note: Caps of 27 take effect with the {{next_term}} schedule.
+            changes:
+              - { kind: setCap, courseId: ENGL101, cap: 27 }
+              - { kind: setCap, courseId: ENGL102, cap: 27 }
         response:
           from: dean
           body: I asked for numbers last year, and I'm asking again. Without them, caps go to 27.
@@ -103,10 +109,15 @@ options:
         everyone can live with, and a few sections fewer each term than the
         program had when you started.
       changes:
-        - { kind: setCap, courseId: ENGL101, cap: 25 }
-        - { kind: setCap, courseId: ENGL102, cap: 25 }
         - { kind: adjustTrust, stakeholder: dean, delta: 3 }
         - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -3 }
+      delayed:
+        - inTerms: 1
+          announced: true
+          note: Caps of 25 take effect with the {{next_term}} schedule.
+          changes:
+            - { kind: setCap, courseId: ENGL101, cap: 25 }
+            - { kind: setCap, courseId: ENGL102, cap: 25 }
       response:
         from: dean
         body: Twenty-five it is. Thank you for meeting me partway.
@@ -117,17 +128,22 @@ options:
     cost: { adminHours: 1 }
     consequence:
       narrative: |
-        Caps go to 27 in the fall. The registrar rebuilds the schedule, and
+        Caps go to 27 in the {{next_term}}. The registrar builds the {{next_term}} schedule, and
         the sections that disappear are adjunct sections. The dean thanks
         the program for its patience, and adjuncts learn about it from the
         schedule again.
       changes:
-        - { kind: setCap, courseId: ENGL101, cap: 27 }
-        - { kind: setCap, courseId: ENGL102, cap: 27 }
         - { kind: adjustTrust, stakeholder: dean, delta: 6 }
         - { kind: adjustTrust, stakeholder: adjunct_faculty, delta: -8 }
         - { kind: adjustMorale, rank: adjunct, delta: -6 }
         - { kind: adjustPoliticalCapital, delta: 3 }
+      delayed:
+        - inTerms: 1
+          announced: true
+          note: Caps of 27 take effect with the {{next_term}} schedule.
+          changes:
+            - { kind: setCap, courseId: ENGL101, cap: 27 }
+            - { kind: setCap, courseId: ENGL102, cap: 27 }
       response:
         from: dean
         body: Thank you. I know this wasn't the answer you wanted to give.

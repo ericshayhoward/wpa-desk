@@ -9,6 +9,7 @@ import type { TrainingSession } from "./types";
  *   {{unstaffed}}           → 3
  *   {{unstaffed_sections}}  → "3 sections" / "1 section"
  *   {{term}}                → "fall" / "spring"
+ *   {{next_term}}           → the term after this one, for changes announced now
  *   {{deficit}}             → "$8,600" (0 if balanced)
  *   {{surplus}}             → "$41,800" (0 if in deficit)
  *   {{sections}}            → 60 (sections offered this term)
@@ -31,6 +32,7 @@ export function fillTemplate(text: string, session: TrainingSession): string {
     unstaffed: String(a.unstaffedSections),
     unstaffed_sections: `${a.unstaffedSections} section${a.unstaffedSections === 1 ? "" : "s"}`,
     term,
+    next_term: termOf(session.termIndex + 1),
     deficit: `$${Math.max(0, -a.budgetBalance).toLocaleString("en-US")}`,
     surplus: `$${Math.max(0, a.budgetBalance).toLocaleString("en-US")}`,
     sections: String(a.totalSections),
