@@ -108,6 +108,40 @@ describe("arc calendars", () => {
     expect(() =>
       parseArc({ id: "t", title: "T", description: "D", terms: 4, startStage: "dean", calendar: [] }, all),
     ).toThrow(/startStage: "dean" is not one of assistant_director, wpa/);
+    // A misspelled flag would otherwise silently turn the feature off.
+    expect(() =>
+      parseArc({ id: "t", title: "T", description: "D", terms: 4, startStage: "wpa", calendar: [], routineStaffing: "yes" }, all),
+    ).toThrow(/"routineStaffing" must be true or false/);
+    const cost = { hours: 5, label: "L", note: "N" };
+    expect(() =>
+      parseArc(
+        { id: "t", title: "T", description: "D", terms: 4, startStage: "wpa", calendar: [], timeCosts: [{ term: 2, ...cost }, { term: 2, ...cost }] },
+        all,
+      ),
+    ).toThrow(/only one time cost per term/);
+  });
+
+  it("reject negative option costs and fractional start terms in scenarios", () => {
+    const opts = (cost: unknown) => ({
+      options: [
+        { id: "a", label: "A", description: "A", cost, consequence: { narrative: "A" } },
+        { id: "b", label: "B", description: "B", consequence: { narrative: "B" } },
+      ],
+    });
+    expect(() => scenario("x", opts({ adminHours: -5 }))).toThrow(/option 1 \("a"\) cost: "adminHours" can't be negative/);
+    expect(() => scenario("x", { trigger: { minTerm: 1.5 } })).toThrow(/trigger: "minTerm" must be a whole number ≥ 1/);
+  });
+
+  it("reject a cancellation for every course at once, which would cancel only one", () => {
+    const cancelAll = { narrative: "A", changes: [{ kind: "cancelSections", courseId: "all", term: "fall", sections: 2 }] };
+    expect(() =>
+      scenario("x", {
+        options: [
+          { id: "a", label: "A", description: "A", consequence: cancelAll },
+          { id: "b", label: "B", description: "B", consequence: { narrative: "B" } },
+        ],
+      }),
+    ).toThrow(/"courseId" must name one course/);
   });
 });
 

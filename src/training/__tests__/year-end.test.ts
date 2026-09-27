@@ -159,6 +159,25 @@ describe("the ending", () => {
     expect(program(36000, -6800).points - program(2000, -6800).points).toBe(4);
   });
 
+  it("counts a commitment still open when the capstone closes the final term as missed", () => {
+    const s = to(start(), 6);
+    const open = {
+      id: "commit-x", text: "Send the D/F/W report", dueTerm: 6, status: "open" as const, memoId: "memo-x",
+      audience: "dean" as const, effortHours: 4, extended: false, resolvedTerm: null,
+    };
+    const dean = (x: TrainingSession) => x.history.at(-1)!.trust.find((t) => t.stakeholder === "dean")!.trust;
+    const kept = closeOutTerm(s);
+    const ended = closeOutTerm({ ...s, commitments: [...s.commitments, open] });
+    expect(ended.commitments.find((c) => c.id === "commit-x")!.status).toBe("missed");
+    expect(dean(ended)).toBe(dean(kept) - 6);
+    expect(ended.ending!.factors.find((f) => f.id === "commitments")!.explanation).toMatch(/You kept 0 of the 1 commitments/);
+  });
+
+  it("can't be reached past an urgent scenario still waiting in the final term", () => {
+    const s = to(start(), 6);
+    expect(() => closeOutTerm({ ...s, inbox: ["late-hire"] })).toThrow(/Resolve before submitting the report: The Late Hire/);
+  });
+
   it("rotates out a record with broken relationships", () => {
     const s = finish(
       start([

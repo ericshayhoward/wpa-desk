@@ -60,4 +60,12 @@ describe("save files", () => {
     f.session.termIndex = "two";
     expect(() => parseSave(f, SCENARIOS)).toThrow(/invalid termIndex/);
   });
+
+  it("reject a pending consequence whose changes would crash when they come due", () => {
+    const f = valid();
+    f.session.pending = [{ inTerms: 1, dueTerm: 3, note: "N", scenarioId: "cap-memo", changes: [{ kind: "adjustTrust", stakeholder: "president", delta: 2 }] }];
+    expect(() => parseSave(f, SCENARIOS)).toThrow("A pending consequence is damaged.");
+    f.session.pending[0].changes = [{ kind: "adjustTrust", stakeholder: "dean", delta: 2 }];
+    expect(parseSave(f, SCENARIOS).session.pending).toHaveLength(1);
+  });
 });

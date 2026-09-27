@@ -66,6 +66,7 @@ export function parseArc(raw: unknown, scenarios: Scenario[]): Arc {
     if (term > terms) throw new Error(`${w}: term ${term} is after the arc's last term (${terms})`);
     return { term, hours: whole(o, "hours", w, 1), label: str(o, "label", w), note: str(o, "note", w).trim() };
   });
+  if (new Set(timeCosts.map((c) => c.term)).size !== timeCosts.length) throw new Error(`${at}: only one time cost per term`);
 
   const yearEnd = (r.yearEnd === undefined ? [] : arr(r, "yearEnd", at)).map((y, i) => parseYearEnd(y, `${at} year-end ${i + 1}`, terms));
   if (new Set(yearEnd.map((y) => y.term)).size !== yearEnd.length) throw new Error(`${at}: only one year-end report per term`);
@@ -97,7 +98,7 @@ export function parseArc(raw: unknown, scenarios: Scenario[]): Arc {
     yearEnd,
     dissertation,
     endings,
-    routineStaffing: r.routineStaffing === true,
+    routineStaffing: r.routineStaffing === undefined ? false : bool(r, "routineStaffing", at),
   };
 }
 
@@ -131,7 +132,7 @@ function parseYearEnd(raw: unknown, at: string, terms: number): YearEndSpec {
     sections,
     playerSections,
     reply: reply && { from: stakeholder(reply.from, `${at} reply`), body: str(reply, "body", `${at} reply`).trim() },
-    capstone: o.capstone === undefined ? false : o.capstone === true,
+    capstone: o.capstone === undefined ? false : bool(o, "capstone", at),
   };
 }
 
@@ -149,10 +150,12 @@ function parseEndings(raw: unknown, at: string): EndingsSpec {
       return [id, { title: str(e, "title", `${at} outcomes.${id}`), narrative: str(e, "narrative", `${at} outcomes.${id}`).trim() }];
     }),
   ) as EndingsSpec["outcomes"];
+  const relationships = arr(o, "relationships", at).map((x) => stakeholder(x, `${at} relationships`));
+  if (relationships.length === 0) throw new Error(`${at}: "relationships" needs at least one stakeholder`);
   return {
     tenureTrackAt,
     twoYearAt,
-    relationships: arr(o, "relationships", at).map((x) => stakeholder(x, `${at} relationships`)),
+    relationships,
     recommender: stakeholder(o.recommender, `${at} recommender`),
     outcomes,
   };
@@ -207,6 +210,10 @@ function whole(r: Record<string, unknown>, k: string, at: string, min: number): 
 function num(r: Record<string, unknown>, k: string, at: string): number {
   if (typeof r[k] !== "number" || !Number.isFinite(r[k])) throw new Error(`${at}: "${k}" must be a number`);
   return r[k] as number;
+}
+function bool(r: Record<string, unknown>, k: string, at: string): boolean {
+  if (typeof r[k] !== "boolean") throw new Error(`${at}: "${k}" must be true or false`);
+  return r[k] as boolean;
 }
 function oneOf<T extends string>(v: unknown, allowed: readonly T[], at: string): T {
   if (typeof v !== "string" || !(allowed as readonly string[]).includes(v)) {

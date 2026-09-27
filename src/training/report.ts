@@ -5,6 +5,7 @@
  * instructors, but never scored.
  */
 import { RANK_LABELS, type StakeholderId } from "../model";
+import { missOverdue } from "./commitments";
 import { wordCount, type DraftVersion } from "./drafts";
 import { computeEnding } from "./ending";
 import { recordTerm } from "./history";
@@ -154,6 +155,9 @@ export function submitReport(
   const spec = reportDue(session, arc);
   if (!spec) throw new Error("No report is due this term.");
   if (staffingDue(session, arc, scenarios)) throw new Error("Cover this term's sections before submitting the report.");
+  // The capstone closes the final term, so urgent scenarios block it just as they block advancing.
+  const urgent = spec.capstone ? scenarios.filter((s) => s.urgent && session.inbox.includes(s.id)) : [];
+  if (urgent.length) throw new Error(`Resolve before submitting the report: ${urgent.map((s) => s.title).join(", ")}`);
   const draft = session.reportDraft?.termIndex === spec.term ? session.reportDraft : undefined;
   const missing = spec.playerSections.filter((id) => wordCount(draft?.sections[id]?.body ?? "") === 0);
   if (missing.length) {
@@ -190,6 +194,8 @@ export function submitReport(
     reportDraft: undefined,
   };
   if (spec.capstone) {
+    // The final term ends here: commitments still open and due are missed, as at any term's end.
+    next = missOverdue(next).session;
     next = { ...next, history: [...next.history, recordTerm(next)] };
     next = { ...next, ending: computeEnding(next, arc, scenarios) };
   }

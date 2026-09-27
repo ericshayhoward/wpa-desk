@@ -1,4 +1,4 @@
-import { DEFAULT_ASSUMPTIONS, TERMS, analyzeTerm, type Program } from "../model";
+import { DEFAULT_ASSUMPTIONS, TERMS, analyzeTerm, parseChange, type Program } from "../model";
 import { termLabel } from "./terms";
 import { recordTerm } from "./history";
 import { CAREER_STAGES, DEFAULT_SETTINGS, type Arc, type Scenario, type TrainingSession } from "./types";
@@ -168,6 +168,12 @@ function parseSession(raw: unknown, scenarios: Scenario[], arcs: Arc[]): Trainin
     pending: list(s, "pending").map((p) => {
       const r = obj(p, "A pending consequence");
       if (!Array.isArray(r.changes) || typeof r.dueTerm !== "number") throw new Error("A pending consequence is damaged.");
+      // Checked now, so a damaged change can't crash the game later, when it comes due.
+      try {
+        r.changes.forEach((c) => parseChange(c));
+      } catch {
+        throw new Error("A pending consequence is damaged.");
+      }
       return r as unknown as TrainingSession["pending"][number];
     }),
     evidence: list(s, "evidence") as TrainingSession["evidence"],
