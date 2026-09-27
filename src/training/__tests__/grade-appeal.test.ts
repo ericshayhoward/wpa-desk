@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { MIDLAND_STATE } from "../../model";
 import { CAST, STANDARD_ARC, scenarioById } from "../../content";
 import { advanceTerm, blockingScenarios, resolveScenario, startSession, type TrainingSession } from "../index";
-import { submitDueReport } from "../../test-fixtures/reports";
+import { closeOutTerm } from "../../test-fixtures/reports";
 
 const appeal = scenarioById("grade-appeal")!;
 const only = [appeal];
 
 const trust = (s: TrainingSession, id: string) => s.program.stakeholders.find((x) => x.id === id)!.trust;
-const next = (s: TrainingSession) => advanceTerm(submitDueReport(s), only, STANDARD_ARC).session;
+const next = (s: TrainingSession) => advanceTerm(closeOutTerm(s), only, STANDARD_ARC).session;
 const spring = () => next(startSession(MIDLAND_STATE, only, STANDARD_ARC));
 const decide = (s: TrainingSession, id: string) => resolveScenario(s, appeal, id, null, CAST);
 
@@ -18,7 +18,7 @@ describe("The Grade Appeal Escalation", () => {
     const s = spring();
     expect(s.inbox).toContain("grade-appeal");
     expect(blockingScenarios(s, only).map((x) => x.id)).toEqual(["grade-appeal"]);
-    expect(() => advanceTerm(submitDueReport(s), only, STANDARD_ARC)).toThrow(/Resolve before Spring, Year 1 ends: The Grade Appeal Escalation/);
+    expect(() => advanceTerm(closeOutTerm(s), only, STANDARD_ARC)).toThrow(/Resolve before Spring, Year 1 ends: The Grade Appeal Escalation/);
   });
 
   it("following the process earns trust all around, and GTAs come to you in the fall", () => {

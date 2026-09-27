@@ -232,17 +232,30 @@ Built so far (`src/content/arcs/standard.yaml`, `src/training/arc.ts`):
   Shown in the status bar during play.
 - **Endings** (`endings`; `src/training/ending.ts`) — submitting the
   capstone scores the record out of 100: program outcomes 20 (fall D/F/W
-  against the baseline, terms with uncovered sections, budget), the
+  against the baseline, terms where students couldn't get a section,
+  budget over the final year), the
   recommender's trust 15, campus relationships 15, instructors' trust and
   morale 15, commitments kept 15, dissertation 20. Thresholds and outcome
   text live in the arc; weights in `ENDING_RULES`. The tenure-track outcome
   also needs the dissertation finished or on track, and the ending screen
   says so when that gate is what held it back. Reports and the ending are
   in the dossier and the Markdown export.
-- **Calibration note** — with only two scenarios, few admin hours get spent,
-  so the dissertation fills for nearly everyone and ordinary play lands
-  around 50–60 (two-year college). Recalibrate hours and weights as
-  scenarios are added.
+- **Routine staffing** (`routineStaffing`; `src/training/staffing.ts`) —
+  whenever a term has sections without an instructor and no scenario is
+  handling it (The Late Hire), the director decides before the term (or the
+  capstone) can close: hire adjuncts (2 hours), teach one section yourself
+  (20 hours, overtime comes out of the dissertation; earns instructor
+  trust), or cancel (students lose seats; restored next term). Decisions go
+  in the case files.
+- **Political capital is earned by delivering**: a memo that persuades its
+  reader returns +2, and each kept commitment +1. Without this, careful
+  players ran out by Year 3 and only expedient choices earned capital back.
+- **Calibration** (13 scenarios, whole-arc test runs): thoughtful play
+  with evidence scores about 72 (tenure track); adding kept commitments
+  raises it to about 78 with the dissertation still on track; also teaching
+  the extra sections yourself scores about 76 but leaves the dissertation
+  behind (two-year college, held back by the dissertation gate); expedient
+  play scores about 44 (rotated out). Recheck when scenarios change.
 
 Still to design and build:
 

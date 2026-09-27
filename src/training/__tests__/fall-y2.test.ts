@@ -14,7 +14,7 @@ import {
   type MemoDraft,
   type TrainingSession,
 } from "../index";
-import { submitDueReport } from "../../test-fixtures/reports";
+import { closeOutTerm } from "../../test-fixtures/reports";
 
 const accreditation = scenarioById("accreditation-ask")!;
 const dual = scenarioById("dual-enrollment")!;
@@ -22,7 +22,7 @@ const only = [accreditation, dual];
 
 const trust = (s: TrainingSession, id: string) => s.program.stakeholders.find((x) => x.id === id)!.trust;
 const balance = (s: TrainingSession, term: "fall" | "spring") => analyzeTerm(s.program, term, A).budgetBalance;
-const next = (s: TrainingSession) => advanceTerm(submitDueReport(s), only, STANDARD_ARC).session;
+const next = (s: TrainingSession) => advanceTerm(closeOutTerm(s), only, STANDARD_ARC).session;
 /** Fall, Year 2 with nothing else decided. */
 const fallY2 = () => next(next(startSession(MIDLAND_STATE, only, STANDARD_ARC)));
 

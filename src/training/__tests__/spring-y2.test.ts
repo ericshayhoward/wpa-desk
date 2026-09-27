@@ -12,7 +12,7 @@ import {
   type Scenario,
   type TrainingSession,
 } from "../index";
-import { submitDueReport } from "../../test-fixtures/reports";
+import { closeOutTerm } from "../../test-fixtures/reports";
 
 const capMemo = scenarioById("cap-memo")!;
 const review = scenarioById("cap-review")!;
@@ -31,7 +31,7 @@ function withCapEvidence(s: TrainingSession): TrainingSession {
   return addEvidence(s, capAnalysisEvidence(s.program, caps, before, after));
 }
 function advance(s: TrainingSession, scenarios: Scenario[], to: number): TrainingSession {
-  while (s.termIndex < to) s = advanceTerm(submitDueReport(s), scenarios, STANDARD_ARC).session;
+  while (s.termIndex < to) s = advanceTerm(closeOutTerm(s), scenarios, STANDARD_ARC).session;
   return s;
 }
 

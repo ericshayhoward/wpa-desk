@@ -10,6 +10,7 @@ import {
 import { arcAllows, checkArc, isFinalTerm, stageChangeAt, timeCostAt } from "./arc";
 import { recordTerm } from "./history";
 import { reportDue } from "./report";
+import { staffingDue } from "./staffing";
 import type { EvidenceDraft } from "./evidence";
 import { persuasionProfile } from "./cast";
 import { missOverdue } from "./commitments";
@@ -35,6 +36,9 @@ import type {
 import { DEFAULT_SETTINGS, REPLY_TONE, type SessionSettings } from "./types";
 
 export const DEFAULT_ADMIN_HOURS_PER_TERM = 60;
+
+/** Political capital earned back when a memo persuades its reader: winning a case builds standing. */
+export const PERSUASION_CAPITAL = 2;
 
 /**
  * Starts a session. With an arc, scenarios arrive on its calendar and the
@@ -65,6 +69,7 @@ export function startSession(
     history: [],
     overtimeHours: 0,
     reports: [],
+    staffingLog: [],
     baseline: { ...recordTerm({ program, termIndex: 1, adminHoursRemaining: 0, overtimeHours: 0 }) },
   };
   return deliver(session, scenarios, arc);
@@ -185,8 +190,8 @@ export function resolveScenario(
   const before = session.program;
   const term = termOf(session.termIndex);
   const resolved = resolveChanges(before, term, consequence.changes);
-  const costChanges: ProgramChange[] =
-    option.cost.politicalCapital > 0 ? [{ kind: "adjustPoliticalCapital", delta: -option.cost.politicalCapital }] : [];
+  const capital = (persuaded ? PERSUASION_CAPITAL : 0) - option.cost.politicalCapital;
+  const costChanges: ProgramChange[] = capital !== 0 ? [{ kind: "adjustPoliticalCapital", delta: capital }] : [];
   const after = applyChanges(before, [...resolved, ...costChanges]);
 
   const queued: PendingEffect[] = consequence.delayed.map((d) => ({
@@ -285,6 +290,7 @@ export function advanceTerm(
   if (blocked.length) {
     throw new Error(`Resolve before ${termLabel(session.termIndex)} ends: ${blocked.map((s) => s.title).join(", ")}`);
   }
+  if (staffingDue(session, arc, scenarios)) throw new Error(`Some ${termLabel(session.termIndex)} sections still have no instructor.`);
   if (reportDue(session, arc)) throw new Error(`Submit the year-end report before ${termLabel(session.termIndex)} ends.`);
   // Order matters: close out the ending term (missed commitments, turnover
   // judged on the morale people actually worked under), then land the

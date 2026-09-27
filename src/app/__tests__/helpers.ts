@@ -21,8 +21,8 @@ const URGENT: [subject: RegExp, option: RegExp][] = [
   [/Writing support budget for next year/, /Split it evenly/],
 ];
 
-/** Resolves any urgent scenario waiting in the inbox (without a memo), returning to the desk each time. */
-export async function resolveUrgent(user: UserEvent) {
+/** Resolves any urgent scenario waiting in the inbox (without a memo), and hires for uncovered sections. */
+export async function resolveUrgent(user: UserEvent, { hire = true } = {}) {
   for (const [subject, option] of URGENT) {
     const item = screen.queryByRole("button", { name: subject });
     if (!item) continue;
@@ -31,4 +31,6 @@ export async function resolveUrgent(user: UserEvent) {
     await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
     await user.click(screen.getByRole("button", { name: "Back to desk" }));
   }
+  const hireButton = hire && screen.queryByRole("button", { name: /Hire adjuncts to cover them/ });
+  if (hireButton) await user.click(hireButton);
 }

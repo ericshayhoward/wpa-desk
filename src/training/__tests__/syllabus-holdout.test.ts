@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MIDLAND_STATE, describeChange, parseChange } from "../../model";
 import { CAST, STANDARD_ARC, scenarioById } from "../../content";
 import { advanceTerm, resolveScenario, startSession, unavailableReason, type MemoDraft, type TrainingSession } from "../index";
-import { submitDueReport } from "../../test-fixtures/reports";
+import { closeOutTerm } from "../../test-fixtures/reports";
 
 const holdout = scenarioById("syllabus-holdout")!;
 const capMemo = scenarioById("cap-memo")!;
@@ -11,7 +11,7 @@ const only = [capMemo, holdout];
 const trust = (s: TrainingSession, id: string) => s.program.stakeholders.find((x) => x.id === id)!.trust;
 const option = (id: string) => holdout.options.find((o) => o.id === id)!;
 const start = () => startSession(MIDLAND_STATE, only, STANDARD_ARC);
-const next = (s: TrainingSession) => advanceTerm(submitDueReport(s), only, STANDARD_ARC).session;
+const next = (s: TrainingSession) => advanceTerm(closeOutTerm(s), only, STANDARD_ARC).session;
 const decide = (s: TrainingSession, id: string, memo: MemoDraft | null = null) =>
   resolveScenario(s, holdout, id, memo, CAST).session;
 

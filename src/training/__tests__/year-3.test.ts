@@ -13,7 +13,7 @@ import {
   type MemoDraft,
   type TrainingSession,
 } from "../index";
-import { submitDueReport } from "../../test-fixtures/reports";
+import { closeOutTerm } from "../../test-fixtures/reports";
 
 const stipend = scenarioById("gta-stipend")!;
 const swap = scenarioById("wc-budget-swap")!;
@@ -27,7 +27,7 @@ const memo = (audience: MemoDraft["audience"], evidenceIds: string[] = []): Memo
 /** Advances a term, settling the urgent budget swap (split) if it's waiting. */
 function next(s: TrainingSession): TrainingSession {
   if (s.inbox.includes("wc-budget-swap")) s = resolveScenario(s, swap, "split", null, CAST).session;
-  return advanceTerm(submitDueReport(s), only, STANDARD_ARC).session;
+  return advanceTerm(closeOutTerm(s), only, STANDARD_ARC).session;
 }
 function to(termIndex: number): TrainingSession {
   let s = startSession(MIDLAND_STATE, only, STANDARD_ARC);

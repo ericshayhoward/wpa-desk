@@ -16,3 +16,4 @@ export * from "./morale";
 export * from "./history";
 export * from "./report";
 export * from "./ending";
+export * from "./staffing";

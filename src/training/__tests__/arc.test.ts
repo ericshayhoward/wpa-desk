@@ -14,7 +14,7 @@ import {
   type Scenario,
   type TrainingSession,
 } from "../index";
-import { submitDueReport } from "../../test-fixtures/reports";
+import { closeOutTerm } from "../../test-fixtures/reports";
 
 const capMemo = scenarioById("cap-memo")!;
 
@@ -43,7 +43,7 @@ function standardAfter(terms: number): { session: TrainingSession; milestones: s
   s = resolveScenario(s, capMemo, "accept", null).session;
   let milestones: string[] = [];
   for (let i = 0; i < terms; i++) {
-    s = submitDueReport(s);
+    s = closeOutTerm(s);
     const r = advanceTerm(s, [capMemo], STANDARD_ARC);
     s = r.session;
     milestones = r.milestones;

@@ -15,7 +15,9 @@ import {
   STAGE_LABELS,
   dissertationStatus,
   reportDue,
+  resolveStaffing,
   setReportDraft,
+  staffingDue,
   startSession,
   submitReport,
   termLabel,
@@ -90,6 +92,7 @@ export function App() {
   const scenario = SCENARIOS.find((s) => s.id === openScenario) ?? null;
   const arc = arcOf(session);
   const due = reportDue(session, arc);
+  const staffing = staffingDue(session, arc, SCENARIOS);
   const dissertation = arc && dissertationStatus(session, arc);
 
   // Autosave every change to the session.
@@ -293,6 +296,12 @@ export function App() {
               session={session}
               arc={arc}
               reportDue={due}
+              staffingDue={staffing}
+              onStaffing={(choice) => {
+                const r = resolveStaffing(session, arc, SCENARIOS, choice);
+                setSession(r.session);
+                setNote(r.note);
+              }}
               onOpenReport={() => {
                 setWritingReport(true);
                 setLanded(NOTHING_LANDED);

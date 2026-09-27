@@ -1,9 +1,13 @@
-/** Helpers for playing through year-end reports in tests. */
+/** Helpers for playing through the end of a term in tests. */
 import { SCENARIOS, STANDARD_ARC } from "../content";
-import { reportDue, submitReport, type TrainingSession } from "../training";
+import { reportDue, resolveStaffing, staffingDue, submitReport, type TrainingSession } from "../training";
 
-/** Writes every player section of the report due this term, if any, and submits it. */
-export function submitDueReport(s: TrainingSession, body = "Our numbers held steady."): TrainingSession {
+/**
+ * Gets a standard-arc term ready to end: hires adjuncts for any uncovered
+ * sections, then writes every player section of a due report and submits it.
+ */
+export function closeOutTerm(s: TrainingSession, body = "Our numbers held steady."): TrainingSession {
+  if (staffingDue(s, STANDARD_ARC, SCENARIOS)) s = resolveStaffing(s, STANDARD_ARC, SCENARIOS, "hire").session;
   const spec = reportDue(s, STANDARD_ARC);
   if (!spec) return s;
   const sections = Object.fromEntries(spec.playerSections.map((id) => [id, { body, history: [] }]));

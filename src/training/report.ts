@@ -8,6 +8,7 @@ import { RANK_LABELS, type StakeholderId } from "../model";
 import { wordCount, type DraftVersion } from "./drafts";
 import { computeEnding } from "./ending";
 import { recordTerm } from "./history";
+import { staffingDue } from "./staffing";
 import { termLabel, yearOf } from "./terms";
 import type {
   AnnualReport,
@@ -152,6 +153,7 @@ export function submitReport(
 ): { session: TrainingSession; report: AnnualReport } {
   const spec = reportDue(session, arc);
   if (!spec) throw new Error("No report is due this term.");
+  if (staffingDue(session, arc, scenarios)) throw new Error("Cover this term's sections before submitting the report.");
   const draft = session.reportDraft?.termIndex === spec.term ? session.reportDraft : undefined;
   const missing = spec.playerSections.filter((id) => wordCount(draft?.sections[id]?.body ?? "") === 0);
   if (missing.length) {

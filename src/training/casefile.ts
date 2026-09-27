@@ -253,9 +253,23 @@ export function caseFilesToMarkdown(session: TrainingSession, scenarios: Scenari
   return out.join("\n");
 }
 
-/** Annual reports, then the ending if the arc is over. */
+const STAFFING_TEXT = { hire: "hired adjuncts", teach: "taught a section yourself", cancel: "cancelled the sections" } as const;
+
+/** Staffing decisions, then annual reports, then the ending if the arc is over. */
 function reportsMarkdown(session: TrainingSession, names: Names): string[] {
   const out: string[] = [];
+  if (session.staffingLog.length) {
+    out.push(
+      "---",
+      "",
+      "## Staffing decisions",
+      "",
+      ...session.staffingLog.map(
+        (d) => `- ${termLabel(d.termIndex)}: ${d.sections} section${d.sections === 1 ? "" : "s"} without an instructor; ${STAFFING_TEXT[d.choice]}.`,
+      ),
+      "",
+    );
+  }
   const you = session.portfolio?.author?.trim() || "The author";
   for (const r of session.reports) {
     out.push(

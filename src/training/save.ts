@@ -5,7 +5,7 @@ import { CAREER_STAGES, DEFAULT_SETTINGS, type Arc, type Scenario, type Training
 
 export const SAVE_FORMAT = "wpa-desk-save";
 /** Bump when the saved shape changes, and add a migration in parseSave. */
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 export interface SaveSummary {
   institution: string;
@@ -62,6 +62,8 @@ export function parseSave(raw: unknown, scenarios: Scenario[], arcs: Arc[] = [])
   if (f.version < 4) rawSession = migrate3to4(rawSession);
   // v5 added session settings; earlier saves were played with the defaults.
   if (f.version < 5) rawSession = { settings: DEFAULT_SETTINGS, ...obj(rawSession, "The saved session") };
+  // v6 added routine staffing decisions.
+  if (f.version < 6) rawSession = { staffingLog: [], ...obj(rawSession, "The saved session") };
 
   const session = parseSession(rawSession, scenarios, arcs);
   return {
@@ -181,6 +183,13 @@ function parseSession(raw: unknown, scenarios: Scenario[], arcs: Arc[]): Trainin
     drafts: parseDrafts(s.drafts),
     history: list(s, "history").map((r) => termRecord(r, "A term in the history")),
     overtimeHours: int(s, "overtimeHours", 0),
+    staffingLog: list(s, "staffingLog").map((d) => {
+      const r = obj(d, "A saved staffing decision");
+      if (typeof r.termIndex !== "number" || !["hire", "teach", "cancel"].includes(r.choice as string) || typeof r.sections !== "number") {
+        throw new Error("A saved staffing decision is damaged.");
+      }
+      return r as unknown as TrainingSession["staffingLog"][number];
+    }),
     reports: list(s, "reports").map((r) => {
       const o = obj(r, "A saved report");
       if (typeof o.termIndex !== "number" || !Array.isArray(o.sections) || typeof o.submittedAt !== "string") {

@@ -170,7 +170,8 @@ export function MemoComposer({ session, option, audience, prompt, defaultSubject
         <legend>Commitments</legend>
         <p className="muted small">
           Promises you make here are tracked. Delivering one takes admin hours in the term you do it; keeping it earns trust (+
-          {COMMITMENT_EFFECTS.keptTrust}), and missing it costs more ({COMMITMENT_EFFECTS.missedTrust}).
+          {COMMITMENT_EFFECTS.keptTrust}) and political capital (+{COMMITMENT_EFFECTS.keptCapital}), and missing it costs more (
+          {COMMITMENT_EFFECTS.missedTrust}).
         </p>
         {commitments.map((c, i) => (
           <div key={i} className="commitment">

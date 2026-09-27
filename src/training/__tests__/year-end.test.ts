@@ -16,7 +16,7 @@ import {
   submitReport,
   type TrainingSession,
 } from "../index";
-import { submitDueReport } from "../../test-fixtures/reports";
+import { closeOutTerm } from "../../test-fixtures/reports";
 
 const capMemo = scenarioById("cap-memo")!;
 const only = [capMemo]; // keeps The Late Hire from interrupting the calendar
@@ -29,12 +29,12 @@ function start(changes: ProgramChange[] = []): TrainingSession {
 
 /** Advance to a term, submitting reports along the way. */
 function to(s: TrainingSession, termIndex: number): TrainingSession {
-  while (s.termIndex < termIndex) s = advanceTerm(submitDueReport(s), only, STANDARD_ARC).session;
+  while (s.termIndex < termIndex) s = advanceTerm(closeOutTerm(s), only, STANDARD_ARC).session;
   return s;
 }
 
 /** Play the whole arc and submit the capstone. */
-const finish = (s: TrainingSession) => submitDueReport(to(s, 6));
+const finish = (s: TrainingSession) => closeOutTerm(to(s, 6));
 
 describe("term history", () => {
   it("records a baseline and one record per completed term", () => {
@@ -54,7 +54,7 @@ describe("year-end reports", () => {
     expect(() => advanceTerm(s, only, STANDARD_ARC)).toThrow("Submit the year-end report before Spring, Year 1 ends.");
     expect(() => submitReport(s, STANDARD_ARC, SCENARIOS, new Date())).toThrow("Write your section first: Program data.");
 
-    s = submitDueReport(s, "Sections held steady.");
+    s = closeOutTerm(s, "Sections held steady.");
     expect(reportDue(s, STANDARD_ARC)).toBeNull();
     expect(s.adminHoursRemaining).toBe(54); // 60 − 6
     const r = s.reports[0]!;
@@ -75,7 +75,7 @@ describe("year-end reports", () => {
   it("come out of dissertation time when admin hours run out", () => {
     let s = to(start(), 2);
     s = { ...s, adminHoursRemaining: 2 };
-    s = submitDueReport(s);
+    s = closeOutTerm(s);
     expect(s.adminHoursRemaining).toBe(0);
     expect(s.overtimeHours).toBe(4);
     expect(recordTerm(s).adminHoursUnspent).toBe(-4);
@@ -83,7 +83,7 @@ describe("year-end reports", () => {
 
   it("take job applications out of Fall, Year 3", () => {
     const s = to(start(), 4);
-    const r = advanceTerm(submitDueReport(s), only, STANDARD_ARC);
+    const r = advanceTerm(closeOutTerm(s), only, STANDARD_ARC);
     expect(r.session.adminHoursRemaining).toBe(45);
     expect(r.milestones.join(" ")).toMatch(/Job applications are due this fall/);
   });

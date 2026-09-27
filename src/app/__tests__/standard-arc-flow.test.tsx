@@ -49,7 +49,8 @@ describe("playing the standard arc through the UI", () => {
     expect(screen.getByText(/Spring, Year 3 is the final term of The Standard Arc/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Advance to/ })).toBeNull();
 
-    // The capstone: the whole report, to the chair, then the ending.
+    // The capstone: the whole report, to the chair, then the ending. Staffing comes first.
+    await resolveUrgent(user);
     await user.click(screen.getByRole("button", { name: /Annual report for first-year writing/ }));
     expect(screen.getByRole("textbox", { name: "Looking back: three years" })).toBeTruthy();
     expect(screen.getAllByRole("textbox").filter((b) => b.tagName === "TEXTAREA")).toHaveLength(5);

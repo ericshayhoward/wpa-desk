@@ -7,6 +7,8 @@ import type { Commitment, TrainingSession } from "./types";
  */
 export const COMMITMENT_EFFECTS = {
   keptTrust: 3,
+  /** Delivering is how political capital is earned back. */
+  keptCapital: 1,
   missedTrust: -6,
   extensionTrust: -1,
 } as const;
@@ -32,12 +34,12 @@ export function deliverCommitment(session: TrainingSession, id: string): Trainin
   const c = find(session, id);
   const blocked = cannotDeliver(session, c);
   if (blocked) throw new Error(blocked);
-  return settle(
-    { ...session, adminHoursRemaining: session.adminHoursRemaining - c.effortHours },
-    c,
-    { status: "kept" },
-    COMMITMENT_EFFECTS.keptTrust,
-  );
+  const spent = {
+    ...session,
+    adminHoursRemaining: session.adminHoursRemaining - c.effortHours,
+    program: applyChanges(session.program, [{ kind: "adjustPoliticalCapital", delta: COMMITMENT_EFFECTS.keptCapital }]),
+  };
+  return settle(spent, c, { status: "kept" }, COMMITMENT_EFFECTS.keptTrust);
 }
 
 /** Pushes a due commitment back one term, once, at a small trust cost. */

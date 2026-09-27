@@ -17,6 +17,10 @@ description: >
 terms: 6
 startStage: assistant_director
 
+# Uncovered sections wait on a staffing decision (hire adjuncts, teach one
+# yourself, or cancel) before the term can end.
+routineStaffing: true
+
 stageChanges:
   - term: 5
     stage: wpa

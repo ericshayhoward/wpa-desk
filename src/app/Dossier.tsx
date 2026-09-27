@@ -287,6 +287,20 @@ export function Dossier({ session, scenarios, onReflect, onRevise, onPortfolio, 
         );
       })}
 
+      {session.staffingLog.length > 0 && (
+        <article className="case-file" aria-labelledby="staffing">
+          <h2 id="staffing">Staffing decisions</h2>
+          <ul>
+            {session.staffingLog.map((d, i) => (
+              <li key={i}>
+                {termLabel(d.termIndex)}: {d.sections} section{d.sections === 1 ? "" : "s"} without an instructor;{" "}
+                {d.choice === "hire" ? "hired adjuncts" : d.choice === "teach" ? "taught a section yourself" : "cancelled the sections"}.
+              </li>
+            ))}
+          </ul>
+        </article>
+      )}
+
       {session.reports.map((r) => (
         <article key={r.termIndex} className="case-file" aria-labelledby={`report-${r.year}`}>
           <h2 id={`report-${r.year}`}>Year {r.year} annual report</h2>

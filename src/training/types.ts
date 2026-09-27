@@ -174,6 +174,8 @@ export interface Arc {
   dissertation: DissertationSpec | null;
   /** How the arc ends, decided when the capstone report is submitted. */
   endings: EndingsSpec | null;
+  /** Uncovered sections wait on a staffing decision (hire, teach, or cancel) before the term can end. */
+  routineStaffing: boolean;
 }
 
 export interface TimeCost {
@@ -479,6 +481,13 @@ export interface SessionSettings {
 
 export const DEFAULT_SETTINGS: SessionSettings = { id: "default", label: "Default settings" };
 
+/** A routine staffing decision, for the record. */
+export interface StaffingDecision {
+  termIndex: number;
+  choice: "hire" | "teach" | "cancel";
+  sections: number;
+}
+
 export interface TrainingSession {
   program: Program;
   settings: SessionSettings;
@@ -507,6 +516,7 @@ export interface TrainingSession {
   /** Hours spent this term beyond the admin hours available (e.g., a report written on your own time). */
   overtimeHours: number;
   reports: AnnualReport[];
+  staffingLog: StaffingDecision[];
   reportDraft?: ReportInProgress;
   ending?: EndingResult;
 }

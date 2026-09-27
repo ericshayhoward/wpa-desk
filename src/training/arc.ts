@@ -97,6 +97,7 @@ export function parseArc(raw: unknown, scenarios: Scenario[]): Arc {
     yearEnd,
     dissertation,
     endings,
+    routineStaffing: r.routineStaffing === true,
   };
 }
 
