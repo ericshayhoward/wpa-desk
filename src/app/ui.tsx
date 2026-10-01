@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import type { Program, StakeholderId } from "../model";
 import { CAST } from "../content";
 import { characterFor, termLabel } from "../training";
+import { portraitFor } from "./Portraits";
 
 /* Small presentational pieces shared across views. All decoration is aria-hidden,
    so accessible names stay exactly what the text says. */
@@ -185,17 +186,18 @@ function initials(name: string): string {
   return ((words[0]?.[0] ?? "") + (words.length > 1 ? words[words.length - 1]![0] : "")).toUpperCase() || "?";
 }
 
-/** A colored monogram for a stakeholder: a person's initials, or a group glyph. */
+/** A stakeholder's face: a person's cartoon portrait (or initials, if they have none), or a group glyph. */
 export function Avatar({ program, id, size = 36 }: { program: Program; id: StakeholderId; size?: number }) {
   const c = characterFor(CAST, id);
   const name = c?.name ?? program.stakeholders.find((s) => s.id === id)?.name ?? id;
+  const Portrait = portraitFor(c?.portrait);
   return (
     <span
-      className={`avatar ${c ? "" : "avatar-group"}`}
+      className={`avatar ${c ? "" : "avatar-group"} ${Portrait ? "avatar-portrait" : ""}`}
       style={{ "--hue": hueFor(id), width: size, height: size, fontSize: size * 0.38 } as CSSProperties}
       aria-hidden="true"
     >
-      {c ? initials(name) : <Icon name="users" size={size * 0.5} />}
+      {Portrait ? <Portrait /> : c ? initials(name) : <Icon name="users" size={size * 0.5} />}
     </span>
   );
 }

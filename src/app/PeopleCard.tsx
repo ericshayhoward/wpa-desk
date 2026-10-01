@@ -27,6 +27,7 @@ export function PeopleCard({ session }: { session: TrainingSession }) {
                   <TrustMeter id={s.id} name={c.name} trust={s.trust} />
                 </summary>
                 <div className="person-detail small">
+                  {c.portrait && <Avatar program={program} id={s.id} size={92} />}
                   <p>{c.bio}</p>
                   <p>
                     <strong>Responds to:</strong> {c.responds}

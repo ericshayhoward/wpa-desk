@@ -5,6 +5,7 @@
 # persuasion.withoutEvidence: trust needed to take your word without it.
 # Groups (adjuncts, GTAs, students, senate, accreditor) have no single
 # character and use the default profile (25 / 80).
+# portrait: which drawing the app shows (src/app/Portraits.tsx); optional.
 
 # Pronouns: Dean Alvarez he/him; Dr. Cherry she/her.
 
@@ -18,6 +19,7 @@
     without numbers.
   responds: Local numbers that speak to budget, enrollment, and retention. Principle alone won't carry a request.
   persuasion: { withEvidence: 30, withoutEvidence: 90 }
+  portrait: alvarez
 
 - stakeholder: chair
   name: Marcus Hale
@@ -29,6 +31,7 @@
     colleagues who keep problems off the chair's desk.
   responds: Plans that protect the department's name, and being consulted before decisions rather than after.
   persuasion: { withEvidence: 20, withoutEvidence: 65 }
+  portrait: hale
 
 - stakeholder: fyw_director
   name: Nora Cherry
@@ -41,6 +44,7 @@
     problems with a proposed solution attached.
   responds: Careful work with the numbers checked, and hearing about problems early rather than after they've grown.
   persuasion: { withEvidence: 15, withoutEvidence: 55 }
+  portrait: cherry
 
 - stakeholder: provost_office
   name: Grace Okafor
@@ -51,6 +55,7 @@
     early-alert reports every week, and remembers which units helped.
   responds: Retention and completion data, and anything that changes the experience of first-year students.
   persuasion: { withEvidence: 35, withoutEvidence: 85 }
+  portrait: okafor
 
 - stakeholder: writing_center
   name: Priya Raman
@@ -61,3 +66,4 @@
     same small budget lines. Values partnership over turf.
   responds: Collaboration, and being told early about anything that will send more students through the center's door.
   persuasion: { withEvidence: 15, withoutEvidence: 60 }
+  portrait: raman

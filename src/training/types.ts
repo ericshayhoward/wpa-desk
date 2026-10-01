@@ -299,6 +299,8 @@ export interface Character {
   /** What moves them, shown when you write to them. */
   responds: string;
   persuasion: PersuasionProfile;
+  /** Which drawing the app shows for them; without one it shows initials. */
+  portrait?: string;
 }
 
 export interface PersuasionProfile {

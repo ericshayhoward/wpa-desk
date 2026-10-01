@@ -477,6 +477,8 @@ meter:-moz-meter-sub-sub-optimum::-moz-meter-bar { background: linear-gradient(9
   box-shadow: 0 0 0 2px var(--surface), 0 3px 8px -2px hsl(var(--hue) 60% 40% / 0.5);
 }
 .avatar-group { background: linear-gradient(140deg, hsl(var(--hue) 35% 70%), hsl(var(--hue) 30% 52%)); }
+.avatar-portrait { overflow: hidden; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px #1f1b2d, 0 3px 8px -2px hsl(var(--hue) 60% 40% / 0.5); }
+.avatar-portrait svg { display: block; }
 
 /* People */
 .people-list { list-style: none; padding: 0; margin: 0 0 8px; }
@@ -491,6 +493,8 @@ meter:-moz-meter-sub-sub-optimum::-moz-meter-bar { background: linear-gradient(9
 .person { display: grid; min-width: 0; }
 .person-detail { padding: 2px 0 14px 50px; animation: rise 0.3s var(--ease) both; }
 .person-detail p { margin: 5px 0; }
+.person-detail > .avatar { float: right; margin: 6px 0 8px 14px; }
+.person-detail::after { content: ""; display: block; clear: both; }
 .trust { display: inline-flex; gap: 10px; align-items: center; }
 .trust meter { width: 88px; }
 .trust .num { min-width: 22px; text-align: right; font-weight: 600; }

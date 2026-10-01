@@ -124,5 +124,12 @@ describe("cast content", () => {
     expect(() => parseCast([{ ...base, stakeholder: "president" }])).toThrow(/"president" is not a stakeholder/);
     expect(() => parseCast([{ ...base, persuasion: { withEvidence: 50, withoutEvidence: 40 } }])).toThrow(/can't be lower/);
     expect(() => parseCast([base, base])).toThrow(/only one character/);
+    expect(() => parseCast([{ ...base, portrait: "" }])).toThrow(/"portrait" must be non-empty/);
+  });
+
+  it("each named person has a portrait; one without falls back to initials", () => {
+    expect(CAST.map((c) => c.portrait)).toEqual(["alvarez", "hale", "cherry", "okafor", "raman"]);
+    const base = { stakeholder: "dean", name: "N", shortName: "S", title: "T", bio: "B", responds: "R" };
+    expect(parseCast([base])[0]).not.toHaveProperty("portrait");
   });
 });

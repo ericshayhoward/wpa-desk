@@ -30,6 +30,9 @@ function parseCharacter(raw: unknown, at: string): Character {
   if (persuasion.withoutEvidence < persuasion.withEvidence) {
     throw new Error(`${at}: persuasion.withoutEvidence can't be lower than withEvidence`);
   }
+  if (r.portrait !== undefined && (typeof r.portrait !== "string" || !r.portrait.trim())) {
+    throw new Error(`${at}: "portrait" must be non-empty text`);
+  }
   return {
     stakeholder: r.stakeholder as StakeholderId,
     name: text("name"),
@@ -38,6 +41,7 @@ function parseCharacter(raw: unknown, at: string): Character {
     bio: text("bio"),
     responds: text("responds"),
     persuasion,
+    ...(typeof r.portrait === "string" ? { portrait: r.portrait.trim() } : {}),
   };
 }
 
