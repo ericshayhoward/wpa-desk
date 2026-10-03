@@ -76,6 +76,20 @@ function ThemeToggle() {
   );
 }
 
+/** The AGPL's Appropriate Legal Notices. NOTICE.md requires the attribution to stay visible on every screen. */
+function Colophon() {
+  return (
+    <footer className="colophon no-print">
+      <a href="https://ericshayhoward.com/projects/wpa-desk/">WPA Desk by Eric Shay Howard</a>
+      {" · "}
+      Code under the <a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL 3.0</a>, scenarios under{" "}
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+      {" · "}
+      <a href="https://github.com/ericshayhoward/wpa-desk">Source</a>
+    </footer>
+  );
+}
+
 /** Resume from the autosave if there is a readable one; otherwise start fresh. */
 function initialSession(): { session: TrainingSession; note: string | null } {
   const r = readSlot(AUTOSAVE);
@@ -219,6 +233,7 @@ export function App() {
         <main className="page view">
           <ReviewMode onExit={() => setReviewing(false)} />
         </main>
+        <Colophon />
       </div>
     );
   }
@@ -472,6 +487,7 @@ export function App() {
           )}
         </main>
       </div>
+      <Colophon />
     </div>
   );
 }

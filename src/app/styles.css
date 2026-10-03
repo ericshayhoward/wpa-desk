@@ -91,6 +91,10 @@ a { color: var(--accent); }
 
 .page { max-width: 1040px; margin: 0 auto; padding: 28px 20px 80px; }
 
+/* Attribution and licenses, under every screen (see NOTICE.md). */
+.colophon { max-width: 1040px; margin: 0 auto; padding: 0 20px 32px; color: var(--muted); font-size: 0.8rem; }
+.colophon a { color: inherit; }
+
 /* =====================================================================
    Masthead
    ===================================================================== */

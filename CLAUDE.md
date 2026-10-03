@@ -101,6 +101,14 @@ npm run build
 ## Environment notes
 
 - Remote: `origin` is the private GitHub repo `ericshayhoward/wpa-desk`.
+- Deploy: pushing to `main` runs `.github/workflows/deploy.yml` (tests, build,
+  GitHub Pages). The site is served at `ericshayhoward.com/wpa-desk/`, so the
+  build uses `base: "/wpa-desk/"`; reference assets through Vite, not
+  root-absolute paths. Storage keys share the origin with the website and
+  must keep the `wpa-desk:` prefix.
+- Licenses: code AGPL-3.0-only, `src/content/` CC BY-NC-SA 4.0 (see
+  `NOTICE.md`). The `Colophon` in `App.tsx` is the required attribution;
+  keep it on every screen, including new top-level views.
 - The desktop app's preview server can't access Google Drive folders
   (EPERM on cwd), so browser previews of this repo fail there. Verify UI
   with the jsdom playthrough tests instead.
