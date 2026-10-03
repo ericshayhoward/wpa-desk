@@ -107,7 +107,7 @@ npm run build
 
 ## Environment notes
 
-- Remote: `origin` is the private GitHub repo `ericshayhoward/wpa-desk`.
+- Remote: `origin` is the public GitHub repo `ericshayhoward/wpa-desk` (public since 2026-10-03).
 - Deploy: pushing to `main` runs `.github/workflows/deploy.yml` (tests, build,
   GitHub Pages). The site is served at `ericshayhoward.com/wpa-desk/`, so the
   build uses `base: "/wpa-desk/"`; reference assets through Vite, not
