@@ -54,6 +54,18 @@ export function exportFile(session: TrainingSession, label: string): { name: str
   return { name: `wpa-desk-${term}-${date}.json`, text: JSON.stringify(save, null, 2) };
 }
 
+/** Downloads the session as a save file and returns the file's name. */
+export function downloadSession(session: TrainingSession, label: string): string {
+  const { name, text } = exportFile(session, label);
+  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
+  return name;
+}
+
 /** Parses an imported file's text. Throws with a player-readable message. */
 export function importFile(text: string): SaveFile {
   let raw: unknown;
@@ -82,5 +94,80 @@ export function writeTheme(theme: Theme): void {
     localStorage.setItem(PREFIX + "theme", theme);
   } catch {
     // The choice just won't persist past this page load.
+  }
+}
+
+/**
+ * Where the session stood when the player last kept a copy outside this
+ * browser (an export or an import), or chose "Not now" on the reminder.
+ */
+export interface BackupMark {
+  at: string;
+  term: number;
+  decisions: number;
+  /** "Not now" rather than a file: remind again next term, not after a week. */
+  snoozed?: boolean;
+}
+
+const BACKUP = PREFIX + "backup";
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+export function backupMark(session: TrainingSession, now: Date, snoozed = false): BackupMark {
+  return { at: now.toISOString(), term: session.termIndex, decisions: session.decisions.length, ...(snoozed && { snoozed }) };
+}
+
+export function readBackup(): BackupMark | null {
+  try {
+    const raw: unknown = JSON.parse(localStorage.getItem(BACKUP) ?? "null");
+    if (typeof raw !== "object" || raw === null) return null;
+    const m = raw as Partial<BackupMark>;
+    if (typeof m.at !== "string" || typeof m.term !== "number" || typeof m.decisions !== "number") return null;
+    return { at: m.at, term: m.term, decisions: m.decisions, ...(m.snoozed === true && { snoozed: true }) };
+  } catch {
+    return null;
+  }
+}
+
+export function writeBackup(mark: BackupMark | null): void {
+  try {
+    if (mark) localStorage.setItem(BACKUP, JSON.stringify(mark));
+    else localStorage.removeItem(BACKUP);
+  } catch {
+    // The reminder just comes back sooner.
+  }
+}
+
+/**
+ * Whether to remind the player to export: they've made decisions that exist
+ * only in this browser, and either a term has passed since their last copy or
+ * a week has (browsers such as Safari clear site data after about a week away).
+ */
+export function needsBackup(session: TrainingSession, mark: BackupMark | null, now: Date): boolean {
+  if (session.decisions.length === 0 || session.ending) return false;
+  if (!mark) return true;
+  if (session.termIndex <= mark.term && session.decisions.length <= mark.decisions) return false;
+  if (session.termIndex > mark.term) return true;
+  return !mark.snoozed && now.getTime() - Date.parse(mark.at) >= WEEK_MS;
+}
+
+let persistenceRequested = false;
+
+/**
+ * Asks the browser to keep this site's data instead of clearing it when space
+ * runs low. Browsers decide on their own; Firefox may ask the player, so this
+ * runs once, after their first decision rather than on page load.
+ */
+export function requestPersistence(): void {
+  if (persistenceRequested) return;
+  persistenceRequested = true;
+  try {
+    const storage = navigator.storage;
+    if (!storage?.persist || !storage.persisted) return;
+    storage
+      .persisted()
+      .then((kept) => (kept ? undefined : storage.persist()))
+      .catch(() => {});
+  } catch {
+    // Not available here; the export reminder still covers it.
   }
 }

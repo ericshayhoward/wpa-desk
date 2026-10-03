@@ -1,14 +1,17 @@
 import { useRef, useState } from "react";
 import { termLabel, type TrainingSession } from "../training";
-import { SLOTS, deleteSlot, exportFile, importFile, readSlot, writeSlot, type SlotId } from "./storage";
+import { SLOTS, deleteSlot, importFile, readSlot, writeSlot, type SlotId } from "./storage";
 
 interface Props {
   session: TrainingSession;
-  onLoad: (session: TrainingSession, note: string) => void;
+  /** `fromFile` when the session came from a file, so it already has a copy outside the browser. */
+  onLoad: (session: TrainingSession, note: string, fromFile?: boolean) => void;
   onNewSession: () => void;
+  /** Downloads the session as a file and returns the file's name. */
+  onExport: () => string;
 }
 
-export function SavesPanel({ session, onLoad, onNewSession }: Props) {
+export function SavesPanel({ session, onLoad, onNewSession, onExport }: Props) {
   // Bumped after writes so slot summaries re-read storage.
   const [version, setVersion] = useState(0);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
@@ -28,20 +31,14 @@ export function SavesPanel({ session, onLoad, onNewSession }: Props) {
   };
 
   const download = () => {
-    const { name, text } = exportFile(session, "Exported session");
-    const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    a.click();
-    URL.revokeObjectURL(url);
+    const name = onExport();
     setMessage({ kind: "ok", text: `Exported ${name}.` });
   };
 
   const upload = async (file: File) => {
     try {
       const saveFile = importFile(await file.text());
-      onLoad(saveFile.session, `Imported ${file.name} (${saveFile.summary.term}).`);
+      onLoad(saveFile.session, `Imported ${file.name} (${saveFile.summary.term}).`, true);
     } catch (err) {
       setMessage({ kind: "error", text: (err as Error).message });
     } finally {
@@ -55,8 +52,9 @@ export function SavesPanel({ session, onLoad, onNewSession }: Props) {
         <div>
           <h2>Saves</h2>
           <p className="muted">
-            Your session saves automatically in this browser. Use slots to keep separate playthroughs, or export a file to move
-            a session to another computer or hand it in.
+            Your session saves automatically in this browser, and slots keep separate playthroughs. Browsers can clear saved
+            data, though (Safari does after about a week away), so export a file to keep a copy of your own, move a session to
+            another computer, or hand it in.
           </p>
         </div>
       </div>

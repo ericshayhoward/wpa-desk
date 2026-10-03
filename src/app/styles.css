@@ -269,6 +269,10 @@ a { color: var(--accent); }
 .banner { display: flex; gap: 10px; align-items: flex-start; padding: 12px 16px; border-radius: var(--radius); margin: 0 0 18px; border: 1px solid transparent; }
 .banner.good { background: var(--up-soft); border-color: color-mix(in srgb, var(--up) 25%, transparent); }
 .banner.bad { background: var(--coral-soft); border-color: color-mix(in srgb, var(--coral) 25%, transparent); }
+.banner.note { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+.banner.note > .icon { color: var(--accent); margin-top: 2px; }
+.banner.note p { margin: 0; }
+.banner-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
 
 /* =====================================================================
    Buttons and controls

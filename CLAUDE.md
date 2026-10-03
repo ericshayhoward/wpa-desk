@@ -60,7 +60,11 @@ npm run build
   and validates untrusted input with player-readable errors. If you change
   the shape of `TrainingSession` or `Program`, bump the version and add a
   migration in `parseSave`. Browser storage lives in `src/app/storage.ts`
-  (all access guarded; autosave + 3 slots + file export/import).
+  (all access guarded; autosave + 3 slots + file export/import). Browsers
+  can clear storage (Safari after ~7 days away), so the file is the real
+  copy: `needsBackup()` drives the desk's export reminder from a
+  `wpa-desk:backup` mark (set on export/import, or "Not now" until next
+  term), and `requestPersistence()` runs once after the first decision.
 - UI tests must `localStorage.clear()` in `beforeEach` (autosave persists
   across renders). `src/test-setup.ts` restores jsdom's localStorage, which
   Node 25's built-in stub otherwise shadows.

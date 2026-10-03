@@ -42,7 +42,21 @@ import { ReviewMode } from "./ReviewMode";
 import { SavesPanel } from "./SavesPanel";
 import { StaffingPlanner } from "./StaffingPlanner";
 import { stakeholderName, usd } from "./format";
-import { AUTOSAVE, readSlot, readTheme, writeSlot, writeTheme, type Theme } from "./storage";
+import {
+  AUTOSAVE,
+  backupMark,
+  downloadSession,
+  needsBackup,
+  readBackup,
+  readSlot,
+  readTheme,
+  requestPersistence,
+  writeBackup,
+  writeSlot,
+  writeTheme,
+  type BackupMark,
+  type Theme,
+} from "./storage";
 import { Bar, Icon, Logo, TermTrack, type IconName } from "./ui";
 
 type Tab = "desk" | "dossier" | "tools" | "saves";
@@ -110,6 +124,8 @@ export function App() {
   const [session, setSession] = useState(initial.session);
   const [note, setNote] = useState<string | null>(initial.note);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // The last copy kept outside this browser, for the export reminder.
+  const [backup, setBackup] = useState(readBackup);
   const [tab, setTab] = useState<Tab>("desk");
   // Instructor review is a separate mode; the game session is left untouched.
   const [reviewing, setReviewing] = useState(false);
@@ -144,7 +160,20 @@ export function App() {
     setSaveError(writeSlot(AUTOSAVE, session, "Autosave"));
   }, [session]);
 
-  const replaceSession = (next: TrainingSession, message: string) => {
+  const keepBackup = (mark: BackupMark | null) => {
+    writeBackup(mark);
+    setBackup(mark);
+  };
+
+  const exportCopy = () => {
+    const name = downloadSession(session, "Exported session");
+    keepBackup(backupMark(session, new Date()));
+    return name;
+  };
+
+  /** A session from a file already has a copy outside the browser; one from a slot or a fresh start doesn't. */
+  const replaceSession = (next: TrainingSession, message: string, fromFile = false) => {
+    keepBackup(fromFile ? backupMark(next, new Date()) : null);
     setSession(next);
     setOutcome(null);
     setOpenScenario(null);
@@ -178,6 +207,7 @@ export function App() {
   const decide = (optionId: string, memo: MemoDraft | null) => {
     if (!scenario) return;
     const result = resolveScenario(session, scenario, optionId, memo, CAST);
+    requestPersistence();
     setSession(result.session);
     setOutcome(result.outcome);
     setOpenScenario(null);
@@ -367,6 +397,31 @@ export function App() {
             {saveError}
           </p>
         )}
+        {tab === "desk" && !outcome && !scenario && !writingReport && !submitted && needsBackup(session, backup, new Date()) && (
+          <aside className="banner note no-print" aria-label="Keep a copy">
+            <Icon name="save" size={18} />
+            <div>
+              <p>
+                <strong>Keep a copy of your progress.</strong> Your session is saved in this browser, but browsers can clear
+                saved data (Safari does after about a week away). Export a file to keep it safe.
+              </p>
+              <div className="banner-actions">
+                <button
+                  className="secondary"
+                  onClick={() => {
+                    const name = exportCopy();
+                    setNote(`Exported ${name}.`);
+                  }}
+                >
+                  Export a copy
+                </button>
+                <button className="link small" onClick={() => keepBackup(backupMark(session, new Date(), true))}>
+                  Not now
+                </button>
+              </div>
+            </div>
+          </aside>
+        )}
 
         <main key={viewKey} className="view">
           {tab === "desk" &&
@@ -465,6 +520,7 @@ export function App() {
             <SavesPanel
               session={session}
               onLoad={replaceSession}
+              onExport={exportCopy}
               onNewSession={() => replaceSession(startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC), "Started a new session.")}
             />
           )}
