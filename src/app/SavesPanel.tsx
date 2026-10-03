@@ -7,11 +7,13 @@ interface Props {
   /** `fromFile` when the session came from a file, so it already has a copy outside the browser. */
   onLoad: (session: TrainingSession, note: string, fromFile?: boolean) => void;
   onNewSession: () => void;
+  /** Erases this browser's saves and starts a new session. */
+  onClearAll: () => void;
   /** Downloads the session as a file and returns the file's name. */
   onExport: () => string;
 }
 
-export function SavesPanel({ session, onLoad, onNewSession, onExport }: Props) {
+export function SavesPanel({ session, onLoad, onNewSession, onClearAll, onExport }: Props) {
   // Bumped after writes so slot summaries re-read storage.
   const [version, setVersion] = useState(0);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
@@ -135,6 +137,20 @@ export function SavesPanel({ session, onLoad, onNewSession, onExport }: Props) {
       <h3>Start over</h3>
       <p className="muted small">Begins a new session at Midland State. Save to a slot first if you want to keep this one.</p>
       <ConfirmButton label="Start a new session" confirm="Discard the current session?" onConfirm={onNewSession} />
+
+      <h3>On a shared computer</h3>
+      <p className="muted small">
+        Your memos and reflections stay in this browser for whoever uses it next. When you're done, export your session, then
+        clear the autosave and all three slots.
+      </p>
+      <ConfirmButton
+        label="Clear this browser's saves"
+        confirm="Erase the autosave and all slots?"
+        onConfirm={() => {
+          onClearAll();
+          refresh();
+        }}
+      />
     </section>
   );
 }

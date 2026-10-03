@@ -272,6 +272,8 @@ a { color: var(--accent); }
 .banner.note { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
 .banner.note > .icon { color: var(--accent); margin-top: 2px; }
 .banner.note p { margin: 0; }
+.storage-note { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 18px; color: var(--muted); font-size: 0.85rem; }
+.storage-note .icon { margin-top: 2px; }
 .banner-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
 
 /* =====================================================================

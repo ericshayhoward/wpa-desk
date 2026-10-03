@@ -38,6 +38,12 @@ export function writeSlot(slot: SlotId, session: TrainingSession, label: string)
   }
 }
 
+/** Erases the autosave, every slot, and the export reminder's mark, for a shared computer. The theme stays. */
+export function clearBrowserSaves(): void {
+  for (const slot of [AUTOSAVE, ...SLOTS] satisfies SlotId[]) deleteSlot(slot);
+  writeBackup(null);
+}
+
 export function deleteSlot(slot: SlotId): void {
   try {
     localStorage.removeItem(PREFIX + slot);

@@ -65,6 +65,9 @@ npm run build
   copy: `needsBackup()` drives the desk's export reminder from a
   `wpa-desk:backup` mark (set on export/import, or "Not now" until next
   term), and `requestPersistence()` runs once after the first decision.
+  Until the first decision, the desk says saves stay in this browser; the
+  Saves tab's `clearBrowserSaves()` erases autosave, slots, and the mark (not
+  the theme) for shared computers.
 - UI tests must `localStorage.clear()` in `beforeEach` (autosave persists
   across renders). `src/test-setup.ts` restores jsdom's localStorage, which
   Node 25's built-in stub otherwise shadows.

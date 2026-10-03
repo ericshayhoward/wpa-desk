@@ -112,3 +112,42 @@ describe("the export reminder", () => {
     expect(reminder()).toBeNull();
   });
 });
+
+describe("telling players where saves live", () => {
+  it("notes on the desk that progress stays in this browser, until the first decision", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    expect(screen.getByText(/Your progress saves in this browser only; nothing is sent anywhere\./)).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: /Alan Pruitt and the common syllabus/ }));
+    await user.click(screen.getByRole("button", { name: /Meet with Alan about outcomes, not the syllabus/ }));
+    await user.click(screen.getByRole("button", { name: "Decide without a memo" }));
+    await user.click(screen.getByRole("button", { name: "Back to desk" }));
+    expect(screen.queryByText(/Your progress saves in this browser only/)).toBeNull();
+  });
+
+  it("clears the autosave, every slot, and the reminder mark, but keeps the theme", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Leave these for next term and advance" })); // Spring, Year 1
+    await user.click(screen.getByRole("button", { name: "Saves" }));
+    await user.click(screen.getAllByRole("button", { name: "Save here" })[0]!);
+    localStorage.setItem("wpa-desk:backup", JSON.stringify(backupMark(fresh, NOW, true)));
+    localStorage.setItem("wpa-desk:theme", "dark");
+
+    await user.click(screen.getByRole("button", { name: "Clear this browser's saves" }));
+    expect(screen.getByText("Erase the autosave and all slots?")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Yes" }));
+
+    expect(screen.getByText(/Cleared this browser's saves and started a new session\./)).toBeTruthy();
+    expect(screen.getByText("Fall, Year 1")).toBeTruthy();
+    expect(localStorage.getItem("wpa-desk:slot-1")).toBeNull();
+    expect(localStorage.getItem("wpa-desk:backup")).toBeNull();
+    expect(localStorage.getItem("wpa-desk:theme")).toBe("dark");
+    // The fresh session autosaves, with no decisions in it.
+    expect(JSON.parse(localStorage.getItem("wpa-desk:autosave")!).summary.decisions).toBe(0);
+
+    await user.click(screen.getByRole("button", { name: "Saves" }));
+    expect(screen.getAllByText("Empty")).toHaveLength(3);
+  });
+});

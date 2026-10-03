@@ -45,6 +45,7 @@ import { stakeholderName, usd } from "./format";
 import {
   AUTOSAVE,
   backupMark,
+  clearBrowserSaves,
   downloadSession,
   needsBackup,
   readBackup,
@@ -397,6 +398,15 @@ export function App() {
             {saveError}
           </p>
         )}
+        {tab === "desk" && !outcome && !scenario && !writingReport && !submitted && session.decisions.length === 0 && (
+          <p className="storage-note no-print">
+            <Icon name="save" size={16} />
+            <span>
+              Your progress saves in this browser only; nothing is sent anywhere. On a shared computer, export your work and
+              clear it from the Saves tab when you're done.
+            </span>
+          </p>
+        )}
         {tab === "desk" && !outcome && !scenario && !writingReport && !submitted && needsBackup(session, backup, new Date()) && (
           <aside className="banner note no-print" aria-label="Keep a copy">
             <Icon name="save" size={18} />
@@ -521,6 +531,13 @@ export function App() {
               session={session}
               onLoad={replaceSession}
               onExport={exportCopy}
+              onClearAll={() => {
+                clearBrowserSaves();
+                replaceSession(
+                  startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC),
+                  "Cleared this browser's saves and started a new session.",
+                );
+              }}
               onNewSession={() => replaceSession(startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC), "Started a new session.")}
             />
           )}
