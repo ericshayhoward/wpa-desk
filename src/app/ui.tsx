@@ -118,6 +118,14 @@ const ICONS = {
     </>
   ),
   flag: <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7" />,
+  campus: (
+    <>
+      <path d="M3 21h18M5 21V11l7-4 7 4v10M12 7V3l3 1.5L12 6" />
+      <path d="M9 21v-5h6v5M8.5 12h.01M15.5 12h.01" />
+    </>
+  ),
+  collapse: <path d="m6 9 6 6 6-6" />,
+  close: <path d="M18 6 6 18M6 6l12 12" />,
 } as const;
 
 export type IconName = keyof typeof ICONS;

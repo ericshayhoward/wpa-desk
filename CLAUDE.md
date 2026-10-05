@@ -76,6 +76,14 @@ npm run build
   must never call the game's session setters or write storage. `Dossier`
   is read-only when given no edit handlers.
 - `src/test-fixtures/` holds reusable student sessions for tests.
+- The campus map (`src/app/Campus.tsx`, drawing in `CampusScene.tsx`,
+  mappings in `campus.ts`; see "The campus map" in DESIGN.md) only reads
+  the session; it changes views through App callbacks. Every stakeholder
+  needs a building in `BUILDINGS`. jsdom has no `matchMedia`, so UI tests
+  render it open: keep its unselected text and button names from matching
+  other tests' queries (term labels, scenario subjects, `/advance/i`).
+  Its open/closed choice (`wpa-desk:campus`) is a viewer preference, kept
+  by `clearBrowserSaves()` like the theme.
 - Long-term goal: a hosted multi-user version; see `docs/ROADMAP.md` before
   making choices that would only work local-only.
 - Arcs (`src/content/arcs/*.yaml`, parsed by `parseArc()`) set a

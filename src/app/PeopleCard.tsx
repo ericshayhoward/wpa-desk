@@ -1,6 +1,7 @@
 import { RANK_LABELS, type StakeholderId } from "../model";
 import { CAST } from "../content";
 import { DEFAULT_PERSUASION, MORALE_ATTRITION, characterFor, type TrainingSession } from "../training";
+import { TRUST_METER } from "./format";
 import { Avatar, CardTitle } from "./ui";
 
 /** The people you work with: named characters first, then groups, then instructor morale. */
@@ -84,7 +85,15 @@ export function PeopleCard({ session }: { session: TrainingSession }) {
 function TrustMeter({ id, name, trust }: { id: StakeholderId; name: string; trust: number }) {
   return (
     <span className="trust" data-stakeholder={id}>
-      <meter min={0} max={100} low={35} high={65} optimum={80} value={trust} aria-label={`${name} trust`} />
+      <meter
+        min={0}
+        max={100}
+        low={TRUST_METER.low}
+        high={TRUST_METER.high}
+        optimum={TRUST_METER.optimum}
+        value={trust}
+        aria-label={`${name} trust`}
+      />
       <span className="num">{trust}</span>
     </span>
   );

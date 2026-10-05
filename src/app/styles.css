@@ -889,3 +889,138 @@ del { background: var(--down-soft); color: var(--muted); border-radius: 3px; pad
 .scheduled { border-top: 4px solid var(--accent); }
 .term-flip small { margin-top: 8px; padding: 5px 12px; border-radius: 999px; font-size: 0.82rem; background: rgb(255 255 255 / 0.1); color: #fff; }
 .term-flip small::before { content: attr(data-text); }
+
+/* =====================================================================
+   Campus: a live map of Midland State in the bottom-right corner.
+   On screens at least 1200px wide (CAMPUS_DOCKS in storage.ts) the open
+   panel docks: the masthead, page, and colophon make room beside it so
+   it never covers the desk. Smaller screens start with it closed.
+   ===================================================================== */
+@media (min-width: 1200px) {
+  .app.with-campus { --dock: 392px; }
+  .app.with-campus .page,
+  .app.with-campus .masthead-inner,
+  .app.with-campus .colophon {
+    max-width: calc(1040px + var(--dock));
+    padding-right: calc(20px + var(--dock));
+  }
+}
+
+.campus, .campus-fab { position: fixed; right: 16px; bottom: 16px; z-index: 40; }
+.campus {
+  width: 372px; max-height: calc(100vh - 32px); display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); overflow: hidden; animation: rise 0.45s var(--ease) both;
+}
+.campus-head {
+  display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 12px;
+  border-bottom: 1px solid var(--border); background: var(--surface-2);
+}
+.campus-title { display: grid; min-width: 0; flex: 1; line-height: 1.25; }
+.campus-title strong { font: 600 1rem var(--font-display); }
+.campus-when { font-size: 0.78rem; color: var(--muted); }
+.campus-when::first-letter { text-transform: uppercase; }
+.campus-icon-button {
+  display: grid; place-items: center; width: 32px; height: 32px; flex: none; padding: 0;
+  border: 1px solid transparent; border-radius: 9px; background: none; color: var(--muted); cursor: pointer;
+}
+.campus-icon-button:hover { color: var(--text); background: var(--bg-2); border-color: var(--border); }
+
+.campus-scene { display: block; width: 100%; height: auto; flex: none; background: #7cbf5e; user-select: none; -webkit-user-select: none; }
+.campus-body { overflow-y: auto; overscroll-behavior: contain; padding: 10px 14px 12px; }
+.campus-hint { margin: 0 0 6px; min-height: 2.6em; }
+.campus-legend summary { cursor: pointer; color: var(--accent); font-weight: 600; width: fit-content; }
+.campus-legend ul { margin: 8px 0 2px; padding-left: 18px; display: grid; gap: 5px; color: var(--muted); }
+.campus-legend strong { color: var(--text); }
+
+/* A building's card */
+.campus-card h3 { margin: 0; font-size: 1.02rem; }
+.campus-card h4 { margin: 12px 0 6px; font: 700 0.7rem var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.campus-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.campus-card-head p { margin: 2px 0 0; }
+.campus-waiting, .campus-people, .campus-key, .campus-scheduled { list-style: none; margin: 0; padding: 0; }
+.campus-waiting li, .campus-people li {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.campus-waiting li:last-child, .campus-people li:last-child { border-bottom: 0; }
+.campus-waiting-text, .campus-person { display: grid; min-width: 0; line-height: 1.3; }
+.campus-waiting .badge { margin-left: 6px; }
+.campus-subject { font: 600 0.9rem/1.3 var(--font-display); }
+.campus-waiting button.small { padding: 5px 10px; font-size: 0.8rem; }
+.campus-person strong { font-size: 0.9rem; }
+.campus-people .trust meter { width: 56px; }
+.campus-facts { margin-top: 10px; display: grid; gap: 8px; }
+.campus-facts p { margin: 0; }
+.campus-facts h4 { margin-top: 2px; }
+.campus-key { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.campus-key li { display: flex; align-items: center; gap: 6px; }
+.campus-scheduled { display: grid; gap: 4px; }
+.campus-swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; border: 1px solid #1f1b2d; }
+.swatch-tt { background: var(--seg-tt); }
+.swatch-ntt { background: var(--seg-ntt); }
+.swatch-gta { background: var(--seg-gta); }
+.swatch-adjunct { background: var(--seg-adjunct); }
+.swatch-gap { background: #2a2238; border-color: var(--seg-gap); }
+.swatch-cancelled { background: linear-gradient(45deg, transparent 45%, #4a3d2e 45% 55%, transparent 55%), #8a7a66; }
+
+/* Closed: a pill in the corner, with a count of what's waiting. */
+.campus-fab {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px 10px 12px; border: 0; border-radius: 999px;
+  font: 600 0.9rem var(--font-ui); color: #fff; cursor: pointer;
+  background: radial-gradient(120px 60px at 10% 0%, rgb(255 138 91 / 0.45), transparent 70%), linear-gradient(150deg, #1a1d3d, #2b2f66);
+  box-shadow: 0 12px 30px -10px rgb(20 20 60 / 0.6); animation: rise 0.4s var(--ease) both;
+}
+.campus-fab:hover { transform: translateY(-1px); }
+.campus-fab .count-pill { margin-left: 0; }
+
+/* Scene: buildings are buttons; their outline shows on hover, focus, and selection. */
+.cs-hit { cursor: pointer; outline: none; }
+.cs-hit rect { fill: transparent; stroke: transparent; stroke-width: 1.6; stroke-dasharray: 4 3; transition: stroke 0.15s, fill 0.15s; }
+.cs-hit:hover rect, .cs-hit:focus-visible rect { stroke: #fff; fill: rgb(255 255 255 / 0.12); }
+.cs-hit:focus-visible rect { stroke: #ffd45c; stroke-width: 2.2; }
+.cs-hit[aria-pressed="true"] rect { stroke: #ffd45c; stroke-dasharray: none; stroke-width: 2.2; fill: rgb(255 212 92 / 0.14); }
+
+.cs-walk { animation: cs-walk linear infinite; }
+@keyframes cs-walk { from { transform: translateX(var(--from)); } to { transform: translateX(var(--to)); } }
+.cs-bob { animation: cs-bob 0.5s ease-in-out infinite alternate; }
+@keyframes cs-bob { to { transform: translateY(-0.7px); } }
+.cs-drift { animation: cs-drift linear infinite; }
+@keyframes cs-drift { from { transform: translateX(var(--from)); } to { transform: translateX(var(--to)); } }
+.cs-fall { animation: cs-fall linear infinite; transform-box: fill-box; }
+@keyframes cs-fall {
+  from { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(calc(var(--drift) * -0.5), 110px) rotate(260deg); }
+  to { transform: translate(var(--drift), 225px) rotate(540deg); }
+}
+.cs-flag { animation: cs-wave 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: left center; }
+@keyframes cs-wave { 50% { transform: scaleX(0.82) skewY(-6deg); } }
+.cs-marker { animation: cs-float 2.4s ease-in-out infinite; }
+@keyframes cs-float { 50% { transform: translateY(-2.5px); } }
+.cs-ping { animation: cs-ping 1.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes cs-ping { from { transform: scale(0.9); opacity: 0.9; } to { transform: scale(1.9); opacity: 0; } }
+.cs-gap { animation: cs-blink 1.6s steps(2, jump-none) infinite; }
+@keyframes cs-blink { 50% { opacity: 0.45; } }
+.cs-twinkle { animation: cs-blink 2.8s ease-in-out infinite; }
+.cs-toss { animation: cs-toss 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes cs-toss { 50% { transform: translateY(-34px) rotate(200deg); } }
+/* The bus pulls in at the stop, waits, and goes; then the road is quiet for a while. */
+.cs-bus { animation: cs-bus 32s linear infinite; }
+@keyframes cs-bus {
+  0% { transform: translateX(0); animation-timing-function: cubic-bezier(0.3, 0.6, 0.4, 1); }
+  12% { transform: translateX(370px); }
+  20% { transform: translateX(370px); animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.6); }
+  30%, 100% { transform: translateX(520px); }
+}
+
+/* Undocked, the panel floats over the page: leave room below the colophon so the
+   attribution (required on every screen, NOTICE.md) can always scroll clear of it. */
+@media (max-width: 1199px) {
+  .app .colophon { padding-bottom: 76px; }
+  .app.with-campus .colophon { padding-bottom: 420px; }
+}
+@media (max-width: 720px) {
+  .campus { left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 78vh; }
+  .campus-fab { right: 12px; bottom: 12px; }
+}
+@media print { .campus, .campus-fab { display: none !important; } }

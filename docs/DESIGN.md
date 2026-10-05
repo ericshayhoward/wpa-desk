@@ -364,6 +364,35 @@ Relationships have mechanical weight:
 - **Morale drives turnover.** Adjunct or lecturer morale below 40 costs one
   person per term, which can bring on staffing crises later.
 
+### The campus map
+
+A live map of Midland State sits in the bottom-right corner of the game
+(`src/app/Campus.tsx`; the drawing is `CampusScene.tsx`, and every mapping
+from the session is a pure function in `campus.ts`). It shows the game's
+state as a place, so the numbers have somewhere to live:
+
+- **The day is the term's admin hours.** A term starts at 8 a.m. and it's
+  10 p.m. when the hours are gone; the sky, sun, lamps, and Old Main's
+  clock follow. Overtime runs past ten, with only the player's window lit.
+- **Buildings are stakeholders.** Kessler Library (Writing Center, the
+  dissertation carrel), Old Main (provost, Faculty Senate, accreditor),
+  Humanities Hall (chair, WPA, GTAs, adjuncts, the player's office),
+  Arts & Sciences Hall (the dean), Founders Hall (classrooms), and the quad
+  (students). Envelopes float over whoever sent an inbox item; flags show
+  the lowest trust inside, in the People card's bands.
+- **Founders Hall's windows are the term's sections**, colored by who
+  teaches them as in the staffing planner, with unstaffed and cancelled
+  sections marked. Announced changes put a sign out front.
+- **The quad** thins out after dark; students without a seat wait outside
+  Founders Hall; an instructor pool below the morale line sends someone to
+  the bus stop with a box. Commencement ends the arc.
+
+Tapping a building opens a card: who's inside and their trust, what's
+waiting (opening it goes straight to the scenario), and what the numbers
+mean there (budget at the dean's, political capital at Old Main, the
+dissertation at the library). On screens 1200px and wider the open map
+docks beside the page; smaller screens start with it folded into a button.
+
 ### Starter program: "Midland State University" (fictional)
 
 Regional public, ~9,000 undergrads. Two-course FYC sequence plus a

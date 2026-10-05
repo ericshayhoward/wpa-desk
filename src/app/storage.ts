@@ -103,6 +103,32 @@ export function writeTheme(theme: Theme): void {
   }
 }
 
+/** Screens at least this wide dock the campus beside the page (keep in step with styles.css). */
+export const CAMPUS_DOCKS = "(min-width: 1200px)";
+
+/**
+ * Whether the campus panel is open: the viewer's last choice, else open on
+ * screens wide enough to dock it and closed on smaller ones, where it would
+ * cover the page. A viewer preference like the theme, so clearing saves keeps it.
+ */
+export function readCampusOpen(): boolean {
+  try {
+    const v = localStorage.getItem(PREFIX + "campus");
+    if (v === "open" || v === "closed") return v === "open";
+  } catch {
+    // Fall through to the screen-size default.
+  }
+  return typeof window === "undefined" || typeof window.matchMedia !== "function" || window.matchMedia(CAMPUS_DOCKS).matches;
+}
+
+export function writeCampusOpen(open: boolean): void {
+  try {
+    localStorage.setItem(PREFIX + "campus", open ? "open" : "closed");
+  } catch {
+    // The choice just won't persist past this page load.
+  }
+}
+
 /**
  * Where the session stood when the player last kept a copy outside this
  * browser (an export or an import), or chose "Not now" on the reminder.

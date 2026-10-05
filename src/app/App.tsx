@@ -30,6 +30,7 @@ import {
   type PendingEffect,
   type TrainingSession,
 } from "../training";
+import { Campus } from "./Campus";
 import { CapCalculator } from "./CapCalculator";
 import { Desk } from "./Desk";
 import { Dossier } from "./Dossier";
@@ -49,10 +50,12 @@ import {
   downloadSession,
   needsBackup,
   readBackup,
+  readCampusOpen,
   readSlot,
   readTheme,
   requestPersistence,
   writeBackup,
+  writeCampusOpen,
   writeSlot,
   writeTheme,
   type BackupMark,
@@ -131,6 +134,7 @@ export function App() {
   // Instructor review is a separate mode; the game session is left untouched.
   const [reviewing, setReviewing] = useState(false);
   const [tool, setTool] = useState<Tool>("caps");
+  const [campusOpen, setCampusOpen] = useState(readCampusOpen);
   const [openScenario, setOpenScenario] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<DecisionOutcome | null>(null);
   const [writingReport, setWritingReport] = useState(false);
@@ -222,6 +226,16 @@ export function App() {
     setArrived(result.session.termIndex);
   };
 
+  /** From the campus map: leave whatever's open (drafts are already saved) and go to the desk. */
+  const toDesk = (scenarioId: string | null) => {
+    setTab("desk");
+    setOutcome(null);
+    setWritingReport(false);
+    setSubmitted(null);
+    setLanded(NOTHING_LANDED);
+    setOpenScenario(scenarioId);
+  };
+
   const hoursLeft = session.adminHoursRemaining / Math.max(1, session.adminHoursPerTerm);
   const view = session.ending
     ? "ending"
@@ -270,7 +284,7 @@ export function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app${campusOpen ? " with-campus" : ""}`}>
       <header className="masthead">
         <div className="masthead-inner">
           <div className="masthead-row">
@@ -560,6 +574,20 @@ export function App() {
           )}
         </main>
       </div>
+      <Campus
+        session={session}
+        analysis={analysis}
+        reportDue={due}
+        staffingDue={staffing}
+        dissertation={dissertation}
+        open={campusOpen}
+        onToggle={(open) => {
+          writeCampusOpen(open);
+          setCampusOpen(open);
+        }}
+        onOpenScenario={toDesk}
+        onGoToDesk={() => toDesk(null)}
+      />
       <Colophon />
     </div>
   );

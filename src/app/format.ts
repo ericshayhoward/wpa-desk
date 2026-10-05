@@ -2,6 +2,9 @@ import type { Program, StakeholderId } from "../model";
 import { CAST } from "../content";
 import { characterFor, type Names } from "../training";
 
+/** Trust meter bands, shared by the People card and the campus flags. */
+export const TRUST_METER = { low: 35, high: 65, optimum: 80 } as const;
+
 export function usd(n: number): string {
   const s = `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
   return n < 0 ? `−${s}` : s;
