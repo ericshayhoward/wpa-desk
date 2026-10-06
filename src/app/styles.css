@@ -928,7 +928,9 @@ del { background: var(--down-soft); color: var(--muted); border-radius: 3px; pad
 
 .campus-scene { display: block; width: 100%; height: auto; flex: none; background: #7cbf5e; user-select: none; -webkit-user-select: none; }
 .campus-body { overflow-y: auto; overscroll-behavior: contain; padding: 10px 14px 12px; }
-.campus-hint { margin: 0 0 6px; min-height: 2.6em; }
+.campus-hint { display: grid; margin: 0 0 6px; }
+.campus-hint > p { grid-area: 1 / 1; margin: 0; }
+.campus-hint-sizer { visibility: hidden; }
 .campus-legend summary { cursor: pointer; color: var(--accent); font-weight: 600; width: fit-content; }
 .campus-legend ul { margin: 8px 0 2px; padding-left: 18px; display: grid; gap: 5px; color: var(--muted); }
 .campus-legend strong { color: var(--text); }

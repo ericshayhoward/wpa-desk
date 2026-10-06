@@ -13,6 +13,7 @@ import {
   type YearEndSpec,
 } from "../training";
 import {
+  BUILDINGS,
   DAY,
   WINDOW_LABELS,
   building,
@@ -132,25 +133,42 @@ export function Campus({ session, analysis, reportDue, staffingDue, dissertation
           />
         ) : (
           <>
-            <p className="campus-hint small" aria-live="polite">
-              {hint ? (
-                <>
-                  <strong>{building(hint).name}.</strong> {building(hint).tagline}.
-                </>
-              ) : count > 0 ? (
-                <>
-                  {count} {count === 1 ? "thing is" : "things are"} waiting on you: look for the envelopes. Tap a building to see
-                  who's inside.
-                </>
-              ) : (
-                <>Nothing waiting on you. Tap a building to see who's inside and how things stand.</>
-              )}
-            </p>
+            {/* Every hint sits in the same cell, the unshown ones invisible, so the
+                hint is always as tall as its longest text. Otherwise hovering a
+                building with a longer tagline grows the panel, which is pinned to
+                the bottom of the screen, and lifts the map out from under the pointer. */}
+            <div className="campus-hint small">
+              <p aria-live="polite">
+                {hint ? (
+                  <BuildingHint id={hint} />
+                ) : count > 0 ? (
+                  <>
+                    {count} {count === 1 ? "thing is" : "things are"} waiting on you: look for the envelopes. Tap a building to
+                    see who's inside.
+                  </>
+                ) : (
+                  <>Nothing waiting on you. Tap a building to see who's inside and how things stand.</>
+                )}
+              </p>
+              {BUILDINGS.map((b) => (
+                <p key={b.id} className="campus-hint-sizer" aria-hidden="true">
+                  <BuildingHint id={b.id} />
+                </p>
+              ))}
+            </div>
             <Legend />
           </>
         )}
       </div>
     </aside>
+  );
+}
+
+function BuildingHint({ id }: { id: BuildingId }) {
+  return (
+    <>
+      <strong>{building(id).name}.</strong> {building(id).tagline}.
+    </>
   );
 }
 
