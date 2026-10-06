@@ -77,7 +77,7 @@ npm run build
   is read-only when given no edit handlers.
 - `src/test-fixtures/` holds reusable student sessions for tests.
 - The campus map (`src/app/Campus.tsx`, drawing in `CampusScene.tsx`,
-  mappings in `campus.ts`; see "The campus map" in DESIGN.md) only reads
+  mappings in `campusView.ts`; see "The campus map" in DESIGN.md) only reads
   the session; it changes views through App callbacks. Every stakeholder
   needs a building in `BUILDINGS`. jsdom has no `matchMedia`, so UI tests
   render it open: keep its unselected text and button names from matching

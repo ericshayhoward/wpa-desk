@@ -368,7 +368,7 @@ Relationships have mechanical weight:
 
 A live map of Midland State sits in the bottom-right corner of the game
 (`src/app/Campus.tsx`; the drawing is `CampusScene.tsx`, and every mapping
-from the session is a pure function in `campus.ts`). It shows the game's
+from the session is a pure function in `campusView.ts`). It shows the game's
 state as a place, so the numbers have somewhere to live:
 
 - **The day is the term's admin hours.** A term starts at 8 a.m. and it's

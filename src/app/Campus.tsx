@@ -23,7 +23,7 @@ import {
   type BuildingId,
   type WaitingItem,
   type WindowKind,
-} from "./campus";
+} from "./campusView";
 import { CampusScene } from "./CampusScene";
 import { TRUST_METER, pct, stakeholderName, usd } from "./format";
 import { Avatar, Icon } from "./ui";

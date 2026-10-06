@@ -14,7 +14,7 @@ import {
   type TrustBand,
   type WaitingItem,
   type WindowKind,
-} from "./campus";
+} from "./campusView";
 
 /* Midland State's campus, drawn in the cast portraits' style: ink outlines and
    flat bright fills on a 360×210 canvas. Everything that moves or changes

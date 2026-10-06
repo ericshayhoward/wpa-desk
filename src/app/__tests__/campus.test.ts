@@ -14,7 +14,7 @@ import {
   skyAt,
   trustBand,
   waitingByBuilding,
-} from "../campus";
+} from "../campusView";
 
 const fresh = () => startSession(MIDLAND_STATE, SCENARIOS, STANDARD_ARC);
 const analysisOf = (s: TrainingSession) => analyzeTerm(s.program, termOf(s.termIndex), DEFAULT_ASSUMPTIONS);
