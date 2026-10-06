@@ -391,7 +391,8 @@ Tapping a building opens a card: who's inside and their trust, what's
 waiting (opening it goes straight to the scenario), and what the numbers
 mean there (budget at the dean's, political capital at Old Main, the
 dissertation at the library). On screens 1200px and wider the open map
-docks beside the page; smaller screens start with it folded into a button.
+docks beside the page, and the masthead's stat tiles tighten to fit beside
+it; smaller screens start with it folded into a button.
 
 ### Starter program: "Midland State University" (fictional)
 

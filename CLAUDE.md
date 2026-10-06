@@ -86,7 +86,10 @@ npm run build
   render it open: keep its unselected text and button names from matching
   other tests' queries (term labels, scenario subjects, `/advance/i`).
   Its open/closed choice (`wpa-desk:campus`) is a viewer preference, kept
-  by `clearBrowserSaves()` like the theme.
+  by `clearBrowserSaves()` like the theme. Docked (`CAMPUS_DOCKS`, 1200px
+  and up) it narrows the masthead, so the stat tiles size by the
+  masthead's width (a container query in `styles.css`), not the screen's:
+  check 1200–1440px with it open, with and without the Unstaffed tile.
 - Long-term goal: a hosted multi-user version; see `docs/ROADMAP.md` before
   making choices that would only work local-only.
 - Arcs (`src/content/arcs/*.yaml`, parsed by `parseArc()`) set a
