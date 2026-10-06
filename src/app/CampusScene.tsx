@@ -593,10 +593,17 @@ function Person({ x, y, i, question = false, graduate = false, box = false }: { 
   );
 }
 
-function Figure({ i, shirt, graduate = false, box = false }: { i: number; shirt: string; graduate?: boolean; box?: boolean }) {
+function Figure({ i, shirt, graduate = false, box = false, walking = false }: { i: number; shirt: string; graduate?: boolean; box?: boolean; walking?: boolean }) {
   return (
     <g>
-      <path d="M-1 -4 L-1.6 0 M1 -4 L1.6 0" stroke="#2f2c45" strokeWidth={1.3} strokeLinecap="round" />
+      {walking ? (
+        <>
+          <path className="cs-leg" d="M-0.5 -4 V0" stroke="#2f2c45" strokeWidth={1.3} strokeLinecap="round" />
+          <path className="cs-leg" d="M0.5 -4 V0" stroke="#2f2c45" strokeWidth={1.3} strokeLinecap="round" />
+        </>
+      ) : (
+        <path d="M-1 -4 L-1.6 0 M1 -4 L1.6 0" stroke="#2f2c45" strokeWidth={1.3} strokeLinecap="round" />
+      )}
       {i % 3 === 1 && !graduate && <rect x={-4.3} y={-9.6} width={2.2} height={4.6} rx={0.8} fill={SHIRTS[(i + 3) % SHIRTS.length]} {...thin} />}
       <rect x={-2.6} y={-10} width={5.2} height={graduate ? 9 : 6.5} rx={2} fill={shirt} {...thin} />
       <circle cy={-12.6} r={2.4} fill={SKIN[i % SKIN.length]} {...thin} />
@@ -608,6 +615,15 @@ function Figure({ i, shirt, graduate = false, box = false }: { i: number; shirt:
       {box && <rect x={1} y={-9.4} width={5} height={4.2} fill="#c49a6c" {...thin} />}
     </g>
   );
+}
+
+/** Ground a walker covers per step, so quicker walkers take quicker steps. */
+const STRIDE = 4;
+
+/** CSS variables that time a walker's legs and bob to its pace across the scene. */
+function stepVars(distance: number, seconds: number, phase: number): Vars {
+  const step = (STRIDE * seconds) / distance;
+  return { "--step": `${step.toFixed(2)}s`, "--phase": `${(-phase * step).toFixed(2)}s` } as Vars;
 }
 
 /** Students on the quad: fewer as the day goes on, gowns at commencement. */
@@ -625,10 +641,12 @@ function Walkers({ count, graduates }: { count: number; graduates: boolean }) {
           <g key={i} transform={`translate(${x0.toFixed(1)} ${y})`}>
             <g
               className="cs-walk"
-              style={{ "--from": `${from.toFixed(1)}px`, "--to": `${to.toFixed(1)}px`, animationDuration: `${dur.toFixed(1)}s`, animationDelay: `${(-rand(i, 23) * dur).toFixed(1)}s` } as Vars}
+              style={{ "--from": `${from.toFixed(1)}px`, "--to": `${to.toFixed(1)}px`, animationDuration: `${dur.toFixed(1)}s`, animationDelay: `${(-rand(i, 23) * dur).toFixed(1)}s`, ...stepVars(W + 24, dur, rand(i, 24)) } as Vars}
             >
-              <g className="cs-bob" transform={left ? "scale(-1 1)" : undefined}>
-                <Figure i={i} shirt={graduates ? "#2a2540" : SHIRTS[i % SHIRTS.length]!} graduate={graduates} />
+              <g className="cs-bob">
+                <g transform={left ? "scale(-1 1)" : undefined}>
+                  <Figure i={i} shirt={graduates ? "#2a2540" : SHIRTS[i % SHIRTS.length]!} graduate={graduates} walking />
+                </g>
               </g>
             </g>
           </g>
@@ -641,11 +659,13 @@ function Walkers({ count, graduates }: { count: number; graduates: boolean }) {
 /** An instructor below the morale line, carrying a box of books to the bus stop. */
 function Leaving() {
   const x0 = 150;
+  const from = -x0 - 12;
+  const to = 330 - x0;
   return (
     <g transform={`translate(${x0} 177)`}>
-      <g className="cs-walk" style={{ "--from": `${-x0 - 12}px`, "--to": `${330 - x0}px`, animationDuration: "48s" } as Vars}>
+      <g className="cs-walk" style={{ "--from": `${from}px`, "--to": `${to}px`, animationDuration: "48s", ...stepVars(to - from, 48, 0) } as Vars}>
         <g className="cs-bob">
-          <Figure i={7} shirt="#7c7f93" box />
+          <Figure i={7} shirt="#7c7f93" box walking />
         </g>
       </g>
     </g>

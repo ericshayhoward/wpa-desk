@@ -983,8 +983,13 @@ del { background: var(--down-soft); color: var(--muted); border-radius: 3px; pad
 
 .cs-walk { animation: cs-walk linear infinite; }
 @keyframes cs-walk { from { transform: translateX(var(--from)); } to { transform: translateX(var(--to)); } }
-.cs-bob { animation: cs-bob 0.5s ease-in-out infinite alternate; }
-@keyframes cs-bob { to { transform: translateY(-0.7px); } }
+/* One bob per step, highest as the legs pass under the body; the second leg
+   runs a step behind the first. --step and --phase come from stepVars(). */
+.cs-bob { animation: cs-bob var(--step, 0.5s) ease-in-out var(--phase, 0s) infinite; }
+@keyframes cs-bob { 50% { transform: translateY(-0.7px); } }
+.cs-leg { animation: cs-stride var(--step, 0.5s) ease-in-out var(--phase, 0s) infinite alternate; transform-box: fill-box; transform-origin: 50% 0; }
+.cs-leg + .cs-leg { animation-delay: calc(var(--phase, 0s) - var(--step, 0.5s)); }
+@keyframes cs-stride { from { transform: rotate(24deg); } to { transform: rotate(-24deg); } }
 .cs-drift { animation: cs-drift linear infinite; }
 @keyframes cs-drift { from { transform: translateX(var(--from)); } to { transform: translateX(var(--to)); } }
 .cs-fall { animation: cs-fall linear infinite; transform-box: fill-box; }
