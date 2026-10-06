@@ -18,6 +18,9 @@ npm run build
 - Layers: `src/model/` (program model) ← `src/training/` (scenarios,
   evidence, memos, session) ← `src/content/` (YAML loader) ← `src/app/` (React).
   Each imports only from layers to its left, via their `index.ts`.
+- Don't give two files in a folder names that differ only in capitalization
+  (e.g. `campus.ts` and `Campus.tsx`): macOS and Windows treat them as the
+  same name, and imports resolve to the wrong file. Linux CI won't catch it.
 - `src/model/` and `src/training/` are pure TypeScript: no React, no DOM.
   `tsconfig.core.json` compiles them with only the ES library to enforce this.
   The model must not assume training mode.

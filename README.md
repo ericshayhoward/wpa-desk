@@ -10,7 +10,10 @@ Training mode puts you at the desk of a fictional writing program for three
 years: memos, staffing gaps, budget pressure, and stakeholders with their own
 priorities. The same tools you use to respond (cap/cost calculator, staffing
 planner, stakeholder map) are the ones a working WPA would use on real data.
-Instructors can open students' save files in a read-only review mode.
+A live campus map in the corner shows the same state as a place: the day runs
+on your admin hours, envelopes mark who's waiting on you, and Founders Hall's
+windows are the term's sections. Instructors can open students' save files in
+a read-only review mode.
 
 Status: early and changing quickly. Design notes are in
 [docs/DESIGN.md](docs/DESIGN.md) and plans in [docs/ROADMAP.md](docs/ROADMAP.md).
