@@ -78,6 +78,12 @@ npm run build
   `src/training/review.ts`) opens student saves read-only and in memory; it
   must never call the game's session setters or write storage. `Dossier`
   is read-only when given no edit handlers.
+- The guide for instructors lives in the website repo
+  (`src/pages/projects/wpa-desk/teaching.astro`, served at
+  `/projects/wpa-desk/teaching/`), and the review screen links to it. It lists
+  the arc's calendar, maps scenarios to seminar topics, and states play times
+  measured from the words on every screen. When scenarios are added, moved,
+  or lengthened, or review mode changes, update it too.
 - `src/test-fixtures/` holds reusable student sessions for tests.
 - The campus map (`src/app/Campus.tsx`, drawing in `CampusScene.tsx`,
   mappings in `campusView.ts`; see "The campus map" in DESIGN.md) only reads

@@ -14,6 +14,14 @@ interface Loaded {
 
 type View = { kind: "overview" } | { kind: "scenarios" } | { kind: "student"; key: number };
 
+/** The guide for instructors, on the project's website. */
+const GUIDE = "https://ericshayhoward.com/projects/wpa-desk/teaching/";
+
+/** There are no analytics, so an email is how Eric learns who teaches with WPA Desk. The guide links the same address. */
+const TELL_ME = `mailto:helloeshoward@gmail.com?subject=${encodeURIComponent("Using WPA Desk in a course")}&body=${encodeURIComponent(
+  "Course:\r\nTerm:\r\nAbout how many students:\r\nHow you're using it:\r\n",
+)}`;
+
 /**
  * Instructor review. Student files are opened read-only and held in memory
  * only: nothing here writes to the instructor's own session or storage.
@@ -85,6 +93,10 @@ export function ReviewMode({ onExit }: { onExit: () => void }) {
           <p className="muted">
             Open student save files to review their work. Files are read-only and stay on this computer; nothing here
             changes your own session.
+          </p>
+          <p className="muted small no-print">
+            The <a href={GUIDE}>guide for instructors</a> covers timing, where the scenarios fit in a seminar, and discussion
+            questions. Using WPA Desk in a course? <a href={TELL_ME}>Let Eric know</a>.
           </p>
         </div>
         <button className="secondary" onClick={onExit}>

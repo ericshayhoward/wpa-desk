@@ -63,3 +63,16 @@ it("instructor review: class overview, by-scenario view, read-only case files, o
   expect(screen.getByRole("button", { name: /Dr. Cherry.*FYC section caps/ })).toBeTruthy();
   expect(localStorage.getItem("wpa-desk:autosave")).toBe(autosaveBefore);
 });
+
+it("instructor review links the guide for instructors and asks teachers to say they use it", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole("button", { name: "Instructor review" }));
+
+  const guide = screen.getByRole("link", { name: "guide for instructors" });
+  expect(guide.getAttribute("href")).toBe("https://ericshayhoward.com/projects/wpa-desk/teaching/");
+  // No analytics, so an email is how Eric hears about classes.
+  const tell = screen.getByRole("link", { name: "Let Eric know" }).getAttribute("href")!;
+  expect(tell.startsWith("mailto:helloeshoward@gmail.com?subject=Using%20WPA%20Desk%20in%20a%20course&body=")).toBe(true);
+  expect(decodeURIComponent(tell.split("body=")[1]!)).toContain("About how many students:");
+});

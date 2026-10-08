@@ -4,7 +4,8 @@ A training simulator for aspiring and new Writing Program Administrators,
 built on a program model that can grow into a planning tool for working WPAs.
 
 **Play it:** <https://ericshayhoward.com/wpa-desk/> ·
-**About the project:** <https://ericshayhoward.com/projects/wpa-desk/>
+**About the project:** <https://ericshayhoward.com/projects/wpa-desk/> ·
+**For instructors:** <https://ericshayhoward.com/projects/wpa-desk/teaching/>
 
 Training mode puts you at the desk of a fictional writing program for three
 years: memos, staffing gaps, budget pressure, and stakeholders with their own
