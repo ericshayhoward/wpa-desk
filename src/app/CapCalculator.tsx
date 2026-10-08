@@ -6,6 +6,7 @@ import {
   applyChanges,
   compareTerms,
   rangeLabel,
+  type Assumptions,
   type Program,
   type ProgramChange,
   type Range,
@@ -13,6 +14,7 @@ import {
 } from "../model";
 import { capAnalysisEvidence, type EvidenceDraft } from "../training";
 import { signed, usd } from "./format";
+import { WorkloadChart } from "./StaffingCharts";
 import { Delta, EvidenceBar, Row, TermToggle, WhatIf, tone } from "./ToolParts";
 
 interface Props {
@@ -21,9 +23,13 @@ interface Props {
   onSaveEvidence?: (draft: EvidenceDraft) => void;
   /** Caps to preload (e.g., the proposal in a scenario document). */
   initialCaps?: Record<string, number>;
+  /** Used in the planning tools, outside the game. */
+  planning?: boolean;
+  /** The planning tools pass a program's local assumptions; the game uses the defaults. */
+  assumptions?: Assumptions;
 }
 
-export function CapCalculator({ program, onSaveEvidence, initialCaps }: Props) {
+export function CapCalculator({ program, onSaveEvidence, initialCaps, planning, assumptions = DEFAULT_ASSUMPTIONS }: Props) {
   const [term, setTerm] = useState<Term>("fall");
   const [caps, setCaps] = useState<Record<string, number>>({ ...program.policies.caps, ...initialCaps });
 
@@ -33,10 +39,10 @@ export function CapCalculator({ program, onSaveEvidence, initialCaps }: Props) {
       .map(([courseId, cap]) => ({ kind: "setCap", courseId, cap }));
     const proposed = applyChanges(program, changes);
     return {
-      before: analyzeTerm(program, term, DEFAULT_ASSUMPTIONS),
-      after: analyzeTerm(proposed, term, DEFAULT_ASSUMPTIONS),
+      before: analyzeTerm(program, term, assumptions),
+      after: analyzeTerm(proposed, term, assumptions),
     };
-  }, [program, caps, term]);
+  }, [program, caps, term, assumptions]);
   const diff = compareTerms(before, after);
   const changed = Object.entries(caps).some(([id, cap]) => cap !== program.policies.caps[id]);
 
@@ -46,7 +52,7 @@ export function CapCalculator({ program, onSaveEvidence, initialCaps }: Props) {
         <div>
           <h2>Class cap calculator</h2>
           <p className="muted">What happens to sections, staffing, cost, and outcomes if caps change?</p>
-          <WhatIf what="Caps" />
+          <WhatIf what="Caps" planning={planning} />
         </div>
         <TermToggle term={term} onChange={setTerm} />
       </header>
@@ -185,6 +191,9 @@ export function CapCalculator({ program, onSaveEvidence, initialCaps }: Props) {
         </tbody>
       </table>
 
+      <h3>Workload</h3>
+      <WorkloadChart before={before} after={after} assumptions={assumptions} />
+
       <details className="why" open>
         <summary>How these numbers were reached</summary>
         <ul>
@@ -197,7 +206,7 @@ export function CapCalculator({ program, onSaveEvidence, initialCaps }: Props) {
       <details className="why">
         <summary>Assumptions</summary>
         <ul className="assumptions">
-          {Object.values(DEFAULT_ASSUMPTIONS).map((a) => (
+          {Object.values(assumptions).map((a) => (
             <li key={a.id}>
               <div>
                 <strong>{a.label}</strong>: {a.value} {a.unit}{" "}

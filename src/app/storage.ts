@@ -3,8 +3,9 @@
  * unavailable (private windows, blocked site data) or full, and the app must
  * keep working without it.
  */
+import { createProgramFile, parseProgramFile, type LocalAssumptions, type Program, type ProgramFile } from "../model";
 import { ARCS, SCENARIOS } from "../content";
-import { createSave, parseSave, type SaveFile, type TrainingSession } from "../training";
+import { SAVE_FORMAT, createSave, parseSave, type SaveFile, type TrainingSession } from "../training";
 
 const PREFIX = "wpa-desk:";
 export const AUTOSAVE = "autosave";
@@ -38,10 +39,16 @@ export function writeSlot(slot: SlotId, session: TrainingSession, label: string)
   }
 }
 
-/** Erases the autosave, every slot, and the export reminder's mark, for a shared computer. The theme stays. */
+/**
+ * Erases the autosave, every slot, the export reminder's mark, and the
+ * program entered in the planning tools, for a shared computer: a real
+ * program's pay and budget figures are no less private than a game. The
+ * theme and campus panel choice stay.
+ */
 export function clearBrowserSaves(): void {
   for (const slot of [AUTOSAVE, ...SLOTS] satisfies SlotId[]) deleteSlot(slot);
   writeBackup(null);
+  deleteWorkingProgram();
 }
 
 export function deleteSlot(slot: SlotId): void {
@@ -63,12 +70,7 @@ export function exportFile(session: TrainingSession, label: string): { name: str
 /** Downloads the session as a save file and returns the file's name. */
 export function downloadSession(session: TrainingSession, label: string): string {
   const { name, text } = exportFile(session, label);
-  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
+  download(name, text);
   return name;
 }
 
@@ -81,6 +83,83 @@ export function importFile(text: string): SaveFile {
     throw new Error("That file isn't a WPA Desk save (it isn't valid JSON).");
   }
   return parseSave(raw, SCENARIOS, ARCS);
+}
+
+// ---- The program entered in the planning tools ----------------------------
+
+const PROGRAM = PREFIX + "program";
+
+export type ProgramReadResult = { ok: true; file: ProgramFile } | { ok: false; error: string } | { ok: false; empty: true };
+
+/** The program entered in the planning tools, with its local assumptions. */
+export function readWorkingProgram(): ProgramReadResult {
+  let raw: string | null;
+  try {
+    raw = localStorage.getItem(PROGRAM);
+  } catch {
+    return { ok: false, error: "This browser isn't allowing saved data." };
+  }
+  if (raw === null) return { ok: false, empty: true };
+  try {
+    return { ok: true, file: parseProgramFile(JSON.parse(raw)) };
+  } catch (err) {
+    return { ok: false, error: err instanceof SyntaxError ? "The saved program is damaged." : (err as Error).message };
+  }
+}
+
+/** Returns an error message, or null on success. */
+export function writeWorkingProgram(program: Program, assumptions: LocalAssumptions): string | null {
+  try {
+    localStorage.setItem(PROGRAM, JSON.stringify(createProgramFile(program, assumptions, new Date())));
+    return null;
+  } catch {
+    return "Couldn't save in this browser: its storage is unavailable or full. Export a file to keep your program.";
+  }
+}
+
+export function deleteWorkingProgram(): void {
+  try {
+    localStorage.removeItem(PROGRAM);
+  } catch {
+    // Nothing to do; it's unreachable either way.
+  }
+}
+
+/** Serializes a program and its local assumptions for download as a file. */
+export function exportProgramFile(program: Program, assumptions: LocalAssumptions): { name: string; text: string } {
+  const file = createProgramFile(program, assumptions, new Date());
+  const slug = program.institution.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "program";
+  return { name: `wpa-desk-program-${slug}-${file.savedAt.slice(0, 10)}.json`, text: JSON.stringify(file, null, 2) };
+}
+
+/** Downloads a program file and returns its name. */
+export function downloadProgram(program: Program, assumptions: LocalAssumptions): string {
+  const { name, text } = exportProgramFile(program, assumptions);
+  download(name, text);
+  return name;
+}
+
+/** Parses an imported program file's text. Throws with a readable message. */
+export function importProgramFile(text: string): ProgramFile {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    throw new Error("That file isn't a WPA Desk program file (it isn't valid JSON).");
+  }
+  if ((raw as { format?: unknown } | null)?.format === SAVE_FORMAT) {
+    throw new Error("That's a game save, not a program file. Open it from Play on the start screen.");
+  }
+  return parseProgramFile(raw);
+}
+
+function download(name: string, text: string): void {
+  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export type Theme = "light" | "dark";
@@ -103,22 +182,17 @@ export function writeTheme(theme: Theme): void {
   }
 }
 
-/** Screens at least this wide dock the campus beside the page (keep in step with styles.css). */
-export const CAMPUS_DOCKS = "(min-width: 1200px)";
-
 /**
- * Whether the campus panel is open: the viewer's last choice, else open on
- * screens wide enough to dock it and closed on smaller ones, where it would
- * cover the page. A viewer preference like the theme, so clearing saves keeps it.
+ * Whether the campus panel is open: the viewer's last choice, else closed,
+ * since open it floats over the page. A viewer preference like the theme, so
+ * clearing saves keeps it.
  */
 export function readCampusOpen(): boolean {
   try {
-    const v = localStorage.getItem(PREFIX + "campus");
-    if (v === "open" || v === "closed") return v === "open";
+    return localStorage.getItem(PREFIX + "campus") === "open";
   } catch {
-    // Fall through to the screen-size default.
+    return false;
   }
-  return typeof window === "undefined" || typeof window.matchMedia !== "function" || window.matchMedia(CAMPUS_DOCKS).matches;
 }
 
 export function writeCampusOpen(open: boolean): void {

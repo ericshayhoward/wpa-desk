@@ -1,16 +1,15 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "../App";
-import { resolveUrgent, submitYearEndReport } from "./helpers";
+import { playGame, resolveUrgent, submitYearEndReport } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
 
 async function toFallY2() {
   const user = userEvent.setup();
-  render(<App />);
+  await playGame(user);
   await user.click(screen.getByRole("button", { name: /advance/i }));
   await resolveUrgent(user);
   await submitYearEndReport(user);

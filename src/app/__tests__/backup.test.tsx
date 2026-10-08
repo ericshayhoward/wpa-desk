@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "../App";
+import { playGame } from "./helpers";
 import { MIDLAND_STATE } from "../../model";
 import { CAST, SCENARIOS, STANDARD_ARC } from "../../content";
 import { createSave, resolveScenario, startSession, type TrainingSession } from "../../training";
@@ -64,7 +64,7 @@ describe("the export reminder", () => {
     vi.stubGlobal("URL", Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() }));
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     const user = userEvent.setup();
-    render(<App />);
+    await playGame(user);
     expect(reminder()).toBeNull();
 
     await decideSyllabusHoldout(user);
@@ -80,13 +80,13 @@ describe("the export reminder", () => {
 
   it('"Not now" hides it until the next term, across reloads', async () => {
     const user = userEvent.setup();
-    const first = render(<App />);
+    const first = await playGame(user);
     await decideSyllabusHoldout(user);
     await user.click(screen.getByRole("button", { name: "Not now" }));
     expect(reminder()).toBeNull();
     first.unmount();
 
-    render(<App />);
+    await playGame(user);
     expect(reminder()).toBeNull();
     await user.click(screen.getByRole("button", { name: /advance/i }));
     expect(screen.getByText("Spring, Year 1")).toBeTruthy();
@@ -100,7 +100,7 @@ describe("the export reminder", () => {
     expect(needsBackup(decided, null, NOW)).toBe(true);
 
     const user = userEvent.setup();
-    render(<App />);
+    await playGame(user);
     await user.click(screen.getByRole("button", { name: "Saves" }));
     const save = createSave(decided, "Seminar", NOW);
     await user.upload(
@@ -116,7 +116,7 @@ describe("the export reminder", () => {
 describe("telling players where saves live", () => {
   it("notes on the desk that progress stays in this browser, until the first decision", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    await playGame(user);
     expect(screen.getByText(/Your progress saves in this browser only; nothing is sent anywhere\./)).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: /Alan Pruitt and the common syllabus/ }));
@@ -126,23 +126,25 @@ describe("telling players where saves live", () => {
     expect(screen.queryByText(/Your progress saves in this browser only/)).toBeNull();
   });
 
-  it("clears the autosave, every slot, and the reminder mark, but keeps the theme", async () => {
+  it("clears the autosave, every slot, the reminder mark, and the planning tools' program, but keeps the theme", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    await playGame(user);
     await user.click(screen.getByRole("button", { name: "Leave these for next term and advance" })); // Spring, Year 1
     await user.click(screen.getByRole("button", { name: "Saves" }));
     await user.click(screen.getAllByRole("button", { name: "Save here" })[0]!);
     localStorage.setItem("wpa-desk:backup", JSON.stringify(backupMark(fresh, NOW, true)));
     localStorage.setItem("wpa-desk:theme", "dark");
+    localStorage.setItem("wpa-desk:program", "{}");
 
     await user.click(screen.getByRole("button", { name: "Clear this browser's saves" }));
-    expect(screen.getByText("Erase the autosave and all slots?")).toBeTruthy();
+    expect(screen.getByText("Erase the autosave, all slots, and any program in the planning tools?")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Yes" }));
 
     expect(screen.getByText(/Cleared this browser's saves and started a new session\./)).toBeTruthy();
     expect(screen.getByText("Fall, Year 1")).toBeTruthy();
     expect(localStorage.getItem("wpa-desk:slot-1")).toBeNull();
     expect(localStorage.getItem("wpa-desk:backup")).toBeNull();
+    expect(localStorage.getItem("wpa-desk:program")).toBeNull();
     expect(localStorage.getItem("wpa-desk:theme")).toBe("dark");
     // The fresh session autosaves, with no decisions in it.
     expect(JSON.parse(localStorage.getItem("wpa-desk:autosave")!).summary.decisions).toBe(0);

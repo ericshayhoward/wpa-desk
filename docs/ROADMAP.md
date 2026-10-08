@@ -5,6 +5,15 @@ Living list of what's next and what's further out. Design details live in
 
 ## Near term
 
+- **Planning tools (working mode)**: started. Done: the start screen
+  (Play, Plan, Teach), the planning tools outside the game on the sample
+  program, the staffing and workload charts, and your own program (a form
+  for its data, local assumptions, browser autosave, and a versioned
+  program file to export and import). Next: a class size explorer, a budget
+  breakdown, and plan comparison with export; later, importing a section
+  schedule (CSV) instead of typing seat demand. See "Working mode" in
+  `DESIGN.md`.
+
 - ~~**Instructor review mode**~~ — done: read-only review of student save
   files (class overview with CSV download, per-scenario choice summary,
   per-student case files). Follow-ups: sortable columns; remembering opened
@@ -53,7 +62,9 @@ Things to think through before building it:
 - **Course platform integration** — LTI so the tool can launch from Canvas,
   Blackboard, Moodle, etc., and return grades.
 - **Working-mode data** — importing a real program's schedule and staffing
-  data; keeping it private to that WPA or institution.
+  data; keeping it private to that WPA or institution. The program file
+  (`parseProgramFile` in `src/model/`) is pure and versioned, so a server
+  can store and validate the same format the browser exports.
 - **Content authoring** — letting instructors add or adapt scenarios and
   casts (the YAML formats were designed with this in mind).
 - **Keeping local-first working** — the offline, file-based version should

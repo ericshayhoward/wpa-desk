@@ -3,6 +3,7 @@ import { afterEach, beforeEach, expect, it } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../App";
+import { playGame } from "./helpers";
 import { createSave } from "../../training";
 import { avery, blake } from "../../test-fixtures/students";
 
@@ -14,10 +15,14 @@ const saveFile = (name: string, s: ReturnType<typeof avery>) => file(name, JSON.
 
 it("instructor review: class overview, by-scenario view, read-only case files, own session untouched", async () => {
   const user = userEvent.setup();
-  render(<App />);
+  await playGame(user);
   expect(screen.getByText("Fall, Year 1")).toBeTruthy();
-  const autosaveBefore = localStorage.getItem("wpa-desk:autosave");
+  // The session, not the whole save: resuming re-saves it with a new time.
+  const savedSession = () => JSON.parse(localStorage.getItem("wpa-desk:autosave")!).session;
+  const sessionBefore = savedSession();
 
+  // Instructor review opens from the start screen.
+  await user.click(screen.getByRole("button", { name: "Home" }));
   await user.click(screen.getByRole("button", { name: "Instructor review" }));
   await user.upload(screen.getByLabelText("Open student files"), [
     saveFile("avery.json", avery()),
@@ -58,10 +63,11 @@ it("instructor review: class overview, by-scenario view, read-only case files, o
 
   // Back to the instructor's own desk: session and autosave unchanged.
   await user.click(screen.getByRole("button", { name: "Back to class overview" }));
-  await user.click(screen.getByRole("button", { name: "Back to my desk" }));
+  await user.click(screen.getByRole("button", { name: "Home" }));
+  await user.click(screen.getByRole("button", { name: "Resume" }));
   expect(screen.getByText("Fall, Year 1")).toBeTruthy();
   expect(screen.getByRole("button", { name: /Dr. Cherry.*FYC section caps/ })).toBeTruthy();
-  expect(localStorage.getItem("wpa-desk:autosave")).toBe(autosaveBefore);
+  expect(savedSession()).toEqual(sessionBefore);
 });
 
 it("instructor review links the guide for instructors and asks teachers to say they use it", async () => {

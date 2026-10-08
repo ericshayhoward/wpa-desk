@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "../App";
+import { playGame } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
 
 it("staffing planner: a late gap, overloads, then a cancellation", async () => {
   const user = userEvent.setup();
-  render(<App />);
+  await playGame(user);
   await user.click(screen.getByRole("button", { name: "Tools" }));
   await user.click(screen.getByRole("button", { name: "Staffing planner" }));
 

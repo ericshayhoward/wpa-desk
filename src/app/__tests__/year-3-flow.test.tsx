@@ -1,16 +1,15 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "../App";
-import { resolveUrgent, submitYearEndReport } from "./helpers";
+import { playGame, resolveUrgent, submitYearEndReport } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
 
 it("Year 3: the stipend campaign, the budget swap, and the handoff, as interim director", async () => {
   const user = userEvent.setup();
-  render(<App />);
+  await playGame(user);
   for (const term of ["Spring, Year 1", "Fall, Year 2", "Spring, Year 2", "Fall, Year 3"]) {
     await resolveUrgent(user);
     if (screen.queryByText("Submit the year-end report before the term ends.")) await submitYearEndReport(user);

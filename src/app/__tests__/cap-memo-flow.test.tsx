@@ -1,16 +1,15 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "../App";
-import { resolveUrgent, submitYearEndReport } from "./helpers";
+import { playGame, resolveUrgent, submitYearEndReport } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
 
 async function openCapMemo() {
   const user = userEvent.setup();
-  render(<App />);
+  await playGame(user);
   await user.click(screen.getByRole("button", { name: /FYC section caps for spring/ }));
   return user;
 }
@@ -18,7 +17,7 @@ async function openCapMemo() {
 describe("cap calculator explains changes that do nothing", () => {
   it("spring ENGL101 at 26: labeled what-if, shows rounding, explains why", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    await playGame(user);
     await user.click(screen.getByRole("button", { name: "Tools" }));
     expect(screen.getByText(/What-if only: this doesn't change your program/)).toBeTruthy();
 
@@ -35,7 +34,8 @@ describe("cap calculator explains changes that do nothing", () => {
 
 describe("playing The Cap Memo through the UI", () => {
   it("shows the starting deficit and the dean's memo in the inbox", async () => {
-    render(<App />);
+    const user = userEvent.setup();
+    await playGame(user);
     expect(screen.getByText("$8,600 deficit")).toBeTruthy();
     expect(screen.getByText("Fall, Year 1")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Dr. Cherry.*FYC section caps/ })).toBeTruthy();

@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import type { Program, StakeholderId } from "../model";
 import { CAST } from "../content";
 import { characterFor, termLabel } from "../training";
@@ -95,6 +95,9 @@ const ICONS = {
     </>
   ),
   check: <path d="M20 6 9 17l-5-5" />,
+  home: <path d="M3 10.5 12 3l9 7.5M5 9v12h5v-6h4v6h5V9" />,
+  chart: <path d="M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-3" />,
+  play: <path d="M7 4v16l13-8z" />,
   pen: (
     <>
       <path d="M12 20h9" />
@@ -280,5 +283,34 @@ export function CardTitle({ icon, children, id, level = 2 }: { icon: IconName; c
       </span>
       <span>{children}</span>
     </H>
+  );
+}
+
+/** Two-step button: the first click asks, the second acts. Avoids browser dialogs. */
+export function ConfirmButton({ label, confirm, onConfirm }: { label: string; confirm: string; onConfirm: () => void }) {
+  const [asking, setAsking] = useState(false);
+  if (!asking) {
+    return (
+      <button className="secondary" onClick={() => setAsking(true)}>
+        {label}
+      </button>
+    );
+  }
+  return (
+    <span className="confirm">
+      <span className="small">{confirm}</span>
+      <button
+        className="primary"
+        onClick={() => {
+          setAsking(false);
+          onConfirm();
+        }}
+      >
+        Yes
+      </button>
+      <button className="link" onClick={() => setAsking(false)}>
+        Cancel
+      </button>
+    </span>
   );
 }

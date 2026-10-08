@@ -35,14 +35,26 @@
   --down: light-dark(#bf2a1c, #ff8f84);
   --down-soft: light-dark(#fce6e2, #3a1c1d);
 
+  /* Masthead: a quiet band a step deeper than the page, in the same palette. */
+  --mast-bg: light-dark(#ebe4d5, #151822);
+  --mast-text: light-dark(#1d1c24, #ebe8f3);
+  --mast-muted: light-dark(#5c5763, #a19db1);
+  --mast-line: light-dark(#d6ccb7, #2a2e3e);
+  --mast-fill: light-dark(rgb(255 253 249 / 0.55), rgb(255 255 255 / 0.035));
+  --mast-fill-hover: light-dark(rgb(255 253 249 / 0.95), rgb(255 255 255 / 0.07));
+  --mast-current: light-dark(#fffdf9, #262a39);
+  --mast-track: light-dark(#d4cab5, #2e3344);
+
   --badge-illustrative: var(--gold-soft);
   --badge-literature: var(--accent-soft);
   --badge-local: var(--up-soft);
 
-  --seg-tt: light-dark(#5b6fd6, #8e9cf2);
-  --seg-ntt: light-dark(#3f9b74, #7fd1a8);
-  --seg-gta: light-dark(#d69a2d, #f0c068);
-  --seg-adjunct: light-dark(#a45fc4, #c897e0);
+  /* Rank colors, checked with a palette validator against --surface in each
+     theme (lightness band, color-blind and normal-vision separation). */
+  --seg-tt: light-dark(#5b6fd6, #7686e8);
+  --seg-ntt: light-dark(#3f9b74, #47a97d);
+  --seg-gta: light-dark(#d69a2d, #bd8a2c);
+  --seg-adjunct: light-dark(#a45fc4, #b075d2);
   --seg-gap: light-dark(#d9432f, #ff806c);
 
   --radius-sm: 8px;
@@ -100,75 +112,61 @@ a { color: var(--accent); }
    ===================================================================== */
 .masthead {
   position: relative;
-  color: #f4f1ff;
-  background:
-    radial-gradient(900px 380px at 8% -20%, rgb(255 138 91 / 0.38), transparent 62%),
-    radial-gradient(760px 340px at 96% -10%, rgb(129 120 255 / 0.5), transparent 60%),
-    radial-gradient(600px 300px at 60% 130%, rgb(242 181 68 / 0.18), transparent 60%),
-    linear-gradient(165deg, #1a1d3d 0%, #262a5c 55%, #1c2046 100%);
-  overflow: hidden;
-  isolation: isolate;
+  color: var(--mast-text);
+  background: var(--mast-bg);
+  border-bottom: 1px solid var(--mast-line);
 }
-.masthead::before {
-  content: "";
-  position: absolute; inset: 0; z-index: -1;
-  background-image: radial-gradient(rgb(255 255 255 / 0.09) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: linear-gradient(to bottom, black, transparent 90%);
-}
+/* A thin rule in the logo's colors: the one bit of ornament. */
 .masthead::after {
   content: "";
-  position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
-  background: linear-gradient(90deg, #ff8a5b, #f2b544 35%, #8e87ff 70%, #5eead4);
-  opacity: 0.85;
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: linear-gradient(90deg, var(--coral), var(--gold));
+  opacity: 0.7;
 }
 .masthead-inner { max-width: 1040px; margin: 0 auto; padding: 22px 20px 26px; }
 .masthead-row { display: flex; justify-content: space-between; align-items: center; gap: 16px 24px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.brand .logo { filter: drop-shadow(0 6px 14px rgb(255 138 91 / 0.35)); flex: none; }
-.brand h1 { font-size: 1.75rem; font-weight: 650; letter-spacing: -0.02em; color: #fff; }
-.brand-sub { margin: 2px 0 0; color: rgb(236 233 255 / 0.78); font-size: 0.92rem; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 0; }
-.masthead .badge.illustrative { background: rgb(242 181 68 / 0.2); color: #ffdc8f; border: 1px solid rgb(242 181 68 / 0.35); }
+.brand .logo { flex: none; }
+.brand h1 { font-size: 1.75rem; font-weight: 650; letter-spacing: -0.02em; color: var(--mast-text); }
+.brand-sub { margin: 2px 0 0; color: var(--mast-muted); font-size: 0.92rem; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 0; }
 
 .masthead-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; max-width: 100%; }
 .tabs {
   display: flex; gap: 2px; padding: 4px; border-radius: 14px;
-  background: rgb(255 255 255 / 0.07); border: 1px solid rgb(255 255 255 / 0.12);
-  backdrop-filter: blur(8px); max-width: 100%; overflow-x: auto; scrollbar-width: none;
+  background: var(--mast-fill); border: 1px solid var(--mast-line);
+  max-width: 100%; overflow-x: auto; scrollbar-width: none;
 }
 .tabs::-webkit-scrollbar { display: none; }
-.tabs button, .review-link, .theme-toggle {
+.tabs button, .masthead-link, .theme-toggle {
   display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
-  border: 0; background: none; color: rgb(236 233 255 / 0.78);
+  border: 0; background: none; color: var(--mast-muted);
   padding: 7px 13px; border-radius: 10px; font: 500 0.9rem var(--font-ui); cursor: pointer;
   transition: background 0.2s var(--ease), color 0.2s var(--ease), transform 0.2s var(--ease);
 }
-.tabs button:hover, .review-link:hover, .theme-toggle:hover { color: #fff; background: rgb(255 255 255 / 0.1); }
+.tabs button:hover, .masthead-link:hover, .theme-toggle:hover { color: var(--mast-text); background: var(--mast-fill-hover); }
 .tabs button[aria-current="page"] {
-  color: #1d1f45; background: #fff;
-  box-shadow: 0 4px 14px -4px rgb(0 0 0 / 0.4);
+  color: var(--mast-text); background: var(--mast-current);
+  box-shadow: var(--shadow-sm);
 }
-.tabs button[aria-current="page"] .icon { color: #5b50f0; }
-.review-link { border: 1px solid rgb(255 255 255 / 0.14); }
-.theme-toggle { padding: 8px; border: 1px solid rgb(255 255 255 / 0.14); }
+.tabs button[aria-current="page"] .icon { color: var(--accent); }
+.masthead-link { border: 1px solid var(--mast-line); }
+.theme-toggle { padding: 8px; border: 1px solid var(--mast-line); }
 .theme-toggle:hover .icon { transform: rotate(-20deg); }
 .theme-toggle .icon { transition: transform 0.3s var(--ease); }
 
 /* Stat tiles: one row of equal tiles, Term two tiles wide (plus the gap
    between them) for its track. Equal flex bases keep that ratio exact. The
-   row answers to its own width, not the screen's, since the docked campus map
-   takes 392px of it. */
+   row answers to its own width, not the screen's. */
 .masthead-inner { container: masthead / inline-size; }
 .status { --gap: 10px; display: flex; gap: var(--gap); margin: 22px 0 0; padding: 0; }
 .stat {
   flex: 1 1 60px; position: relative; min-width: 0;
   padding: 12px 14px 13px; border-radius: 14px;
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.05));
-  border: 1px solid rgb(255 255 255 / 0.12);
-  backdrop-filter: blur(6px);
+  background: var(--mast-fill);
+  border: 1px solid var(--mast-line);
   transition: transform 0.25s var(--ease), background 0.25s var(--ease);
 }
-.stat:hover { transform: translateY(-2px); background: linear-gradient(180deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.07)); }
+.stat:hover { background: var(--mast-fill-hover); }
 /* With a row to itself, Term has room for its track beside the term's name;
    in a shared row the track wraps below it. */
 .stat-term { flex: 2 1 calc(120px + var(--gap)); grid-column: span 2; display: flex; flex-wrap: wrap; align-items: center; column-gap: 24px; }
@@ -176,18 +174,18 @@ a { color: var(--accent); }
 .stat-term .term-track { flex: 1 1 300px; }
 .status dt {
   display: flex; align-items: center; gap: 6px;
-  font-size: 0.66rem; font-weight: 600; color: rgb(236 233 255 / 0.66); line-height: 1.3;
+  font-size: 0.66rem; font-weight: 600; color: var(--mast-muted); line-height: 1.3;
   text-transform: uppercase; letter-spacing: 0.08em;
 }
 .status dd {
-  margin: 5px 0 0; font: 600 1.12rem/1.2 var(--font-display); color: #fff;
+  margin: 5px 0 0; font: 600 1.12rem/1.2 var(--font-display); color: var(--mast-text);
   font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
 }
-.status dd.down { color: #ffab9c; }
-.status dd.up { color: #8ff0bb; }
-.stat-alert { border-color: rgb(255 128 108 / 0.55); background: linear-gradient(180deg, rgb(255 110 90 / 0.2), rgb(255 110 90 / 0.08)); }
+.status dd.down { color: var(--down); }
+.status dd.up { color: var(--up); }
+.stat-alert { border-color: color-mix(in srgb, var(--down) 45%, transparent); background: color-mix(in srgb, var(--down) 9%, transparent); }
 
-/* Narrow rows, mostly beside the docked campus map. Tiles need about 132px
+/* Narrow rows. Tiles need about 132px
    roomy, or 107px compact (tighter, without label icons), for the longest
    label word, "Dissertation", to stay clear of their edges. Six tiles stay
    roomy from 984px and fit compact from 797px. Seven (with Unstaffed
@@ -215,33 +213,33 @@ a { color: var(--accent); }
   }
 }
 
-.bar { display: block; height: 5px; margin-top: 9px; border-radius: 99px; background: rgb(255 255 255 / 0.14); overflow: hidden; }
-.bar > span { display: block; height: 100%; border-radius: inherit; transition: width 0.8s var(--ease); background: #fff; }
-.bar.accent > span { background: linear-gradient(90deg, #8e87ff, #c4b5fd); }
-.bar.good > span { background: linear-gradient(90deg, #34d399, #a7f3d0); }
-.bar.warn > span { background: linear-gradient(90deg, #ff8a5b, #f2b544); }
+.bar { display: block; height: 5px; margin-top: 9px; border-radius: 99px; background: var(--mast-track); overflow: hidden; }
+.bar > span { display: block; height: 100%; border-radius: inherit; transition: width 0.8s var(--ease); background: var(--mast-muted); }
+.bar.accent > span { background: var(--accent); }
+.bar.good > span { background: var(--up); }
+.bar.warn > span { background: var(--coral); }
 
 .term-track { list-style: none; display: flex; margin: 10px 0 0; padding: 0; }
 .term-track li { flex: 1; position: relative; display: grid; justify-items: center; gap: 4px; min-width: 0; }
 .term-track li::before {
   content: ""; position: absolute; top: 7px; left: -50%; right: 50%; height: 2px;
-  background: rgb(255 255 255 / 0.18);
+  background: var(--mast-track);
 }
 .term-track li:first-child::before { display: none; }
-.term-track li.past::before, .term-track li.now::before { background: linear-gradient(90deg, #f2b544, #ff8a5b); }
+.term-track li.past::before, .term-track li.now::before { background: var(--gold); }
 .term-track .dot {
   position: relative; z-index: 1; width: 16px; height: 16px; border-radius: 50%;
-  display: grid; place-items: center; color: #1d1f45;
-  background: #262a5c; border: 2px solid rgb(255 255 255 / 0.3);
+  display: grid; place-items: center; color: var(--accent-ink);
+  background: var(--mast-bg); border: 2px solid var(--mast-track);
 }
-.term-track .past .dot { background: #f2b544; border-color: #f2b544; }
+.term-track .past .dot { background: var(--gold); border-color: var(--gold); }
 .term-track .now .dot {
-  background: #fff; border-color: #ff8a5b;
-  box-shadow: 0 0 0 4px rgb(255 138 91 / 0.3);
+  background: var(--surface); border-color: var(--coral);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--coral) 25%, transparent);
   animation: pulse-ring 2.4s var(--ease) infinite;
 }
-.term-name { font-size: 0.66rem; color: rgb(236 233 255 / 0.55); white-space: nowrap; letter-spacing: 0.02em; }
-.term-track .now .term-name { color: #fff; font-weight: 600; }
+.term-name { font-size: 0.66rem; color: var(--mast-muted); white-space: nowrap; letter-spacing: 0.02em; }
+.term-track .now .term-name { color: var(--mast-text); font-weight: 600; }
 
 /* Toast-style session note */
 .session-note.toast {
@@ -428,6 +426,68 @@ input, textarea, select { accent-color: var(--accent); }
 .pool-note { display: block; font-weight: 400; font-size: 0.8rem; color: var(--muted); margin-top: 2px; max-width: 320px; }
 .num-input { width: 70px; padding: 6px 8px; font-variant-numeric: tabular-nums; }
 .num-input.wide { width: 96px; }
+
+/* Charts (StaffingCharts.tsx): one row per group, a shared scale per chart,
+   values in text beside every bar. */
+.chart { margin: 8px 0 18px; }
+.chart figcaption { margin-top: 10px; max-width: 72ch; }
+.chart .legend { margin-top: 8px; }
+.chart-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.chart-row { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr) minmax(110px, auto); align-items: center; gap: 12px; }
+.chart-row.stacked { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.chart-label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500; }
+.chart-order {
+  display: grid; place-items: center; width: 20px; height: 20px; flex: none; border-radius: 50%;
+  font-size: 0.72rem; font-weight: 700; color: var(--muted); background: var(--bg-2);
+}
+.chart-value { font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.chart-track { position: relative; display: flex; gap: 2px; height: 16px; min-width: 0; }
+.chart-seg { flex: 0 1 auto; min-width: 3px; height: 100%; border-radius: 4px; transition: width 0.4s var(--ease); }
+.chart-seg.unused { background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--border-strong); }
+.chart-seg.overload { background-image: repeating-linear-gradient(45deg, rgb(255 255 255 / 0.4) 0 3px, transparent 3px 6px); }
+.chart-seg.unused-overload { background: transparent; box-shadow: inset 0 0 0 1px var(--border-strong); background-image: repeating-linear-gradient(45deg, var(--border) 0 3px, transparent 3px 6px); }
+.chart-seg.gap { background: repeating-linear-gradient(45deg, var(--seg-gap) 0 5px, transparent 5px 9px); box-shadow: inset 0 0 0 1px var(--seg-gap); }
+.was-tick, .ref-tick { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--text); }
+.ref-tick { background: var(--muted); }
+.range-bar { position: absolute; top: 4px; height: 8px; border-radius: 4px; opacity: 0.45; }
+.range-dot { position: absolute; top: 0; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface); }
+.workload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 28px; }
+.workload-grid h4 { margin: 0 0 10px; font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+.key-assigned { background: var(--muted); }
+.key-unused { background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--border-strong); }
+.key-overload { background: var(--muted) repeating-linear-gradient(45deg, rgb(255 255 255 / 0.45) 0 3px, transparent 3px 6px); }
+.key-was { width: 3px; background: var(--text); }
+@media (max-width: 720px) {
+  .chart-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .workload-grid { grid-template-columns: 1fr; }
+}
+
+/* Planning tools: the program they run on */
+.program-card { margin: 0 0 18px; }
+.program-card p { margin: 0 0 4px; }
+.program-picker { margin: 0 0 12px; }
+
+/* Program data: the form for your own program */
+.form-group { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px 16px; margin: 0 0 14px; min-width: 0; }
+.form-group legend { font-weight: 600; padding: 0 6px; }
+.form-group > p { margin: 0 0 8px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px 18px; margin: 0 0 10px; }
+.form-field { display: grid; gap: 4px; align-content: start; min-width: 0; }
+.form-field.wide { grid-column: 1 / -1; }
+.form-field > label { font-weight: 600; font-size: 0.9rem; }
+.form-field input, .form-field select {
+  font: inherit; color: var(--text); background: var(--surface-2); width: 100%; min-width: 0;
+  border: 1px solid var(--border-strong); border-radius: 10px; padding: 7px 10px;
+}
+.form-field input[type="number"] { font-variant-numeric: tabular-nums; }
+.form-field input:focus, .form-field select:focus {
+  outline: none; border-color: var(--accent); background: var(--surface);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.form-field.has-error input, .form-field.has-error select { border-color: var(--down); }
+.input-affix { display: flex; align-items: center; gap: 6px; }
+.field-error { color: var(--down); font-size: 0.85rem; font-weight: 500; }
+.program-data h3 { margin-top: 28px; }
 .plan { margin: 0 0 16px; padding-left: 20px; }
 .plan li { margin: 3px 0; }
 
@@ -924,21 +984,10 @@ del { background: var(--down-soft); color: var(--muted); border-radius: 3px; pad
 .term-flip small::before { content: attr(data-text); }
 
 /* =====================================================================
-   Campus: a live map of Midland State in the bottom-right corner.
-   On screens at least 1200px wide (CAMPUS_DOCKS in storage.ts) the open
-   panel docks: the masthead, page, and colophon make room beside it so
-   it never covers the desk (the stat tiles fit themselves to what's left).
-   Smaller screens start with it closed.
+   Campus: a live map of Midland State in the bottom-right corner. It
+   starts folded into a button; open, it floats over the page and never
+   moves the layout.
    ===================================================================== */
-@media (min-width: 1200px) {
-  .app.with-campus { --dock: 392px; }
-  .app.with-campus .page,
-  .app.with-campus .masthead-inner,
-  .app.with-campus .colophon {
-    max-width: calc(1040px + var(--dock));
-    padding-right: calc(20px + var(--dock));
-  }
-}
 
 .campus, .campus-fab { position: fixed; right: 16px; bottom: 16px; z-index: 40; }
 .campus {
@@ -1054,14 +1103,40 @@ del { background: var(--down-soft); color: var(--muted); border-radius: 3px; pad
   30%, 100% { transform: translateX(520px); }
 }
 
-/* Undocked, the panel floats over the page: leave room below the colophon so the
+/* The panel floats over the page: leave room below the colophon so the
    attribution (required on every screen, NOTICE.md) can always scroll clear of it. */
-@media (max-width: 1199px) {
-  .app .colophon { padding-bottom: 76px; }
-  .app.with-campus .colophon { padding-bottom: 420px; }
-}
+.app .colophon { padding-bottom: 76px; }
+.app.with-campus .colophon { padding-bottom: 420px; }
 @media (max-width: 720px) {
   .campus { left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 78vh; }
   .campus-fab { right: 12px; bottom: 12px; }
 }
 @media print { .campus, .campus-fab { display: none !important; } }
+
+/* =====================================================================
+   Start screen
+   ===================================================================== */
+.home-hero .masthead-inner { padding: 18px 20px 36px; }
+.home-top { display: flex; justify-content: flex-end; }
+.home-brand { display: flex; align-items: center; gap: 18px; margin-top: 18px; }
+.home-brand .logo { flex: none; }
+.home-brand h1 { font-size: 2.6rem; font-weight: 650; letter-spacing: -0.025em; color: var(--mast-text); }
+.home-tagline { margin: 4px 0 0; font-size: 1.08rem; color: var(--mast-muted); }
+.home.page { padding-top: 40px; }
+.paths { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
+.path { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+.path > h2 { margin: 0; }
+.path p { margin: 0; }
+.path .resume { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.path .resume button { min-width: 140px; }
+.confirm-block { padding: 12px 14px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--border); }
+.confirm-block p { margin: 0 0 10px; }
+.home .storage-note { margin-top: 22px; }
+@media (max-width: 860px) {
+  .paths { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .home-brand h1 { font-size: 2rem; }
+  .home-hero .masthead-inner { padding: 14px 16px 28px; }
+  .home.page { padding-top: 28px; }
+}

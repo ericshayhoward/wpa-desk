@@ -22,6 +22,14 @@ export const RANK_LABELS: Record<Rank, string> = {
 };
 
 export type CourseKind = "fyc1" | "fyc2" | "coreq" | "advanced";
+export const COURSE_KINDS: readonly CourseKind[] = ["fyc1", "fyc2", "coreq", "advanced"];
+
+export const COURSE_KIND_LABELS: Record<CourseKind, string> = {
+  fyc1: "First-year composition I",
+  fyc2: "First-year composition II",
+  coreq: "Co-requisite or studio",
+  advanced: "Advanced writing",
+};
 
 export interface Course {
   id: string;
@@ -104,7 +112,7 @@ export interface Program {
   id: string;
   institution: string;
   description: string;
-  /** True for invented programs; working mode will load real ones. */
+  /** True for invented programs, such as the sample; false for a program someone entered. */
   fictional: boolean;
   undergraduateEnrollment: number;
   courses: Course[];

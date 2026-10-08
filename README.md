@@ -14,7 +14,10 @@ planner, stakeholder map) are the ones a working WPA would use on real data.
 A live campus map in the corner shows the same state as a place: the day runs
 on your admin hours, envelopes mark who's waiting on you, and Founders Hall's
 windows are the term's sections. Instructors can open students' save files in
-a read-only review mode.
+a read-only review mode, and the planning tools (staffing, workload, and
+class caps, with charts) work on their own from the start screen, without
+the game, on the sample program or on your own program's numbers (saved in
+your browser and as a file you can export).
 
 Status: early and changing quickly. Design notes are in
 [docs/DESIGN.md](docs/DESIGN.md) and plans in [docs/ROADMAP.md](docs/ROADMAP.md).

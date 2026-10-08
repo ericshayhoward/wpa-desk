@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "../App";
-import { resolveUrgent, submitYearEndReport } from "./helpers";
+import { playGame, resolveUrgent, submitYearEndReport } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
@@ -11,7 +10,7 @@ beforeEach(() => localStorage.clear());
 describe("playing the standard arc through the UI", () => {
   it("starts as assistant director, becomes interim director in Year 3, and stops at Spring, Year 3", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    await playGame(user);
     expect(screen.getByText("Assistant Director")).toBeTruthy();
 
     // Dr. Cherry forwards the dean's memo and asks you to draft the reply.

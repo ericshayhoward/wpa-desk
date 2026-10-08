@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { act, cleanup, render, screen, within } from "@testing-library/react";
+import { act, cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "../App";
+import { playGame } from "./helpers";
 import { HISTORY_NOTICE } from "../../training";
 
 afterEach(() => {
@@ -18,7 +18,7 @@ async function openCounterMemo(user: ReturnType<typeof userEvent.setup>) {
 
 it("drafts are kept, survive a reload, and show up in the case file with changes", async () => {
   const user = userEvent.setup();
-  const first = render(<App />);
+  const first = await playGame(user);
   await openCounterMemo(user);
   expect(screen.getByText(HISTORY_NOTICE, { exact: false })).toBeTruthy();
 
@@ -30,7 +30,7 @@ it("drafts are kept, survive a reload, and show up in the case file with changes
   first.unmount();
 
   // Reload: reopening the scenario goes straight back into the half-written memo.
-  render(<App />);
+  await playGame(user);
   await user.click(screen.getByRole("button", { name: /Dr. Cherry.*FYC section caps/ }));
   expect(screen.queryByRole("heading", { name: "How do you respond?" })).toBeNull();
   expect((screen.getByRole("textbox", { name: /Body/ }) as HTMLTextAreaElement).value).toBe("Caps matter.");
@@ -64,7 +64,7 @@ it("drafts are kept, survive a reload, and show up in the case file with changes
 it("a pause in writing takes a snapshot automatically", async () => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-  render(<App />);
+  await playGame(user);
   await openCounterMemo(user);
   await user.type(screen.getByRole("textbox", { name: /Body/ }), "Thinking out loud");
   expect(screen.getByText(/^No versions saved yet\./)).toBeTruthy();

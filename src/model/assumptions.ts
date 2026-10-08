@@ -1,4 +1,4 @@
-import type { Assumptions } from "./types";
+import type { AssumptionId, Assumptions } from "./types";
 
 /**
  * Default assumptions for training mode.
@@ -49,4 +49,16 @@ export const DEFAULT_ASSUMPTIONS: Assumptions = {
     confidence: "illustrative",
     sources: [],
   },
+};
+
+export const ASSUMPTION_IDS = Object.keys(DEFAULT_ASSUMPTIONS) as AssumptionId[];
+
+/**
+ * Bounds on values a program may enter in place of the defaults: what the
+ * calculations can use, not what's likely. Checked by checkLocalAssumptions.
+ */
+export const ASSUMPTION_LIMITS: Record<AssumptionId, { min: number; max: number; whole?: boolean }> = {
+  classSizeThreshold: { min: 1, max: 200, whole: true },
+  dfwPerStudentOverThreshold: { min: 0, max: 100 },
+  feedbackMinutesPerStudent: { min: 0, max: 10_000 },
 };

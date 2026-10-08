@@ -26,7 +26,7 @@ const TELL_ME = `mailto:helloeshoward@gmail.com?subject=${encodeURIComponent("Us
  * Instructor review. Student files are opened read-only and held in memory
  * only: nothing here writes to the instructor's own session or storage.
  */
-export function ReviewMode({ onExit }: { onExit: () => void }) {
+export function ReviewMode() {
   const [files, setFiles] = useState<Loaded[]>([]);
   const [view, setView] = useState<View>({ kind: "overview" });
   const [dragging, setDragging] = useState(false);
@@ -92,16 +92,13 @@ export function ReviewMode({ onExit }: { onExit: () => void }) {
           <h2>Instructor review</h2>
           <p className="muted">
             Open student save files to review their work. Files are read-only and stay on this computer; nothing here
-            changes your own session.
+            changes your own game.
           </p>
           <p className="muted small no-print">
             The <a href={GUIDE}>guide for instructors</a> covers timing, where the scenarios fit in a seminar, and discussion
             questions. Using WPA Desk in a course? <a href={TELL_ME}>Let Eric know</a>.
           </p>
         </div>
-        <button className="secondary" onClick={onExit}>
-          Back to my desk
-        </button>
       </div>
 
       <label

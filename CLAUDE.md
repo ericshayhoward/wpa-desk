@@ -69,12 +69,45 @@ npm run build
   `wpa-desk:backup` mark (set on export/import, or "Not now" until next
   term), and `requestPersistence()` runs once after the first decision.
   Until the first decision, the desk says saves stay in this browser; the
-  Saves tab's `clearBrowserSaves()` erases autosave, slots, and the mark (not
-  the theme) for shared computers.
+  Saves tab's `clearBrowserSaves()` erases autosave, slots, the mark, and
+  the planning tools' program (not the theme or campus choice) for shared
+  computers, and the Saves panel says so.
+- Screens: `App.tsx` routes between the start screen (`StartScreen.tsx`:
+  Play, Plan, Teach), the game (`Game.tsx`), the planning tools
+  (`Planner.tsx`), and instructor review. Leaving one never changes
+  another's state; only the game reads or writes the autosave. Chrome every
+  screen shares (theme toggle, Home, `Colophon`) is in `Frame.tsx`.
+- The planning tools are the game's own tool components with `planning`
+  set, outside any session, on `MIDLAND_STATE` or on "Your program". A new
+  tool or chart goes in both places unless it only makes sense in one. Tools
+  take `assumptions` as a prop (the game leaves it at `DEFAULT_ASSUMPTIONS`);
+  never read `DEFAULT_ASSUMPTIONS` directly inside a tool.
+- Your program: `src/model/program-file.ts` has `checkProgram()` (every
+  problem, each with a `path` and a field name in words, for the form) and
+  `parseProgram()` (throws the first), local assumptions
+  (`checkLocalAssumptions`, `withLocalAssumptions`, which marks overrides
+  "local-data"; low must stay below high so projections keep a range), and
+  the program file (`PROGRAM_FORMAT`, `PROGRAM_VERSION`, separate from game
+  saves: bump the version and migrate in `parseProgramFile` if its shape
+  changes). Only what the tools use is required; game-only fields default.
+  The form (`ProgramData.tsx`) edits a `ProgramDraft` (`programDraft.ts`:
+  NaN for empty numbers, caps beside each course) and the Planner saves
+  each complete version under `wpa-desk:program`; the tools keep using the
+  last complete one while fields need fixing. The game never reads it.
+- The masthead (every screen's header) follows the theme through the
+  `--mast-*` tokens in `styles.css`; don't hard-code white-on-dark colors
+  in it.
+- Charts (`StaffingCharts.tsx`) give every value in text or a table beside
+  the bars, never color alone. Rank colors are `--seg-*` in `styles.css`,
+  checked with a palette validator for both themes; re-check if you change
+  them.
+- UI tests reach the game through `playGame(user)` in
+  `src/app/__tests__/helpers.ts`, which clicks Resume (or New game) on the
+  start screen.
 - UI tests must `localStorage.clear()` in `beforeEach` (autosave persists
   across renders). `src/test-setup.ts` restores jsdom's localStorage, which
   Node 25's built-in stub otherwise shadows.
-- Instructor review (`src/app/ReviewMode.tsx`, summaries in
+- Instructor review (opened from the start screen; `src/app/ReviewMode.tsx`, summaries in
   `src/training/review.ts`) opens student saves read-only and in memory; it
   must never call the game's session setters or write storage. `Dossier`
   is read-only when given no edit handlers.
@@ -88,14 +121,14 @@ npm run build
 - The campus map (`src/app/Campus.tsx`, drawing in `CampusScene.tsx`,
   mappings in `campusView.ts`; see "The campus map" in DESIGN.md) only reads
   the session; it changes views through App callbacks. Every stakeholder
-  needs a building in `BUILDINGS`. jsdom has no `matchMedia`, so UI tests
-  render it open: keep its unselected text and button names from matching
-  other tests' queries (term labels, scenario subjects, `/advance/i`).
-  Its open/closed choice (`wpa-desk:campus`) is a viewer preference, kept
-  by `clearBrowserSaves()` like the theme. Docked (`CAMPUS_DOCKS`, 1200px
-  and up) it narrows the masthead, so the stat tiles size by the
-  masthead's width (a container query in `styles.css`), not the screen's:
-  check 1200–1440px with it open, with and without the Unstaffed tile.
+  needs a building in `BUILDINGS`. It starts closed (UI tests open it with
+  the "Show the campus" button); open, it floats over the page and never
+  moves the layout. Keep the button's name from matching other tests'
+  queries (`/advance/i`, term labels). Its open/closed choice
+  (`wpa-desk:campus`) is a viewer preference, kept by
+  `clearBrowserSaves()` like the theme.
+  The stat tiles size by the masthead's width (a container query in
+  `styles.css`): check narrow widths with and without the Unstaffed tile.
 - Long-term goal: a hosted multi-user version; see `docs/ROADMAP.md` before
   making choices that would only work local-only.
 - Arcs (`src/content/arcs/*.yaml`, parsed by `parseArc()`) set a
@@ -134,7 +167,7 @@ npm run build
   root-absolute paths. Storage keys share the origin with the website and
   must keep the `wpa-desk:` prefix.
 - Licenses: code AGPL-3.0-only, `src/content/` CC BY-NC-SA 4.0 (see
-  `NOTICE.md`). The `Colophon` in `App.tsx` is the required attribution;
+  `NOTICE.md`). The `Colophon` in `Frame.tsx` is the required attribution;
   keep it on every screen, including new top-level views.
 - The desktop app's preview server can't access Google Drive folders
   (EPERM on cwd), so browser previews of this repo fail there. Verify UI

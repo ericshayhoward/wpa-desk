@@ -60,6 +60,8 @@ export interface StaffingLine {
   peopleWithoutSections: number;
   cost: number;
   paidBy: "program" | "department";
+  /** A full regular load: sections one person teaches. */
+  sectionsPerTerm: number;
   /** Students taught by one person carrying a full load. */
   studentsPerFullLoad: number;
   /** Feedback hours per term for one person carrying a full load. */
@@ -198,6 +200,7 @@ export function analyzeTerm(program: Program, term: Term, assumptions: Assumptio
       peopleWithoutSections: pool.headcount - peopleTeaching,
       cost: regularSections * pool.costPerSection + overloadSections * (pool.overload?.costPerSection ?? 0),
       paidBy: pool.paidBy,
+      sectionsPerTerm: pool.sectionsPerTerm,
       studentsPerFullLoad,
       feedbackHoursPerFullLoad: { low: hours(feedback.low), mid: hours(feedback.value), high: hours(feedback.high) },
     };

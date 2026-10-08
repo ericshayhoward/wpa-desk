@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { termLabel, type TrainingSession } from "../training";
 import { SLOTS, deleteSlot, importFile, readSlot, writeSlot, type SlotId } from "./storage";
+import { ConfirmButton } from "./ui";
 
 interface Props {
   session: TrainingSession;
@@ -140,47 +141,19 @@ export function SavesPanel({ session, onLoad, onNewSession, onClearAll, onExport
 
       <h3>On a shared computer</h3>
       <p className="muted small">
-        Your memos and reflections stay in this browser for whoever uses it next. When you're done, export your session, then
-        clear the autosave and all three slots.
+        Your memos and reflections stay in this browser for whoever uses it next, and so does any program entered in the
+        planning tools. When you're done, export what you want to keep, then clear the autosave, all three slots, and that
+        program. The theme and campus map settings stay.
       </p>
       <ConfirmButton
         label="Clear this browser's saves"
-        confirm="Erase the autosave and all slots?"
+        confirm="Erase the autosave, all slots, and any program in the planning tools?"
         onConfirm={() => {
           onClearAll();
           refresh();
         }}
       />
     </section>
-  );
-}
-
-/** Two-step button: the first click asks, the second acts. Avoids browser dialogs. */
-function ConfirmButton({ label, confirm, onConfirm }: { label: string; confirm: string; onConfirm: () => void }) {
-  const [asking, setAsking] = useState(false);
-  if (!asking) {
-    return (
-      <button className="secondary" onClick={() => setAsking(true)}>
-        {label}
-      </button>
-    );
-  }
-  return (
-    <span className="confirm">
-      <span className="small">{confirm}</span>
-      <button
-        className="primary"
-        onClick={() => {
-          setAsking(false);
-          onConfirm();
-        }}
-      >
-        Yes
-      </button>
-      <button className="link" onClick={() => setAsking(false)}>
-        Cancel
-      </button>
-    </span>
   );
 }
 

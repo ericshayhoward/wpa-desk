@@ -390,9 +390,9 @@ state as a place, so the numbers have somewhere to live:
 Tapping a building opens a card: who's inside and their trust, what's
 waiting (opening it goes straight to the scenario), and what the numbers
 mean there (budget at the dean's, political capital at Old Main, the
-dissertation at the library). On screens 1200px and wider the open map
-docks beside the page, and the masthead's stat tiles tighten to fit beside
-it; smaller screens start with it folded into a button.
+dissertation at the library). The map starts folded into a button (with a
+count of what's waiting); open, it floats over the page's bottom-right
+corner without moving anything else, and the choice is remembered.
 
 ### Starter program: "Midland State University" (fictional)
 
@@ -535,11 +535,94 @@ Groundwork already in place:
 - **Everything is data.** Program, cast, arcs, and scenarios are content, so
   presets and variants are content too.
 
-## 5. Working mode (future, not v1)
+## 5. Working mode (started)
 
-Same tools with real data: import a section schedule (CSV), set local
-assumptions, run what-ifs, and export memos, staffing plans and annual
-reports. The scenario layer is simply turned off, or kept as an optional
+### The start screen
+
+The app opens on a start screen with three paths, so the game and the tools
+are separate from the first click:
+
+- **Play**: Resume (with the autosave's term, role, and decision count), New
+  game (asks first when it would replace a saved game), and Open a save
+  file.
+- **Plan**: the planning tools, with no game.
+- **Teach**: instructor review and the guide for instructors.
+
+Each screen has a Home button back to it; the game autosaves, so leaving it
+loses nothing.
+
+### The planning tools
+
+The game's staffing planner and cap calculator on their own: no session,
+scenarios, admin hours, or political capital. A picker chooses the program
+they run on: Midland State (the sample) or your own. Edits in the tools are
+what-ifs against the program as it stands and aren't saved.
+
+Charts are the way into the numbers, and each one answers a question a WPA
+asks, with a table or text beside it giving the same values:
+
+- **Who teaches** (staffing planner): each group's capacity, filled in the
+  order sections are assigned, with overloads striped and unstaffed sections
+  as their own row. It shows where a gap lands and which group absorbs a
+  change (at Midland, adjuncts).
+- **Workload** (both tools): for one person with a full regular load,
+  students taught against the recommended class size times the load, and
+  feedback hours per term as a range. It follows caps, loads, and
+  cancellations.
+
+Next, roughly in order: a class size explorer (budget, D/F/W, and
+workload at every cap, where the section-count steps show); a budget
+breakdown (fall, spring, and the year, by pool, department-paid apart); and
+named plans compared side by side, printable or as CSV for a memo.
+
+### Your program
+
+Choosing "Your program" offers a copy of the sample, a blank program, or a
+program file. A **Program data** view then edits what the tools need:
+
+- the institution's name, a description, and the instruction budget per
+  term;
+- courses: code, title, kind, credits, seats needed in fall and spring, cap
+  per section, and the D/F/W rate with the average section size when it was
+  measured (projections move D/F/W only as section size changes from that
+  point, so local rates carry over as they are);
+- instructor groups (tenure-track, full-time NTT, GTA, adjunct): people,
+  sections each per term, pay per section, who pays (program or
+  department), overloads per person and their pay, and a note on why the
+  limits are what they are.
+
+Each field shows its own problem beside it ("Must be from 0% to 100%."). A
+blank start shows problems only for fields the person has left, plus a
+"Show what's missing" link, so it doesn't open on a wall of errors. The
+validator is `checkProgram()` in the model: pure, it returns every problem
+with the field in words and its path in the file, and `parseProgram()`
+throws the first, naming both ("Course 2 (ENGL102), fall seats needed: must
+be a whole number, 0 or more (courses[1].seatDemand.fall)."). Only what the
+tools use is required; game-only fields (morale, stakeholders, political
+capital, policies other than caps) default when a file leaves them out.
+
+**Local assumptions.** For each assumption, the form shows the default
+with its range and confidence, and "Use this program's own numbers" replaces
+the value, low end, and high end, with an optional source. Overrides are
+marked `local-data` wherever the assumption appears, and the low end must
+stay below the high end, so projections keep reporting ranges.
+
+**Saving.** Every complete version autosaves in this browser
+(`wpa-desk:program`) and becomes what the tools use; while fields need
+fixing, the tools say they're showing the last complete version. The file
+format (`wpa-desk-program`, version 1, with its own migrations) is separate
+from game saves and holds the program plus its local assumptions. Export,
+import, and "Remove from this browser" are in Program data; importing a
+game save there says to open it from Play instead. The game never reads this
+program, and "Clear this browser's saves" in the game's Saves tab erases it
+too, since a real program's pay and budget figures are as private as a
+student's work on a shared computer.
+
+### Real data
+
+Same tools with real data. Entering a program and local assumptions by
+hand is done (above); next, import a section schedule (CSV) to fill seat
+demand and staffing, and export memos, staffing plans and annual reports. The scenario layer is simply turned off, or kept as an optional
 "stress test" feature ("what if the dean asks for caps of 27?").
 
 ## 6. Tech approach (proposal)

@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "../App";
-import { resolveUrgent, submitYearEndReport } from "./helpers";
+import { playGame, resolveUrgent, submitYearEndReport } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
@@ -11,7 +10,7 @@ beforeEach(() => localStorage.clear());
 /** Compromise at 25 in The Cap Memo, then play through to Spring, Year 2. */
 async function toSpringY2() {
   const user = userEvent.setup();
-  render(<App />);
+  await playGame(user);
   await user.click(screen.getByRole("button", { name: /FYC section caps for spring/ }));
   await user.click(screen.getByRole("button", { name: /Propose a compromise at 25/ }));
   await user.click(screen.getByRole("button", { name: "Decide without a memo" }));

@@ -7,6 +7,7 @@ import {
   compareTerms,
   describeChange,
   type InstructorPool,
+  type Assumptions,
   type Program,
   type ProgramChange,
   type Rank,
@@ -14,6 +15,7 @@ import {
 } from "../model";
 import { staffingPlanEvidence, type EvidenceDraft } from "../training";
 import { pct, signed, usd } from "./format";
+import { CapacityChart, WorkloadChart } from "./StaffingCharts";
 import { Delta, EvidenceBar, Row, TermToggle, WhatIf, tone } from "./ToolParts";
 
 interface Props {
@@ -21,6 +23,10 @@ interface Props {
   /** When provided, the planner offers to save its result as memo evidence. */
   onSaveEvidence?: (draft: EvidenceDraft) => void;
   initialTerm?: Term;
+  /** Used in the planning tools, outside the game. */
+  planning?: boolean;
+  /** The planning tools pass a program's local assumptions; the game uses the defaults. */
+  assumptions?: Assumptions;
 }
 
 interface PoolPlan {
@@ -63,7 +69,7 @@ function changesFor(program: Program, term: Term, pools: Record<string, PoolPlan
   return changes;
 }
 
-export function StaffingPlanner({ program, onSaveEvidence, initialTerm = "fall" }: Props) {
+export function StaffingPlanner({ program, onSaveEvidence, initialTerm = "fall", planning, assumptions = DEFAULT_ASSUMPTIONS }: Props) {
   const [term, setTerm] = useState<Term>(initialTerm);
   const basePools = () => Object.fromEntries(program.instructors.map((p) => [p.rank, planOf(p)]));
   const [pools, setPools] = useState<Record<string, PoolPlan>>(basePools);
@@ -72,10 +78,10 @@ export function StaffingPlanner({ program, onSaveEvidence, initialTerm = "fall" 
   const changes = useMemo(() => changesFor(program, term, pools, cancel), [program, term, pools, cancel]);
   const { before, after } = useMemo(
     () => ({
-      before: analyzeTerm(program, term, DEFAULT_ASSUMPTIONS),
-      after: analyzeTerm(applyChanges(program, changes), term, DEFAULT_ASSUMPTIONS),
+      before: analyzeTerm(program, term, assumptions),
+      after: analyzeTerm(applyChanges(program, changes), term, assumptions),
     }),
-    [program, term, changes],
+    [program, term, changes, assumptions],
   );
   const diff = compareTerms(before, after);
   const changed = changes.length > 0;
@@ -91,7 +97,7 @@ export function StaffingPlanner({ program, onSaveEvidence, initialTerm = "fall" 
         <div>
           <h2>Staffing planner</h2>
           <p className="muted">Who will teach every section, what it costs, and what happens when there aren't enough people?</p>
-          <WhatIf what="Staffing and schedules" />
+          <WhatIf what="Staffing and schedules" planning={planning} />
         </div>
         <TermToggle
           term={term}
@@ -220,6 +226,7 @@ export function StaffingPlanner({ program, onSaveEvidence, initialTerm = "fall" 
       </table>
 
       <h3>Who teaches</h3>
+      <CapacityChart before={before} after={after} />
       <div className="table-scroll">
         <table className="compare">
           <thead>
@@ -258,6 +265,9 @@ export function StaffingPlanner({ program, onSaveEvidence, initialTerm = "fall" 
           </tbody>
         </table>
       </div>
+
+      <h3>Workload</h3>
+      <WorkloadChart before={before} after={after} assumptions={assumptions} />
 
       <details className="why" open>
         <summary>How these numbers were reached</summary>
@@ -309,7 +319,7 @@ function Coverage({ analysis }: { analysis: ReturnType<typeof analyzeTerm> }) {
       <ul className="legend small">
         {parts.map((p) => (
           <li key={p.key}>
-            <span className={`swatch ${p.cls}`} aria-hidden="true" /> {p.label} ({p.n})
+            <span className={`swatch ${p.cls}`} aria-hidden="true" /> {p.label} ({p.n}, {Math.round((p.n / total) * 100)}%)
           </li>
         ))}
       </ul>

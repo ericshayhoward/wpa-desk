@@ -1,5 +1,14 @@
-import { screen } from "@testing-library/react";
+import { createElement } from "react";
+import { render, screen } from "@testing-library/react";
 import type { UserEvent } from "@testing-library/user-event";
+import { App } from "../App";
+
+/** Renders the app and goes from the start screen into the game: Resume if there's an autosave, else New game. */
+export async function playGame(user: UserEvent) {
+  const view = render(createElement(App));
+  await user.click(screen.queryByRole("button", { name: "Resume" }) ?? screen.getByRole("button", { name: "New game" }));
+  return view;
+}
 
 /** Writes every section that's the player's in the due year-end report, submits it, and returns to the desk. */
 export async function submitYearEndReport(user: UserEvent, text = "The numbers show a steady program.") {

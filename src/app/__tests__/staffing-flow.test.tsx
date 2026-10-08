@@ -1,16 +1,15 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "../App";
-import { resolveUrgent, submitYearEndReport } from "./helpers";
+import { playGame, resolveUrgent, submitYearEndReport } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
 
 it("routine staffing: when adjuncts leave, the director decides how to cover the gap, and can teach a section", async () => {
   const user = userEvent.setup();
-  render(<App />);
+  await playGame(user);
   // Raising caps drives adjuncts away; play until the program comes up short.
   await user.click(screen.getByRole("button", { name: /FYC section caps for spring/ }));
   await user.click(screen.getByRole("button", { name: /Accept the increase/ }));

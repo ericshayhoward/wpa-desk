@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "../App";
+import { playGame } from "./helpers";
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
 
 it("The Late Hire: urgent, blocks the term, resolved by adding seats", async () => {
   const user = userEvent.setup();
-  render(<App />);
+  await playGame(user);
 
   // Leave The Cap Memo for later and move to spring.
   await user.click(screen.getByRole("button", { name: "Leave these for next term and advance" }));

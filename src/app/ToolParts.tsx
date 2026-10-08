@@ -15,8 +15,15 @@ export function TermToggle({ term, onChange }: { term: Term; onChange: (t: Term)
   );
 }
 
-export function WhatIf({ what }: { what: string }) {
-  return <p className="whatif small">What-if only: this doesn't change your program. {what} change through decisions.</p>;
+/** In the game, tools project changes the player can only make through decisions; in the planning tools, they're a sandbox. */
+export function WhatIf({ what, planning }: { what: string; planning?: boolean }) {
+  return (
+    <p className="whatif small">
+      {planning
+        ? "What-if only: nothing here is saved, so try anything."
+        : `What-if only: this doesn't change your program. ${what} change through decisions.`}
+    </p>
+  );
 }
 
 /** "Save as evidence" bar shown when a tool is opened from a scenario. */
